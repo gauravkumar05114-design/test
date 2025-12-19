@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>भारतीय इतिहास MCQ टेस्ट</title>
+    <!-- Tailwind CSS CDN load kar rahe hain -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic appeal */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .quiz-container {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px 0 rgba(0, 0, 0, 0.05);
+        }
+        .question-card {
+            border-left: 5px solid #3b82f6; /* Blue border for question */
+            transition: all 0.3s ease;
+        }
+        .option-label {
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        .option-label:hover {
+            background-color: #eff6ff; /* Light blue on hover */
+        }
+        /* Style for correct/incorrect feedback */
+        .correct-answer {
+            background-color: #d1fae5; /* Light green */
+            border: 2px solid #10b981; /* Green border */
+            font-weight: 600;
+        }
+        .incorrect-answer {
+            background-color: #fee2e2; /* Light red */
+            border: 2px solid #ef4444; /* Red border */
+            font-weight: 600;
+        }
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.4);
+        }
+        .submit-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-6 md:p-10 quiz-container">
+        <!-- Header Section -->
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 text-center mb-2">भारतीय इतिहास MCQ टेस्ट (50 प्रश्न)</h1>
+        <p class="text-center text-gray-500 mb-8">प्रत्येक सही उत्तर पर +1 अंक, प्रत्येक गलत उत्तर पर -1/3 अंक का नकारात्मक अंकन।</p>
+        
+        <!-- Quiz Questions Container -->
+        <div id="quiz-container">
+            <!-- Questions will be dynamically inserted here -->
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center mt-10">
+            <button id="submit-btn" onclick="checkAnswers()" class="submit-button bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition duration-300 ease-in-out">
+                परिणाम (Results) चेक करें
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden mt-12 p-6 md:p-8 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 border-b pb-3 mb-5">परीक्षा परिणाम (Test Results)</h2>
+            <div class="grid grid-cols-2 gap-4 text-lg">
+                <p><span class="font-medium text-green-600">कुल अंक (Final Score):</span> <span id="final-score" class="font-extrabold text-2xl ml-2"></span></p>
+                <p><span class="font-medium text-green-600">सही उत्तर (Correct):</span> <span id="correct-count" class="font-bold ml-1"></span></p>
+                <p><span class="font-medium text-red-600">गलत उत्तर (Incorrect):</span> <span id="incorrect-count" class="font-bold ml-1"></span></p>
+                <p><span class="font-medium text-yellow-600">बिना जवाब (Unanswered):</span> <span id="unanswered-count" class="font-bold ml-1"></span></p>
+                <p class="col-span-2"><span class="font-medium text-red-600">नेगेटिव मार्किंग (Deduction):</span> <span id="negative-deduction" class="font-bold ml-1"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Quiz Logic -->
+    <script>
+        // Quiz data array, jismein saare sawaal, options aur sahi jawaab hain
+        const quizData = [
+            {
+                question: "किस यूनानी इतिहासकार को 'इतिहास का जनक' (Father of History) कहा जाता है?",
+                options: ["मेगास्थनीज", "कल्हण", "हेरोडोटस", "प्लिनी"],
+                correctAnswer: "हेरोडोटस"
+            },
+            {
+                question: "हेरोडोटस की प्रसिद्ध पुस्तक का नाम क्या है?",
+                options: ["अर्थशास्त्र", "इंडिका", "हिस्टोरिका", "राजतरंगिणी"],
+                correctAnswer: "हिस्टोरिका"
+            },
+            {
+                question: "मेगास्थनीज किसके दरबार में सेल्यूकस का दूत बनकर आया था?",
+                options: ["अशोक", "हर्षवर्धन", "चन्द्रगुप्त मौर्य", "कनिष्क"],
+                correctAnswer: "चन्द्रगुप्त मौर्य" // Text says "Envoy sent by Seleucus" - implies ChandraGupta Maurya's court.
+            },
+            {
+                question: "कौटिल्य (चाणक्य) द्वारा रचित 'अर्थशास्त्र' किस विषय पर केंद्रित है?",
+                options: ["संस्कृत व्याकरण", "युद्ध तकनीकें", "राजनीति एवं प्रशासन", "सिंधु सभ्यता"],
+                correctAnswer: "राजनीति एवं प्रशासन"
+            },
+            {
+                question: "'राजतरंगिणी' नामक पुस्तक, जो कश्मीर के इतिहास का वर्णन करती है, के लेखक कौन हैं?",
+                options: ["हेरोडोटस", "कल्हण", "पाणिनि", "मेगास्थनीज"],
+                correctAnswer: "कल्हण"
+            },
+            {
+                question: "'अष्टाध्यायी' (Ashtadhyayi) के लेखक कौन हैं, जिन्हें संस्कृत व्याकरण का जनक माना जाता है?",
+                options: ["चाणक्य", "विशाखादत्त", "पाणिनि", "बाणभट्ट"],
+                correctAnswer: "पाणिनि"
+            },
+            {
+                question: "आग का आविष्कार मानव ने किस काल में किया था?",
+                options: ["पुरापाषाण काल", "मध्यपाषाण काल", "नवपाषाण काल", "ताम्रपाषाण काल"],
+                correctAnswer: "नवपाषाण काल"
+            },
+            {
+                question: "मानव ने सर्वप्रथम किस पशु को पालतू बनाया था?",
+                options: ["भेड़", "गाय", "घोड़ा", "कुत्ता"],
+                correctAnswer: "कुत्ता"
+            },
+            {
+                question: "मानव द्वारा प्रयोग की जाने वाली प्रथम धातु कौन सी थी?",
+                options: ["सोना", "लोहा", "ताँबा", "चाँदी"],
+                correctAnswer: "ताँबा"
+            },
+            {
+                question: "भारत का सबसे प्राचीन नगर 'मोहनजोदड़ो' का शाब्दिक अर्थ क्या है?",
+                options: ["काले रंग की चूड़ियाँ", "गोदी का शहर", "मृतकों का टीला", "सफेद कुआँ"],
+                correctAnswer: "मृतकों का टीला"
+            },
+            {
+                question: "हड़प्पा स्थल का उत्खननकर्ता कौन था?",
+                options: ["राखालदास बनर्जी", "अर्नेस्ट मैके", "दयाराम साहनी", "जे.पी. जोशी"],
+                correctAnswer: "दयाराम साहनी"
+            },
+            {
+                question: "मोहनजोदड़ो स्थल का उत्खननकर्ता कौन था?",
+                options: ["दयाराम साहनी", "बी.के. थापर", "राखालदास बनर्जी", "एस.आर. राव"],
+                correctAnswer: "राखालदास बनर्जी"
+            },
+            {
+                question: "चन्हुदड़ो स्थल के उत्खननकर्ता कौन थे?",
+                options: ["कल्हण", "वाई.डी. शर्मा", "अर्नेस्ट मैके", "आर.एस. बिष्ट"],
+                correctAnswer: "अर्नेस्ट मैके"
+            },
+            {
+                question: "कालीबंगा किस नदी के तट पर स्थित है?",
+                options: ["रावी", "सिंधु", "घग्घर", "सतलुज"],
+                correctAnswer: "घग्घर"
+            },
+            {
+                question: "रोपड़ नामक सिंधु स्थल वर्तमान में किस राज्य में स्थित है?",
+                options: ["राजस्थान", "गुजरात", "पंजाब", "उत्तर प्रदेश"],
+                correctAnswer: "पंजाब"
+            },
+            {
+                question: "आलमगीरपुर नामक स्थल किस नदी के तट पर स्थित है?",
+                options: ["हिंडन", "सरस्वती", "भोगवा", "लूनी"],
+                correctAnswer: "हिंडन"
+            },
+            {
+                question: "बनवाली और राखीगढ़ी दोनों ही सिंधु स्थल किस राज्य में स्थित हैं?",
+                options: ["गुजरात", "हरियाणा", "पंजाब", "राजस्थान"],
+                correctAnswer: "हरियाणा"
+            },
+            {
+                question: "धौलावीरा नामक स्थल किस नदी के तट पर स्थित है?",
+                options: ["रावी", "लूनी", "सतलुज", "सिंधु"],
+                correctAnswer: "लूनी"
+            },
+            {
+                question: "लोथल की खोज किस उत्खननकर्ता ने की थी?",
+                options: ["जे.पी. जोशी", "एस.आर. राव", "बी.बी. लाल", "आर.एस. बिष्ट"],
+                correctAnswer: "एस.आर. राव"
+            },
+            {
+                question: "सिंधु घाटी सभ्यता की लिपि कैसी थी?",
+                options: ["कीलाक्षर", "ब्राह्मी", "चित्रात्मक", "देवनागरी"],
+                correctAnswer: "चित्रात्मक"
+            },
+            {
+                question: "सिंधु सभ्यता का कालखंड क्या है, जो सबसे अधिक मान्य है?",
+                options: ["1000 ई.पू. - 600 ई.पू.", "3000 ई.पू. - 2000 ई.पू.", "2500 ई.पू. - 1750 ई.पू.", "1500 ई.पू. - 1000 ई.पू."],
+                correctAnswer: "2500 ई.पू. - 1750 ई.पू."
+            },
+            {
+                question: "मोहनजोदड़ो से प्राप्त 'नृत्यांगना की कांस्य मूर्ति' किस धातु से बनी थी?",
+                options: ["लोहा", "सोना", "ताँबा", "कांस्य"],
+                correctAnswer: "कांस्य"
+            },
+            {
+                question: "देवी माँ (पृथ्वी देवी) की मूर्ति, जो उर्वरता की देवी मानी गई है, कहाँ से प्राप्त हुई है?",
+                options: ["मोहनजोदड़ो", "कालीबंगा", "लोथल", "हड़प्पा"],
+                correctAnswer: "हड़प्पा"
+            },
+            {
+                question: "सिंधु सभ्यता का प्रमुख बंदरगाह (Dockyard/गोदीवाड़ा) किस स्थल पर स्थित था?",
+                options: ["रोपड़", "धौलावीरा", "लोथल", "राखीगढ़ी"],
+                correctAnswer: "लोथल"
+            },
+            {
+                question: "जूते हुए खेत के साक्ष्य किस सिंधु स्थल से प्राप्त हुए हैं?",
+                options: ["बनवाली", "कालीबंगा", "चन्हुदड़ो", "हड़प्पा"],
+                correctAnswer: "कालीबंगा"
+            },
+            {
+                question: "वक्राकार ईंटों (Curved Bricks) के प्रमाण किस स्थल से मिले हैं?",
+                options: ["मोहनजोदड़ो", "चन्हुदड़ो", "कालीबंगा", "लोथल"],
+                correctAnswer: "चन्हुदड़ो"
+            },
+            {
+                question: "'पशुपतिनाथ की मुहर' (Seal of Pashupati Nath) कहाँ से मिली है?",
+                options: ["चन्हुदड़ो", "हड़प्पा", "मोहनजोदड़ो", "धौलावीरा"],
+                correctAnswer: "मोहनजोदड़ो"
+            },
+            {
+                question: "किस स्थल से 'दश-अक्षरों वाला शिलालेख' (Ten Letter Inscription) प्राप्त हुआ है?",
+                options: ["रोपड़", "लोथल", "धौलावीरा", "आलमगीरपुर"],
+                correctAnswer: "धौलावीरा"
+            },
+            {
+                question: "चावल की भूसी (Rice Husk) के साक्ष्य किस सिंधु स्थल से प्राप्त हुए हैं?",
+                options: ["कालीबंगा", "लोथल", "बनवाली", "राखीगढ़ी"],
+                correctAnswer: "लोथल"
+            },
+            {
+                question: "बिल्ली का पीछा करते हुए कुत्ते के पैरों के निशान किस स्थल से प्राप्त हुए हैं?",
+                options: ["हड़प्पा", "चन्हुदड़ो", "मोहनजोदड़ो", "लोथल"],
+                correctAnswer: "चन्हुदड़ो"
+            },
+            {
+                question: "आर.एस. बिष्ट किस सिंधु स्थल के उत्खननकर्ता थे?",
+                options: ["धौलावीरा", "राखीगढ़ी", "बनवाली", "लोथल"],
+                correctAnswer: "बनवाली"
+            },
+            {
+                question: "वाई.डी. शर्मा किस स्थल के उत्खनन से संबंधित हैं?",
+                options: ["चन्हुदड़ो", "रोपड़", "कालीबंगा", "मोहनजोदड़ो"],
+                correctAnswer: "रोपड़"
+            },
+            {
+                question: "किस सिंधु स्थल से जौ (Barley) और सरसों (Mustard) के साक्ष्य मिले हैं?",
+                options: ["धौलावीरा", "रोपड़", "बनवाली", "कालीबंगा"],
+                correctAnswer: "बनवाली"
+            },
+            {
+                question: "वेदकालीन इतिहास का विभाजन मुख्यतः कितने भागों में किया गया है?",
+                options: ["तीन", "चार", "दो", "पाँच"],
+                correctAnswer: "दो"
+            },
+            {
+                question: "ऋग्वैदिक काल का समय क्या निर्धारित किया गया है?",
+                options: ["2500-1750 ई.पू.", "1000-600 ई.पू.", "1500-1000 ई.पू.", "600-400 ई.पू."],
+                correctAnswer: "1500-1000 ई.पू."
+            },
+            {
+                question: "उत्तर वैदिक काल का समय क्या माना जाता है?",
+                options: ["1000-600 ई.पू.", "1500-1000 ई.पू.", "2500-1750 ई.पू.", "600-400 ई.पू."],
+                correctAnswer: "1000-600 ई.पू."
+            },
+            {
+                question: "मोहनजोदड़ो से प्राप्त 'विशाल स्नानागार' (Bathing Pool) का साक्ष्य किस स्थल से मिला है?",
+                options: ["हड़प्पा", "लोथल", "मोहनजोदड़ो", "कालीबंगा"],
+                correctAnswer: "मोहनजोदड़ो"
+            },
+            {
+                question: "कालीबंगा, जिसका अर्थ 'काले रंग की चूड़ियाँ' है, किस राज्य में स्थित है?",
+                options: ["गुजरात", "पंजाब", "राजस्थान", "हरियाणा"],
+                correctAnswer: "राजस्थान"
+            },
+            {
+                question: "किस स्थल से शंख (Shell) और कांस्य दर्पण (Bronze Mirror) के साक्ष्य मिले हैं?",
+                options: ["चन्हुदड़ो", "लोथल", "हड़प्पा", "धौलावीरा"],
+                correctAnswer: "हड़प्पा"
+            },
+            {
+                question: "लोथल किस नदी के तट पर स्थित है?",
+                options: ["भोगवा", "सरस्वती", "लूनी", "हिंडन"],
+                correctAnswer: "भोगवा"
+            },
+            {
+                question: "कालीबंगा के उत्खनन में बी.बी. लाल के साथ किस अन्य उत्खननकर्ता का नाम जुड़ा है?",
+                options: ["वाई.डी. शर्मा", "एस.आर. राव", "बी.के. थापर", "अर्नेस्ट मैके"],
+                correctAnswer: "बी.के. थापर"
+            },
+            {
+                question: "सिंधु घाटी सभ्यता के किस स्थल से 'ताँबे का कुत्ता' और 'ताँबे का बैल' प्राप्त हुआ है?",
+                options: ["मोहनजोदड़ो", "हड़प्पा", "लोथल", "कालीबंगा"],
+                correctAnswer: "लोथल"
+            },
+            {
+                question: "किस स्थल से स्टेडियम और जल प्रबंधन प्रणाली (जलाशय) के साक्ष्य मिले हैं?",
+                options: ["हड़प्पा", "धौलावीरा", "रोपड़", "राखीगढ़ी"],
+                correctAnswer: "धौलावीरा"
+            },
+            {
+                question: "हड़प्पा स्थल वर्तमान में किस देश में स्थित है?",
+                options: ["भारत", "पाकिस्तान", "अफगानिस्तान", "नेपाल"],
+                correctAnswer: "पाकिस्तान"
+            },
+            {
+                question: "सिंधु सभ्यता का कौन सा स्थल गुजरात में स्थित है?",
+                options: ["कालीबंगा", "धौलावीरा", "रोपड़", "बनवाली"],
+                correctAnswer: "धौलावीरा"
+            },
+            {
+                question: "किस स्थल से मानव को दफनाने के तीन जोड़े (Three pairs of burial mounds) मिले हैं?",
+                options: ["कालीबंगा", "चन्हुदड़ो", "लोथल", "हड़प्पा"],
+                correctAnswer: "लोथल"
+            },
+            {
+                question: "सिंधु घाटी सभ्यता की लिपि, जो चित्रात्मक थी, किस दिशा में लिखी जाती थी?",
+                options: ["दाएँ से बाएँ", "बाएँ से दाएँ", "ऊपर से नीचे", "नीचे से ऊपर"],
+                correctAnswer: "दाएँ से बाएँ"
+            },
+            {
+                question: "लिपस्टिक (Lipstick) और अलंकृत हाथी के साक्ष्य किस स्थल से मिले हैं?",
+                options: ["मोहनजोदड़ो", "चन्हुदड़ो", "बनवाली", "लोथल"],
+                correctAnswer: "चन्हुदड़ो"
+            },
+            {
+                question: "किस स्थल से 'अग्निकुंड' (Fire Altars) और ऊँट की हड्डियाँ (Camel Bones) मिली हैं?",
+                options: ["लोथल", "धौलावीरा", "कालीबंगा", "रोपड़"],
+                correctAnswer: "कालीबंगा"
+            },
+            {
+                question: "राखीगढ़ी नामक स्थल का उत्खननकर्ता कौन था?",
+                options: ["जे.पी. जोशी", "एस.आर. राव", "वाई.डी. शर्मा", "राखालदास बनर्जी"],
+                correctAnswer: "वाई.डी. शर्मा"
+            }
+        ];
+
+        // Functions ko define kar rahe hain
+        const quizContainer = document.getElementById('quiz-container');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultsDiv = document.getElementById('results');
+
+        // Quiz ko render karne ka function
+        function renderQuiz() {
+            let html = '';
+            quizData.forEach((item, index) => {
+                // Har question ke liye ek card bana rahe hain
+                html += `
+                    <div class="question-card bg-white p-5 mb-6 rounded-lg shadow-md" data-question-index="${index}">
+                        <p class="text-xl font-semibold text-gray-700 mb-4">Q${index + 1}. ${item.question}</p>
+                        <div class="options-group space-y-3">
+                `;
+
+                // Options ko sequence mein hi rakhte hain
+                item.options.forEach((option, optionIndex) => {
+                    const uniqueId = `q${index}-o${optionIndex}`;
+                    html += `
+                        <label for="${uniqueId}" class="option-label block p-3 border border-gray-200 rounded-lg flex items-center">
+                            <input type="radio" id="${uniqueId}" name="question-${index}" value="${option}" class="text-blue-600 focus:ring-blue-500 h-5 w-5 mr-3">
+                            <span class="text-base text-gray-600">${option}</span>
+                        </label>
+                    `;
+                });
+
+                html += `
+                        </div>
+                        <div class="feedback-message mt-3 hidden text-sm font-medium"></div>
+                    </div>
+                `;
+            });
+            quizContainer.innerHTML = html;
+        }
+
+        // Jab user 'Check Answers' par click karega, tab yeh function chlega
+        function checkAnswers() {
+            let finalScore = 0;
+            let correctCount = 0;
+            let incorrectCount = 0;
+            let unansweredCount = 0;
+            const deductionPerWrong = 1 / 3;
+
+            quizData.forEach((item, index) => {
+                const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
+                const questionCard = document.querySelector(`.question-card[data-question-index="${index}"]`);
+                const feedbackMessage = questionCard.querySelector('.feedback-message');
+                const options = questionCard.querySelectorAll('.option-label');
+
+                // Saare previous feedback styles hata dete hain
+                options.forEach(label => {
+                    label.classList.remove('correct-answer', 'incorrect-answer');
+                });
+                feedbackMessage.classList.add('hidden');
+                feedbackMessage.textContent = '';
+
+
+                if (selectedOption) {
+                    const userAnswer = selectedOption.value;
+                    if (userAnswer === item.correctAnswer) {
+                        // Sahi Jawaab
+                        finalScore += 1;
+                        correctCount++;
+                        
+                        // Sahi option ko highlight karna
+                        selectedOption.closest('.option-label').classList.add('correct-answer');
+                        feedbackMessage.textContent = '✅ सही उत्तर!';
+                        feedbackMessage.classList.remove('hidden', 'text-red-600', 'text-yellow-600').classList.add('text-green-600');
+                    } else {
+                        // Galat Jawaab
+                        finalScore -= deductionPerWrong;
+                        incorrectCount++;
+
+                        // Galat chune hue option ko highlight karna
+                        selectedOption.closest('.option-label').classList.add('incorrect-answer');
+                        feedbackMessage.textContent = `❌ गलत उत्तर! सही जवाब है: ${item.correctAnswer}`;
+                        feedbackMessage.classList.remove('hidden', 'text-green-600', 'text-yellow-600').classList.add('text-red-600');
+                        
+                        // Sahi option ko bhi highlight karna (user ki madad ke liye)
+                        options.forEach(label => {
+                            if (label.querySelector('span').textContent === item.correctAnswer) {
+                                label.classList.add('correct-answer');
+                            }
+                        });
+                    }
+                } else {
+                    // Jawaab nahi diya
+                    unansweredCount++;
+                    feedbackMessage.textContent = `⚠️ आपने जवाब नहीं दिया। सही जवाब है: ${item.correctAnswer}`;
+                    feedbackMessage.classList.remove('hidden', 'text-green-600', 'text-red-600').classList.add('text-yellow-600');
+                    
+                    // Sahi option ko highlight karna
+                    options.forEach(label => {
+                        if (label.querySelector('span').textContent === item.correctAnswer) {
+                            label.classList.add('correct-answer');
+                        }
+                    });
+                }
+
+                // Inputs ko disable kar dete hain
+                questionCard.querySelectorAll('input').forEach(input => input.disabled = true);
+            });
+
+            // Score ko 2 decimal places tak round off karna
+            const finalScoreRounded = parseFloat(finalScore).toFixed(2);
+            const totalNegativeDeduction = parseFloat(incorrectCount * deductionPerWrong).toFixed(2);
+            
+            // Results section mein data dikhana
+            document.getElementById('final-score').textContent = finalScoreRounded;
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
+            document.getElementById('unanswered-count').textContent = unansweredCount;
+            document.getElementById('negative-deduction').textContent = `-${totalNegativeDeduction}`;
+            
+            // Results section ko show karna aur button ko hide/disable karna
+            resultsDiv.classList.remove('hidden');
+            submitBtn.textContent = 'परिणाम दिखाए गए हैं';
+            submitBtn.disabled = true;
+
+            // Page ko results section tak scroll karna
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Page load hone par quiz ko shuru karna
+        window.onload = renderQuiz;
+    </script>
+
+</body>
+</html>
