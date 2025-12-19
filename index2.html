@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST SERIES 0.01 BY GAURAV KUMAR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .active-option { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- 1. स्टार्ट स्क्रीन -->
+    <div id="start-screen" class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 text-center">
+        <h1 class="text-3xl font-bold mb-6 text-blue-600">NUMBER SYSTEM TEST <br>BY<br>GAURAV KUMAR</h1>
+        <div class="text-left bg-blue-50 p-4 rounded-xl mb-6">
+             <p>• TEST CODE: <span class="text-red-600 font-bold">       0002</span></p>
+            <p>• प्रत्येक सही उत्तर: <span class="text-green-600 font-bold">    +1 अंक</span></p>
+            <p>• गलत उत्तर (नेगेटिव): <span class="text-red-600 font-bold">-0.33 अंक</span></p>
+            <p>• परिणाम अंत में डैशबोर्ड पर दिखेगा।</p>
+            <p>• Question :100</p>
+        </div>
+        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold">शुरू करें</button>
+    </div>
+
+    <!-- 2. क्विज़ स्क्रीन -->
+    <div id="quiz-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden hidden mt-6">
+        <div class="bg-blue-600 p-4 text-white flex justify-between">
+            <span id="progress-text" class="font-bold">प्रश्न 1</span>
+            <span id="timer" class="font-mono">00:00</span>
+        </div>
+        <div class="p-6">
+            <h2 id="question-label" class="text-xl font-bold mb-6 min-h-[60px]">सवाल यहाँ आएगा</h2>
+            <div id="options-list" class="space-y-3">
+                <!-- बटन यहाँ अपने आप बनेंगे -->
+            </div>
+            <div class="flex gap-4 mt-8 border-t pt-6">
+                <button onclick="changeQuestion(-1)" class="bg-gray-200 px-6 py-2 rounded-lg font-bold">पीछे</button>
+                <button id="next-btn" onclick="changeQuestion(1)" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">अगला</button>
+                <button id="submit-btn" onclick="finishQuiz()" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hidden">सबमिट करें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. रिजल्ट डैशबोर्ड स्क्रीन -->
+    <div id="result-screen" class="max-w-4xl mx-auto hidden mt-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 border-t-8 border-blue-600 text-center">
+            <h2 class="text-3xl font-bold mb-6">आपका स्कोर कार्ड</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-sm text-gray-500">कुल स्कोर</p>
+                    <p id="final-score" class="text-3xl font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <p class="text-sm text-gray-500">सही</p>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl">
+                    <p class="text-sm text-gray-500">गलत</p>
+                    <p id="wrong-count" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-xl">
+                    <p class="text-sm text-gray-500">छोड़े</p>
+                    <p id="skipped-count" class="text-3xl font-bold">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-2 rounded-lg">फिर से टेस्ट दें</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-xl font-bold mb-4">उत्तरों की समीक्षा:</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 uppercase text-xs">
+                            <th class="p-3">#</th>
+                            <th class="p-3">प्रश्न</th>
+                            <th class="p-3">आपका उत्तर</th>
+                            <th class="p-3">सही उत्तर</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // यहाँ अपने नए सवाल जोड़ें
+        // correct: 0 का मतलब है पहला ऑप्शन सही है, 1 का मतलब दूसरा...
+        // ==========================================
+        const myQuestions = [
+        
+  
+  { "q": "वह सबसे बड़ी संख्या 23a68b ज्ञात कीजिए, जो 3 से विभाज्य है लेकिन 9 से विभाज्य नहीं है।", "options": ["238689", "239685", "239688", "237687"], "correct": 1, "exam": "SSC CGL Pre 2021" },
+  { "q": "वह बड़ी से बड़ी संख्या ज्ञात कीजिए, जिससे 108, 124 और 156 को विभाजित करने पर समान शेषफल प्राप्त होता है।", "options": ["18", "10", "12", "16"], "correct": 3, "exam": "SSC CGL 12.04.2022" },
+  { "q": "7 का सबसे छोटा गुणज कौन सा है, जिसे 8, 9, 12 और 15 से विभाजित करने पर प्रत्येक स्थिति में 5 शेष बचता है?", "options": ["365", "1085", "2525", "725"], "correct": 1, "exam": "SSC CGL 11.04.2022" },
+  { "q": "500 से 650 तक (दोनों को सम्मिलित करते हुए) ऐसी कितनी संख्याएं हैं जो 3 और 7 दोनों से विभाज्य नहीं हैं?", "options": ["21", "121", "87", "99"], "correct": 2, "exam": "SSC CGL 11.04.2022" },
+  { "q": "वह सबसे बड़ी संख्या कौन सी है, जिससे 156, 181 और 331 को विभाजित करने पर प्रत्येक स्थिति में शेषफल 6 आता है?", "options": ["26", "17", "25", "13"], "correct": 2, "exam": "SSC CGL 11.04.2022" },
+  { "q": "335, 608 और 853 के गुणनफल को 13 से विभाजित करने पर प्राप्त शेषफल क्या होगा?", "options": ["11", "12", "6", "7"], "correct": 3, "exam": "SSC CGL 11.04.2022" },
+  { "q": "यदि 7-अंकी संख्या x8942y4, 56 से विभाज्य है, तो y के सबसे बड़े मान के लिए (x^2+y) का मान क्या है?", "options": ["33", "44", "55", "70"], "correct": 2, "exam": "SSC CGL 11.04.2022" },
+  { "q": "यदि 8A5146B, 88 से विभाज्य है, तो B-A का मान क्या है?", "options": ["0", "-1", "-2", "2"], "correct": 3, "exam": "SSC CGL 12.04.2022" },
+  { "q": "यदि 8A5146B, 88 से विभाज्य है, तो B^A का मान क्या है?", "options": ["81", "64", "15", "12"], "correct": 1, "exam": "SSC CGL 12.04.2022" },
+  { "q": "नौ-अंक वाली संख्या 7x79251y8, 36 से विभाज्य है, तो y के अधिकतम मान के लिए (10x^2-3y^2) का मान ज्ञात करें।", "options": ["490", "289", "192", "298"], "correct": 3, "exam": "SSC CGL 13.04.2022" },
+  { "q": "यदि 8A5146B, 88 से विभाज्य है, तो AB का मान क्या है?", "options": ["9", "20", "15", "12"], "correct": 2, "exam": "SSC CGL 13.04.2022" },
+  { "q": "यदि नौ अंकों की संख्या 9m2365n48, 88 से विभाज्य है, तो n के सबसे छोटे मान के लिए (m^2 * n^2) क्या है?", "options": ["32", "64", "20", "36"], "correct": 1, "exam": "SSC CGL 13.04.2022" },
+  { "q": "वह छोटी से छोटी संख्या कौन-सी है जिसे 7 घटाने पर प्राप्त संख्या 15, 24, 28 और 32 से विभाजित हो जाती है?", "options": ["10087", "10067", "10077", "10097"], "correct": 0, "exam": "SSC CGL 13.04.2022" },
+  { "q": "सबसे बड़ी संख्या कौन-सी है, जिससे 126, 224 और 608 को विभाजित करने पर शेषफल क्रमशः 2, 7 और 19 प्राप्त होता है?", "options": ["31", "27", "21", "37"], "correct": 0, "exam": "SSC CGL 18.04.2022" },
+  { "q": "सबसे बड़ी संख्या 234a5b ज्ञात कीजिए, जो 22 से विभाज्य है, लेकिन 5 से विभाज्य नहीं है।", "options": ["234850", "234751", "234652", "234058"], "correct": 2, "exam": "SSC CGL 18.04.2022" },
+  { "q": "चार अंकों की सबसे बड़ी संख्या कौन-सी है जिसे 6, 7 और 8 से विभाजित करने पर क्रमशः 4, 5 और 6 शेषफल प्राप्त होते हैं?", "options": ["9921", "9920", "9912", "9910"], "correct": 3, "exam": "SSC CGL 18.04.2022" },
+  { "q": "यदि 9 अंकों की संख्या 468x5138y, 72 से विभाज्य है, तो sqrt(4x+3y) का मान ज्ञात करें।", "options": ["9", "6", "8", "12"], "correct": 1, "exam": "SSC CGL 18.04.2022" },
+  { "q": "एक संख्या 'n' को 6 से विभाजित करने पर 2 शेषफल बचता है। (n^2+n+2)को 6 से विभाजित करने पर शेषफल क्या होगा?", "options": ["6", "2", "4", "0"], "correct": 1, "exam": "SSC CGL 18.04.2022" },
+  { "q": "k का मान ज्ञात कीजिए, जिससे k53206k, 6 से विभाज्य हो।", "options": ["4", "1", "2", "7"], "correct": 0, "exam": "SSC CGL 19.04.2022" },
+  { "q": "तीन अंकों की वह बड़ी से बड़ी संख्या ज्ञात कीजिए, जिसे 3, 4, 5 और 8 से विभाजित करने पर प्रत्येक स्थिति में शेषफल 2 बचे।", "options": ["482", "962", "958", "122"], "correct": 1, "exam": "SSC CGL 19.04.2022" },
+  { "q": "संख्या 3426k में k का मान ज्ञात कीजिए, यदि संख्या 6 से विभाज्य है लेकिन 5 से विभाज्य नहीं है", "options": ["6", "3", "4", "9"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
+  { "q": " 048p6, 99 से विभाज्य है, तो (k*p) का मान क्या होगा?", "options": ["4", "2", "0", "6"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
+  { "q": "वह छोटी से छोटी संख्या कौन सी है जिसे 3627 में जोड़ने पर प्राप्त योग 4, 5, 6 और 8 से पूर्णतः विभाजित होगा?", "options": ["93", "72", "39", "27"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
+  { "q": "सबसे छोटी संख्या जो एक पूर्ण वर्ग है और 6, 8 और 15 प्रत्येक से विभाज्य है?", "options": ["3600", "225", "276", "121"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
+  { "q": "वह छोटी से छोटी संख्या ज्ञात कीजिए जिसे 6, 9 और 15 से विभाज्य सबसे छोटी संख्या में जोड़ने पर यह एक पूर्ण वर्ग बन जाए।", "options": ["10", "9", "19", "21"], "correct": 0, "exam": "SSC CGL 21.04.2022" },
+  { "q": "संख्या 3281k6 में k के स्थान पर आने वाली सबसे बड़ी और सबसे छोटी संख्या का योग ज्ञात करें जिससे संख्या 6 से विभाज्य हो।", "options": ["9", "8", "5", "4"], "correct": 1, "exam": "SSC CGL 21.04.2022" },
+  { "q": "यदि नौ अंकों की संख्या 485x3678y, 72 से विभाज्य है, तो x के सबसे छोटे मान के लिए (2y-3x) का मान है:", "options": ["6", "8", "11", "9"], "correct": 1, "exam": "SSC CGL 21.04.2022" },
+  { "q": "400 और 500 के बीच की संख्याओं का योग क्या है जिन्हें 6, 12 और 16 से विभाजित करने पर कोई शेषफल नहीं बचता?", "options": ["1024", "960", "912", "480"], "correct": 2, "exam": "SSC CGL 21.04.2022" },
+  { "q": "यदि 10-अंकों की एक संख्या 54726x79y6, 72 से विभाज्य है, तो y के न्यूनतम मान के लिए (5x-3y) क्या होगा?", "options": ["23", "16", "19", "17"], "correct": 0, "exam": "SSC CGL 21.04.2022" },
+  { "q": "यदि 9 अंकों की संख्या 957x5y6z3, 33 से विभाज्य है, तो (x+y+z) का अधिकतम मान क्या होगा?", "options": ["27", "24", "25", "26"], "correct": 1, "exam": "SSC PHASE IX 2022" },
+  { "q": "यदि 8-अंकीय संख्या 98x423y4, 72 से विभाज्य है, तो y के अधिकतम मान के लिए (5x+3y-xy) क्या होगा?", "options": ["5", "9", "3", "6"], "correct": 0, "exam": "SSC PHASE IX 2022" },
+  { "q": "यदि x92x, 36 से विभाज्य है और y569z04, 11 से विभाज्य है, तो (y+z) के अधिकतम मान के लिए (2x+y+z) क्या है?", "options": ["22", "26", "33", "31"], "correct": 3, "exam": "SSC PHASE IX 2022" },
+  { "q": "यदि 9 अंकों की एक संख्या 609a5b9c9, 99 से विभाज्य है, तो (a+b+c) किसके बराबर है?", "options": ["7", "25", "26", "16"], "correct": 3, "exam": "SSC PHASE IX 2022" },
+  { "q": "3 अंकों की संख्या abc, bca और cab का योग हमेशा किससे विभाज्य होता है?", "options": ["41", "31", "37", "39"], "correct": 2, "exam": "SSC PHASE IX 2022" },
+  { "q": "यदि 6 अंकों की संख्या 57zxy8, 7, 11 और 13 में से प्रत्येक से विभाज्य है, तो (x-2y+z) का मान है।", "options": ["-1", "2", "1", "-2"], "correct": 0, "exam": "SSC PHASE IX 2022" },
+  { "q": "6-अंकीय संख्या 439xy5, 125 से विभाज्य है। ऐसी कितनी 6-अंकीय संख्याएँ हैं?", "options": ["4", "2", "5", "3"], "correct": 0, "exam": "SSC PHASE IX 2022" },
+  { "q": "यदि 612x97y, 72 से विभाज्य है और 34z178, 11 से विभाज्य है, तो (x-2y+3z) का मान है:", "options": ["6", "5", "2", "7"], "correct": 2, "exam": "SSC PHASE IX 2022" },
+  { "q": "प्रथम 10 अभाज्य संख्याओं का औसत क्या होगा?", "options": ["12.9", "10.5", "15.2", "11.1"], "correct": 0, "exam": "पैटर्न अभ्यास" },
+  { "q": "वह सबसे छोटी संख्या ज्ञात कीजिए जिसे 12, 15 और 20 से विभाजित करने पर प्रत्येक स्थिति में 4 शेष बचे।", "options": ["64", "124", "44", "24"], "correct": 0, "exam": "पैटर्न अभ्यास" },
+  { "q": "7^105 का इकाई अंक क्या होगा?", "options": ["1", "3", "7", "9"], "correct": 2, "exam": "पैटर्न अभ्यास" },
+  { "q": "1 से 100 तक की गिनती में अंक 0 कितनी बार आता है?", "options": ["9", "10", "11", "12"], "correct": 2, "exam": "पैटर्न अभ्यास" }
+
+        ];
+
+        let currentIndex = 0;
+        let selectedAnswers = new Array(myQuestions.length).fill(null);
+        let time = 0;
+        let timer;
+
+        // क्विज़ शुरू करने के लिए
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+            timer = setInterval(() => {
+                time++;
+                let m = Math.floor(time/60).toString().padStart(2,'0');
+                let s = (time%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // सवाल दिखाने के लिए
+        function showQuestion() {
+            const data = myQuestions[currentIndex];
+            document.getElementById('progress-text').innerText = `प्रश्न ${currentIndex + 1} / ${myQuestions.length}`;
+            document.getElementById('question-label').innerText = data.q;
+            
+            const list = document.getElementById('options-list');
+            list.innerHTML = '';
+
+            data.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all ${selectedAnswers[currentIndex] === i ? 'active-option font-bold border-blue-500' : 'border-gray-100 hover:bg-gray-50'}`;
+                btn.innerHTML = `<span class="mr-3 font-bold opacity-50">${i+1}.</span> ${opt}`;
+                btn.onclick = () => { selectedAnswers[currentIndex] = i; showQuestion(); };
+                list.appendChild(btn);
+            });
+
+            // सबमिट बटन केवल आखिरी सवाल पर दिखेगा
+            if(currentIndex === myQuestions.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
+            }
+        }
+
+        // सवाल बदलने के लिए (आगे या पीछे)
+        function changeQuestion(step) {
+            let nextIndex = currentIndex + step;
+            if(nextIndex >= 0 && nextIndex < myQuestions.length) {
+                currentIndex = nextIndex;
+                showQuestion();
+            }
+        }
+
+        // टेस्ट खत्म करने और रिजल्ट दिखाने के लिए
+        function finishQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let correct = 0, wrong = 0, skipped = 0;
+            const table = document.getElementById('analysis-table');
+            table.innerHTML = '';
+
+            myQuestions.forEach((q, i) => {
+                let userPick = selectedAnswers[i];
+                let row = document.createElement('tr');
+                row.className = "border-b text-sm";
+                
+                let userAnsText = (userPick === null) ? "<span class='text-gray-400'>-</span>" : q.options[userPick];
+                let statusColor = "";
+
+                if (userPick === null) {
+                    skipped++;
+                } else if (userPick === q.correct) {
+                    correct++;
+                    statusColor = "text-green-600 font-bold";
+                } else {
+                    wrong++;
+                    statusColor = "text-red-600 font-bold";
+                }
+
+                row.innerHTML = `
+                    <td class="p-3">${i+1}</td>
+                    <td class="p-3">${q.q}</td>
+                    <td class="p-3 ${statusColor}">${userAnsText}</td>
+                    <td class="p-3 font-bold text-green-700">${q.options[q.correct]}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            // स्कोर की गणना (नेगेटिव मार्किंग के साथ)
+            const score = (correct * 1) - (wrong * 0.33);
+            document.getElementById('final-score').innerText = score.toFixed(2);
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+            document.getElementById('skipped-count').innerText = skipped;
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
