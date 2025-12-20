@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST SERIES 0.01 BY GAURAV KUMAR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .active-option { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- 1. स्टार्ट स्क्रीन -->
+    <div id="start-screen" class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 text-center">
+        <h1 class="text-3xl font-bold mb-6 text-blue-600">NTPC INTER LEVEL <br>BY<br>GAURAV KUMAR</h1>
+        <div class="text-left bg-blue-50 p-4 rounded-xl mb-6">
+             <p>• TEST CODE: <span class="text-red-600 font-bold">       0001</span></p>
+            <p>• प्रत्येक सही उत्तर: <span class="text-green-600 font-bold">    +1 अंक</span></p>
+            <p>• गलत उत्तर (नेगेटिव): <span class="text-red-600 font-bold">-0.33 अंक</span></p>
+            <p>• परिणाम अंत में डैशबोर्ड पर दिखेगा।</p>
+        </div>
+        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold">शुरू करें</button>
+    </div>
+
+    <!-- 2. क्विज़ स्क्रीन -->
+    <div id="quiz-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden hidden mt-6">
+        <div class="bg-blue-600 p-4 text-white flex justify-between">
+            <span id="progress-text" class="font-bold">प्रश्न 1</span>
+            <span id="timer" class="font-mono">00:00</span>
+        </div>
+        <div class="p-6">
+            <h2 id="question-label" class="text-xl font-bold mb-6 min-h-[60px]">सवाल यहाँ आएगा</h2>
+            <div id="options-list" class="space-y-3">
+                <!-- बटन यहाँ अपने आप बनेंगे -->
+            </div>
+            <div class="flex gap-4 mt-8 border-t pt-6">
+                <button onclick="changeQuestion(-1)" class="bg-gray-200 px-6 py-2 rounded-lg font-bold">पीछे</button>
+                <button id="next-btn" onclick="changeQuestion(1)" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">अगला</button>
+                <button id="submit-btn" onclick="finishQuiz()" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hidden">सबमिट करें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. रिजल्ट डैशबोर्ड स्क्रीन -->
+    <div id="result-screen" class="max-w-4xl mx-auto hidden mt-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 border-t-8 border-blue-600 text-center">
+            <h2 class="text-3xl font-bold mb-6">आपका स्कोर कार्ड</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-sm text-gray-500">कुल स्कोर</p>
+                    <p id="final-score" class="text-3xl font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <p class="text-sm text-gray-500">सही</p>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl">
+                    <p class="text-sm text-gray-500">गलत</p>
+                    <p id="wrong-count" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-xl">
+                    <p class="text-sm text-gray-500">छोड़े</p>
+                    <p id="skipped-count" class="text-3xl font-bold">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-2 rounded-lg">फिर से टेस्ट दें</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-xl font-bold mb-4">उत्तरों की समीक्षा:</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 uppercase text-xs">
+                            <th class="p-3">#</th>
+                            <th class="p-3">प्रश्न</th>
+                            <th class="p-3">आपका उत्तर</th>
+                            <th class="p-3">सही उत्तर</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // यहाँ अपने नए सवाल जोड़ें
+        // correct: 0 का मतलब है पहला ऑप्शन सही है, 1 का मतलब दूसरा...
+        // ==========================================
+        const myQuestions = [
+        
+            { q: "ABCD : QRST :: FGHI : ?", options: ["UVWX", "STUV", "WXYZ", "TUVW"], correct: 0 },
+            { q: "BAKE : CZLF :: FIRE : ?", options: ["GJTS", "GJSF", "HKRG", "GJRF"], correct: 1 },
+            { q: "COLD : DPME :: HEAT : ?", options: ["IFBU", "IEBU", "IGBU", "HFBU"], correct: 0 },
+            { q: "PUNE : SXQH :: DELHI : ?", options: ["GHMKL", "HGMLK", "GHMLK", "GHMKO"], correct: 2 },
+            { q: "KING : PRMT :: RAIN : ?", options: ["IZRM", "IYRM", "JZRM", "IZSN"], correct: 0 },
+            { q: "GHOST : HJRVW :: SMILE : ?", options: ["TNKNG", "TNKNH", "TMKMG", "UNKNG"], correct: 0 },
+            { q: "TIGER : QFDBS :: HORSE : ?", options: ["ELNPD", "ELOQD", "FMNPD", "GLOQD"], correct: 1 },
+            { q: "TEACHER : VGCEJGT :: STUDENT : ?", options: ["UVWFGPU", "UVWFGPV", "UXWFGPU", "UVWFGOT"], correct: 1 },
+            { q: "POWER : KLDSQ :: LIGHT : ?", options: ["KHGGS", "KHFGS", "MHHIT", "KHGFS"], correct: 3 },
+            { q: "BANK : AZMJ :: ROAD : ?", options: ["QNZC", "SPBE", "QNXC", "QNYC"], correct: 0 },
+            { q: "TRUTH : SUQSTVTSGI :: FALSE : ?", options: ["EGZBKMRTEDF", "EGZBMKSRTDF", "EGZBKMRTFDE", "EGZBKMRTDFA"], correct: 3 },
+            { q: "MIND : KGLB :: DIAGRAM : ?", options: ["BGYEPYK", "BGYEOYK", "AGYEPYK", "BHYEPYK"], correct: 0 },
+            { q: "CAT : 24 :: DOG : ?", options: ["25", "26", "27", "28"], correct: 1 },
+            { q: "GARDEN : HCEAJH :: FLOWER : ?", options: ["GNSXDI", "GNRYDI", "GNSXDK", "FNSXDK"], correct: 2 },
+            { q: "STAMP : TVFQN :: BRAIN : ?", options: ["CSDJO", "CTDLQ", "CTELQ", "CUEMR"], correct: 1 },
+            { q: "VICTORY : CIVSYRO :: TRAITOR : ?", options: ["ARTTIRO", "ARTOTIR", "RATTRIO", "ARTTIOR"], correct: 0 },
+            { q: "MASTER : OCVGGT :: DANGER : ?", options: ["FCPIGT", "FBOHFS", "EDOHFS", "FCPIHU"], correct: 0 },
+            { q: "BREAD : EREBD :: TABLE : ?", options: ["ELBAT", "ALBET", "BATEL", "TELBA"], correct: 0 },
+            { q: "A : E :: I : ?", options: ["M", "O", "J", "K"], correct: 1 },
+            { q: "KING : TMRO :: RAIL : ?", options: ["IZOR", "IZRP", "JARO", "KBSP"], correct: 0 },
+            { q: "6 : 218 :: 8 : ?", options: ["512", "514", "516", "624"], correct: 1 },
+            { q: "7 : 345 :: 5 : ?", options: ["125", "127", "130", "135"], correct: 1 },
+            { q: "12 : 140 :: 15 : ?", options: ["225", "221", "230", "220"], correct: 1 },
+            { q: "9 : 80 :: 7 : ?", options: ["48", "50", "49", "56"], correct: 0 },
+            { q: "5 : 130 :: 6 : ?", options: ["216", "222", "220", "230"], correct: 1 },
+            { q: "11 : 132 :: 13 : ?", options: ["169", "182", "190", "170"], correct: 1 },
+            { q: "48 : 122 :: 168 : ?", options: ["290", "225", "215", "288"], correct: 0 },
+            { q: "2 : 12 :: 3 : ?", options: ["18", "24", "30", "36"], correct: 2 },
+            { q: "720 : 840 :: 60 : ?", options: ["70", "80", "72", "75"], correct: 0 },
+            { q: "14 : 194 :: 16 : ?", options: ["254", "256", "258", "260"], correct: 0 },
+            { "q": "दवा : रोग :: भोजन : ?", "options": ["पोषण", "प्यास", "ऊर्जा", "भूख"], "correct": 2 },
+  { "q": "हृदय रोग विशेषज्ञ : हृदय :: स्नायु रोग विशेषज्ञ : ?", "options": ["फेफड़ों", "दाँत", "कान", "मस्तिष्क"], "correct": 3 },
+  { "q": "इराक : दीनार :: म्यांमार : ?", "options": ["लीरा", "क्यात", "येन", "रैंड"], "correct": 1 },
+  { "q": "हॉकी : स्टिक :: क्रिकेट : ?", "options": ["बल्ला", "स्टेडियम", "पिच", "बल्लेबाज"], "correct": 0 },
+  { "q": "शुतुरमुर्ग : पक्षी :: मगरमच्छ : ?", "options": ["सरीसृप", "कृंतक", "तैरना", "जल"], "correct": 0 },
+  { "q": "दरवाजा : लकड़ी :: कमीज : ?", "options": ["कॉलर", "बटन", "कफ", "कपड़ा"], "correct": 3 },
+  { "q": "चश्मा : देखना :: पेंसिल : ?", "options": ["सीसा", "लिखना", "कागज", "गोल"], "correct": 1 },
+  { "q": "कमीज : वस्त्र :: गले का हार : ?", "options": ["गला", "गहना", "मोती", "गोल"], "correct": 1 },
+  { "q": "रतौंधी : विटामिन A :: स्कर्वी : ?", "options": ["विटामिन B", "लोह", "विटामिन C", "आयोडीन"], "correct": 2 },
+  { "q": "ढांचा : मकान :: अस्थिपंजर : ?", "options": ["पसली", "खोपड़ी", "शरीर", "लावण्य"], "correct": 2 },
+  { "q": "संपादक : पत्रिका :: ? : ?", "options": ["उपन्यास : लेखक", "कविता : कवि", "कुर्सी : बढ़ई", "निर्देशक : फिल्म"], "correct": 3 },
+  { "q": "बर्फ : शीतलता :: पृथ्वी : ?", "options": ["भार", "गुरुत्वाकर्षण", "जंगल", "समुद्र"], "correct": 1 },
+  { "q": "एकरसता : विविधता :: उजड्डपन : ?", "options": ["अपरिपक्वता", "सौम्यता", "सरलता", "सुसंस्कृतता"], "correct": 3 },
+  { "q": "घर : कमरा :: विश्व : ?", "options": ["जमीन", "सूर्य", "हवा", "राष्ट्र"], "correct": 3 },
+  { "q": "कैमरा : लैन्स :: फ्लैश : ?", "options": ["सुबह", "रात", "प्रकाश", "शटर"], "correct": 3 },
+  { "q": "मकान : किराया :: पूँजी : ?", "options": ["ब्याज", "निवेश", "देश", "धन"], "correct": 0 },
+  { "q": "सोमवार : शनिवार :: बृहस्पतिवार : ?", "options": ["बुधवार", "शुक्रवार", "मंगलवार", "रविवार"], "correct": 2 },
+  { "q": "ढांचा : मकान :: अस्थिपंजर : ?", "options": ["पसली", "खोपड़ी", "शरीर", "लावण्य"], "correct": 2 },
+  { "q": "जनवरी : नवम्बर :: रविवार : ?", "options": ["मंगलवार", "सोमवार", "शुक्रवार", "शनिवार"], "correct": 2 },
+  { "q": "मेन्यू : भोजन :: कैटलॉग : ?", "options": ["मैगजीन", "पुस्तक", "अखबार", "रैक"], "correct": 1 },
+  { "q": "अच्छा : बुरा :: छत : ?", "options": ["दीवारें", "खम्भे", "फर्श", "खिड़की"], "correct": 2 },
+  { "q": "शेर : माँद :: खरगोश : ?", "options": ["छेद", "गड्डा", "बिल", "खाई"], "correct": 2 },
+  { "q": "घड़ी : समय :: अखबार : ?", "options": ["कागज", "समाचार", "नौकरी", "चलचित्र"], "correct": 1 },
+  { "q": "विशुद्ध : प्रामाणिक :: मृगतृष्णा : ?", "options": ["भ्रम", "बिम्ब", "गुप्तगृह", "परावर्तन"], "correct": 0 },
+  { "q": "गड़गड़ाहट : वर्षा :: ? : रात्रि", "options": ["दिन", "झुटपुटा", "अंधेरा", "शाम"], "correct": 2 },
+  { "q": "धुआँ : प्रदूषण :: युद्ध : ?", "options": ["विजय", "शांति", "संधि", "विनाश"], "correct": 3 },
+  { "q": "घंटा : सैकेण्ड :: तृतीयक : ?", "options": ["साधारण", "द्वितीयक", "प्राथमिक", "मध्यवर्ती"], "correct": 2 },
+  { "q": "टीला : पर्वत :: झाड़ी : ?", "options": ["पौधा", "भूमि", "पहाड़", "वृक्ष"], "correct": 3 },
+  { "q": "लेख : लेखक :: सैनिक : ?", "options": ["मजबूती", "लड़ाई", "कमजोरी", "शांति"], "correct": 1 },
+  
+  {
+    "q": "लेखक : पुस्तक :: दर्जी : ?",
+    "options": ["सुई", "कपड़ा", "कैंची", "मशीन"],
+    "correct": 1
+  },
+  {
+    "q": "भारत : नई दिल्ली :: उत्तर प्रदेश : ?",
+    "options": ["आगरा", "कानपुर", "लखनऊ", "प्रयागराज"],
+    "correct": 2
+  },
+  {
+    "q": "आम : फल :: आलू : ?",
+    "options": ["जड़", "फल", "सब्जी", "तना"],
+    "correct": 2
+  },
+  {
+    "q": "शिक्षक : स्कूल :: वकील : ?",
+    "options": ["कोर्ट", "अस्पताल", "ऑफिस", "थाना"],
+    "correct": 0
+  },
+  {
+    "q": "आंख : देखना :: कान : ?",
+    "options": ["बोलना", "सुनना", "सूंघना", "चलना"],
+    "correct": 1
+  },
+  {
+    "q": "कलम : लिखना :: सुई : ?",
+    "options": ["काटना", "धागा", "सिलना", "बुनना"],
+    "correct": 2
+  },
+  {
+    "q": "ईंट : दीवार :: शब्द : ?",
+    "options": ["अक्षर", "वाक्य", "भाषा", "किताब"],
+    "correct": 1
+  },
+  {
+    "q": "गाय : दूध :: मधुमक्खी : ?",
+    "options": ["पानी", "रस", "शहद", "फूल"],
+    "correct": 2
+  },
+  {
+    "q": "जंगल : शेर :: समुद्र : ?",
+    "options": ["मछली", "मगरमच्छ", "व्हेल", "हाथी"],
+    "correct": 2
+  },
+  {
+    "q": "सुबह : नाश्ता :: रात : ?",
+    "options": ["दोपहर का भोजन", "नाश्ता", "रात का खाना", "चाय"],
+    "correct": 2
+  },
+  {
+    "q": "Doctor : Hospital :: Lawyer : ?",
+    "options": ["Office", "Court", "Station", "Market"],
+    "correct": 1
+  },
+  {
+    "q": "Bird : Fly :: Snake : ?",
+    "options": ["Walk", "Swim", "Slither", "Run"],
+    "correct": 2
+  },
+  {
+    "q": "Glove : Hand :: Sock : ?",
+    "options": ["Foot", "Leg", "Arm", "Finger"],
+    "correct": 0
+  },
+  {
+    "q": "Keyboard : Type :: Mouse : ?",
+    "options": ["Click", "Move", "Scroll", "Draw"],
+    "correct": 0
+  },
+  {
+    "q": "Poverty : Wealth :: Failure : ?",
+    "options": ["Try", "Lose", "Success", "Rich"],
+    "correct": 2
+  },
+  {
+    "q": "Square : Four :: Triangle : ?",
+    "options": ["Five", "Three", "Six", "Two"],
+    "correct": 1
+  },
+  {
+    "q": "Clock : Time :: Thermometer : ?",
+    "options": ["Heat", "Cold", "Temperature", "Rain"],
+    "correct": 2
+  },
+  {
+    "q": "Book : Page :: Wall : ?",
+    "options": ["Cement", "Paint", "Brick", "Door"],
+    "correct": 2
+  },
+  {
+    "q": "Artist : Painting :: Author : ?",
+    "options": ["Poem", "Song", "Novel", "Script"],
+    "correct": 2
+  },
+  {
+    "q": "Cold : Winter :: Hot : ?",
+    "options": ["Rain", "Autumn", "Summer", "Spring"],
+    "correct": 2
+  },
+  {
+    "q": "2 : 4 :: 5 : ?",
+    "options": ["10", "25", "15", "20"],
+    "correct": 1
+  },
+  {
+    "q": "10 : 100 :: 12 : ?",
+    "options": ["144", "120", "150", "160"],
+    "correct": 0
+  },
+  {
+    "q": "16 : 4 :: 9 : ?",
+    "options": ["3", "6", "2", "8"],
+    "correct": 0
+  },
+  {
+    "q": "12 : 144 :: 8 : ?",
+    "options": ["64", "80", "72", "100"],
+    "correct": 0
+  },
+  {
+    "q": "11 : 121 :: 13 : ?",
+    "options": ["169", "130", "140", "150"],
+    "correct": 0
+  },
+  {
+    "q": "25 : 5 :: 36 : ?",
+    "options": ["6", "9", "4", "10"],
+    "correct": 0
+  },
+  {
+    "q": "7 : 49 :: 9 : ?",
+    "options": ["81", "72", "90", "64"],
+    "correct": 0
+  },
+  {
+    "q": "3 : 27 :: 4 : ?",
+    "options": ["64", "16", "12", "32"],
+    "correct": 0
+  },
+  {
+    "q": "1 : 1 :: 25 : ?",
+    "options": ["625", "50", "100", "25"],
+    "correct": 0
+  },
+  {
+    "q": "10 : 11 :: 20 : ?",
+    "options": ["21", "22", "25", "30"],
+    "correct": 0
+  },
+  {
+    "q": "ABC : ZYX :: DEF : ?",
+    "options": ["UVW", "WVU", "TSR", "RST"],
+    "correct": 1
+  },
+  {
+    "q": "A : 1 :: Z : ?",
+    "options": ["26", "25", "24", "23"],
+    "correct": 0
+  },
+  {
+    "q": "CAT : DOG :: KITTEN : ?",
+    "options": ["PUPPY", "HORSE", "FISH", "CALF"],
+    "correct": 0
+  },
+  {
+    "q": "Ice : Solid :: Water : ?",
+    "options": ["Gas", "Liquid", "Steam", "Cold"],
+    "correct": 1
+  },
+  {
+    "q": "Up : Down :: Open : ?",
+    "options": ["Close", "Shut", "Lock", "Exit"],
+    "correct": 0
+  },
+  {
+    "q": "AC : DF :: GI : ?",
+    "options": ["JL", "KM", "LN", "MO"],
+    "correct": 0
+  },
+  {
+    "q": "Earth : Planet :: Sun : ?",
+    "options": ["Moon", "Star", "Satellite", "Comet"],
+    "correct": 1
+  },
+  {
+    "q": "Camera : Photo :: Phone : ?",
+    "options": ["Talk", "Music", "Call", "Screen"],
+    "correct": 2
+  },
+  {
+    "q": "Wheel : Circle :: Box : ?",
+    "options": ["Square", "Rectangle", "Triangle", "Cube"],
+    "correct": 0
+  },
+  {
+    "q": "1 : 2 :: 3 : ?",
+    "options": ["4", "5", "6", "9"],
+    "correct": 0
+  },
+  {
+    "q": "India : Tiger :: Australia : ?",
+    "options": ["Elephant", "Kangaroo", "Lion", "Panda"],
+    "correct": 1
+  }
+
+
+
+        ];
+
+        let currentIndex = 0;
+        let selectedAnswers = new Array(myQuestions.length).fill(null);
+        let time = 0;
+        let timer;
+
+        // क्विज़ शुरू करने के लिए
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+            timer = setInterval(() => {
+                time++;
+                let m = Math.floor(time/60).toString().padStart(2,'0');
+                let s = (time%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // सवाल दिखाने के लिए
+        function showQuestion() {
+            const data = myQuestions[currentIndex];
+            document.getElementById('progress-text').innerText = `प्रश्न ${currentIndex + 1} / ${myQuestions.length}`;
+            document.getElementById('question-label').innerText = data.q;
+            
+            const list = document.getElementById('options-list');
+            list.innerHTML = '';
+
+            data.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all ${selectedAnswers[currentIndex] === i ? 'active-option font-bold border-blue-500' : 'border-gray-100 hover:bg-gray-50'}`;
+                btn.innerHTML = `<span class="mr-3 font-bold opacity-50">${i+1}.</span> ${opt}`;
+                btn.onclick = () => { selectedAnswers[currentIndex] = i; showQuestion(); };
+                list.appendChild(btn);
+            });
+
+            // सबमिट बटन केवल आखिरी सवाल पर दिखेगा
+            if(currentIndex === myQuestions.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
+            }
+        }
+
+        // सवाल बदलने के लिए (आगे या पीछे)
+        function changeQuestion(step) {
+            let nextIndex = currentIndex + step;
+            if(nextIndex >= 0 && nextIndex < myQuestions.length) {
+                currentIndex = nextIndex;
+                showQuestion();
+            }
+        }
+
+        // टेस्ट खत्म करने और रिजल्ट दिखाने के लिए
+        function finishQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let correct = 0, wrong = 0, skipped = 0;
+            const table = document.getElementById('analysis-table');
+            table.innerHTML = '';
+
+            myQuestions.forEach((q, i) => {
+                let userPick = selectedAnswers[i];
+                let row = document.createElement('tr');
+                row.className = "border-b text-sm";
+                
+                let userAnsText = (userPick === null) ? "<span class='text-gray-400'>-</span>" : q.options[userPick];
+                let statusColor = "";
+
+                if (userPick === null) {
+                    skipped++;
+                } else if (userPick === q.correct) {
+                    correct++;
+                    statusColor = "text-green-600 font-bold";
+                } else {
+                    wrong++;
+                    statusColor = "text-red-600 font-bold";
+                }
+
+                row.innerHTML = `
+                    <td class="p-3">${i+1}</td>
+                    <td class="p-3">${q.q}</td>
+                    <td class="p-3 ${statusColor}">${userAnsText}</td>
+                    <td class="p-3 font-bold text-green-700">${q.options[q.correct]}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            // स्कोर की गणना (नेगेटिव मार्किंग के साथ)
+            const score = (correct * 1) - (wrong * 0.33);
+            document.getElementById('final-score').innerText = score.toFixed(2);
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+            document.getElementById('skipped-count').innerText = skipped;
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
