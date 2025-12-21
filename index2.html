@@ -3,100 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST SERIES 0.01 BY GAURAV KUMAR</title>
+    <title>NTPC Full Mock Test</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .hidden { display: none; }
-        .active-option { border-color: #3b82f6; background-color: #eff6ff; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
+            background-size: cover;
+            background-attachment: fixed;
+            color: white;
+        }
+
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .exam-badge {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Options styling */
+        .option-card {
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .option-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Selected State (Blue - Neutral) */
+        .option-selected {
+            background: rgba(99, 102, 241, 0.2) !important;
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        }
+        .option-selected .btn-circle {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        /* Review Section Colors */
+        .review-card { border-left: 4px solid transparent; }
+        .review-correct { border-left-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        .review-wrong { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+        .review-skipped { border-left-color: #6b7280; background: rgba(107, 114, 128, 0.05); }
+
+        /* Math Formatting */
+        sup { color: #a5b4fc; font-size: 0.75em; vertical-align: super; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     </style>
 </head>
-<body class="p-4">
+<body class="min-h-screen flex items-center justify-center p-2 md:p-4">
 
-    <!-- 1. स्टार्ट स्क्रीन -->
-    <div id="start-screen" class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 text-center">
-        <h1 class="text-3xl font-bold mb-6 text-blue-600">NUMBER SYSTEM TEST <br>BY<br>GAURAV KUMAR</h1>
-        <div class="text-left bg-blue-50 p-4 rounded-xl mb-6">
-             <p>• TEST CODE: <span class="text-red-600 font-bold">       0002</span></p>
-            <p>• प्रत्येक सही उत्तर: <span class="text-green-600 font-bold">    +1 अंक</span></p>
-            <p>• गलत उत्तर (नेगेटिव): <span class="text-red-600 font-bold">-0.33 अंक</span></p>
-            <p>• परिणाम अंत में डैशबोर्ड पर दिखेगा।</p>
-            <p>• Question :100</p>
-        </div>
-        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold">शुरू करें</button>
-    </div>
-
-    <!-- 2. क्विज़ स्क्रीन -->
-    <div id="quiz-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden hidden mt-6">
-        <div class="bg-blue-600 p-4 text-white flex justify-between">
-            <span id="progress-text" class="font-bold">प्रश्न 1</span>
-            <span id="timer" class="font-mono">00:00</span>
-        </div>
-        <div class="p-6">
-            <h2 id="question-label" class="text-xl font-bold mb-6 min-h-[60px]">सवाल यहाँ आएगा</h2>
-            <div id="options-list" class="space-y-3">
-                <!-- बटन यहाँ अपने आप बनेंगे -->
+    <div class="w-full max-w-3xl">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="glass-card rounded-3xl p-8 text-center">
+            <div class="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl ring-4 ring-white/10">
+                <i class="fas fa-book-open text-4xl text-white"></i>
             </div>
-            <div class="flex gap-4 mt-8 border-t pt-6">
-                <button onclick="changeQuestion(-1)" class="bg-gray-200 px-6 py-2 rounded-lg font-bold">पीछे</button>
-                <button id="next-btn" onclick="changeQuestion(1)" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">अगला</button>
-                <button id="submit-btn" onclick="finishQuiz()" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hidden">सबमिट करें</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. रिजल्ट डैशबोर्ड स्क्रीन -->
-    <div id="result-screen" class="max-w-4xl mx-auto hidden mt-6">
-        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 border-t-8 border-blue-600 text-center">
-            <h2 class="text-3xl font-bold mb-6">आपका स्कोर कार्ड</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div class="p-4 bg-blue-50 rounded-xl">
-                    <p class="text-sm text-gray-500">कुल स्कोर</p>
-                    <p id="final-score" class="text-3xl font-bold text-blue-600">0.00</p>
+            <h1 class="text-3xl md:text-4xl font-bold mb-3">SSC/CGL Maths Mock</h1>
+            <p class="text-gray-400 mb-8">Number System & Divisibility Rules</p>
+            
+            <div class="grid grid-cols-3 gap-4 mb-8 max-w-md mx-auto">
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Total Qs</div>
+                    <div class="text-xl font-bold text-white" id="start-total-q">0</div>
                 </div>
-                <div class="p-4 bg-green-50 rounded-xl">
-                    <p class="text-sm text-gray-500">सही</p>
-                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <div class="text-xs text-green-400 uppercase tracking-wider mb-1">Correct</div>
+                    <div class="text-xl font-bold text-green-400">+1</div>
                 </div>
-                <div class="p-4 bg-red-50 rounded-xl">
-                    <p class="text-sm text-gray-500">गलत</p>
-                    <p id="wrong-count" class="text-3xl font-bold text-red-600">0</p>
-                </div>
-                <div class="p-4 bg-gray-100 rounded-xl">
-                    <p class="text-sm text-gray-500">छोड़े</p>
-                    <p id="skipped-count" class="text-3xl font-bold">0</p>
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <div class="text-xs text-red-400 uppercase tracking-wider mb-1">Wrong</div>
+                    <div class="text-xl font-bold text-red-400">-0.33</div>
                 </div>
             </div>
-            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-2 rounded-lg">फिर से टेस्ट दें</button>
+
+            <button onclick="startQuiz()" class="w-full md:w-2/3 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition shadow-lg text-lg">
+                Start Test Now
+            </button>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl p-6">
-            <h3 class="text-xl font-bold mb-4">उत्तरों की समीक्षा:</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 uppercase text-xs">
-                            <th class="p-3">#</th>
-                            <th class="p-3">प्रश्न</th>
-                            <th class="p-3">आपका उत्तर</th>
-                            <th class="p-3">सही उत्तर</th>
-                        </tr>
-                    </thead>
-                    <tbody id="analysis-table"></tbody>
-                </table>
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6 px-1">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold font-mono border border-white/20">
+                        <span id="curr-q">1</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        of <span id="total-q">10</span> Questions
+                    </div>
+                </div>
+                <div class="bg-indigo-900/40 border border-indigo-500/30 px-3 py-1 rounded-lg">
+                    <span class="text-xs text-indigo-300 font-bold tracking-wider">MOCK TEST MODE</span>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="w-full bg-gray-800 h-1.5 rounded-full mb-6">
+                <div id="progress-bar" class="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="width: 0%"></div>
+            </div>
+
+            <!-- Question Area -->
+            <div class="glass-card rounded-2xl p-6 md:p-8 mb-6 min-h-[300px]">
+                <div id="exam-tag"></div>
+                <h2 id="question-text" class="text-xl md:text-2xl font-medium leading-relaxed mb-8 text-gray-100"></h2>
+                
+                <div id="options-list" class="space-y-3">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between items-center h-14">
+                <button id="skip-btn" onclick="nextQuestion(true)" class="text-gray-400 hover:text-white px-6 py-2 rounded-lg hover:bg-white/5 transition">
+                    Skip
+                </button>
+                <button id="next-btn" onclick="nextQuestion(false)" class="px-8 py-3 bg-white text-indigo-900 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg flex items-center gap-2 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Save & Next <i class="fas fa-chevron-right text-xs"></i>
+                </button>
             </div>
         </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden">
+            <div class="glass-card rounded-3xl p-6 md:p-8 mb-8 text-center">
+                <h2 class="text-3xl font-bold mb-2">Test Submitted!</h2>
+                <p class="text-gray-400 mb-8">Here is your performance report</p>
+                
+                <!-- Score Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gray-800/50 p-4 rounded-2xl border border-gray-700">
+                        <div class="text-xs text-gray-400 uppercase font-bold mb-1">Attempted</div>
+                        <div class="text-2xl font-bold text-white" id="res-attempted">0</div>
+                    </div>
+                    <div class="bg-green-500/10 p-4 rounded-2xl border border-green-500/20">
+                        <div class="text-xs text-green-400 uppercase font-bold mb-1">Correct</div>
+                        <div class="text-2xl font-bold text-green-400" id="res-correct">0</div>
+                    </div>
+                    <div class="bg-red-500/10 p-4 rounded-2xl border border-red-500/20">
+                        <div class="text-xs text-red-400 uppercase font-bold mb-1">Wrong</div>
+                        <div class="text-2xl font-bold text-red-400" id="res-wrong">0</div>
+                    </div>
+                    <div class="bg-indigo-600/20 p-4 rounded-2xl border border-indigo-500 text-center shadow-[0_0_20px_rgba(99,102,241,0.15)] col-span-2 md:col-span-1">
+                        <div class="text-xs text-indigo-300 uppercase font-bold mb-1">Total Score</div>
+                        <div class="text-3xl font-bold text-white" id="res-score">0.0</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-4">
+                     <button onclick="location.reload()" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-bold transition">
+                        Restart Test
+                    </button>
+                    <button onclick="scrollToReview()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition">
+                        View Analysis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis -->
+            <div class="flex items-center gap-4 mb-6 px-2">
+                <div class="h-px bg-gray-700 flex-1"></div>
+                <h3 class="text-lg font-bold text-gray-300 uppercase tracking-widest">Detailed Analysis</h3>
+                <div class="h-px bg-gray-700 flex-1"></div>
+            </div>
+
+            <div id="review-container" class="space-y-4 pb-20">
+                <!-- Review cards injected here -->
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // ==========================================
-        // यहाँ अपने नए सवाल जोड़ें
-        // correct: 0 का मतलब है पहला ऑप्शन सही है, 1 का मतलब दूसरा...
-        // ==========================================
-        const myQuestions = [
-        
-  
-  { "q": "वह सबसे बड़ी संख्या 23a68b ज्ञात कीजिए, जो 3 से विभाज्य है लेकिन 9 से विभाज्य नहीं है।", "options": ["238689", "239685", "239688", "237687"], "correct": 1, "exam": "SSC CGL Pre 2021" },
+        // Formatter function to make math text look good
+        function formatText(text) {
+            return text
+                .replace(/\^2/g, "<sup>2</sup>")
+                .replace(/\^3/g, "<sup>3</sup>")
+                .replace(/\^([a-zA-Z0-9]+)/g, "<sup>$1</sup>") // Generic powers
+                .replace(/sqrt\(([^)]+)\)/g, "√$1"); // sqrt(x) -> √x
+        }
+
+        // Complete Question Bank
+        const rawData = [
+ { "q": "वह सबसे बड़ी संख्या 23a68b ज्ञात कीजिए, जो 3 से विभाज्य है लेकिन 9 से विभाज्य नहीं है।", "options": ["238689", "239685", "239688", "237687"], "correct": 1, "exam": "SSC CGL Pre 2021" },
   { "q": "वह बड़ी से बड़ी संख्या ज्ञात कीजिए, जिससे 108, 124 और 156 को विभाजित करने पर समान शेषफल प्राप्त होता है।", "options": ["18", "10", "12", "16"], "correct": 3, "exam": "SSC CGL 12.04.2022" },
   { "q": "7 का सबसे छोटा गुणज कौन सा है, जिसे 8, 9, 12 और 15 से विभाजित करने पर प्रत्येक स्थिति में 5 शेष बचता है?", "options": ["365", "1085", "2525", "725"], "correct": 1, "exam": "SSC CGL 11.04.2022" },
   { "q": "500 से 650 तक (दोनों को सम्मिलित करते हुए) ऐसी कितनी संख्याएं हैं जो 3 और 7 दोनों से विभाज्य नहीं हैं?", "options": ["21", "121", "87", "99"], "correct": 2, "exam": "SSC CGL 11.04.2022" },
@@ -117,7 +236,7 @@
   { "q": "k का मान ज्ञात कीजिए, जिससे k53206k, 6 से विभाज्य हो।", "options": ["4", "1", "2", "7"], "correct": 0, "exam": "SSC CGL 19.04.2022" },
   { "q": "तीन अंकों की वह बड़ी से बड़ी संख्या ज्ञात कीजिए, जिसे 3, 4, 5 और 8 से विभाजित करने पर प्रत्येक स्थिति में शेषफल 2 बचे।", "options": ["482", "962", "958", "122"], "correct": 1, "exam": "SSC CGL 19.04.2022" },
   { "q": "संख्या 3426k में k का मान ज्ञात कीजिए, यदि संख्या 6 से विभाज्य है लेकिन 5 से विभाज्य नहीं है", "options": ["6", "3", "4", "9"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
-  { "q": " 048p6, 99 से विभाज्य है, तो (k*p) का मान क्या होगा?", "options": ["4", "2", "0", "6"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
+  
   { "q": "वह छोटी से छोटी संख्या कौन सी है जिसे 3627 में जोड़ने पर प्राप्त योग 4, 5, 6 और 8 से पूर्णतः विभाजित होगा?", "options": ["93", "72", "39", "27"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
   { "q": "सबसे छोटी संख्या जो एक पूर्ण वर्ग है और 6, 8 और 15 प्रत्येक से विभाज्य है?", "options": ["3600", "225", "276", "121"], "correct": 0, "exam": "SSC CGL 20.04.2022" },
   { "q": "वह छोटी से छोटी संख्या ज्ञात कीजिए जिसे 6, 9 और 15 से विभाज्य सबसे छोटी संख्या में जोड़ने पर यह एक पूर्ण वर्ग बन जाए।", "options": ["10", "9", "19", "21"], "correct": 0, "exam": "SSC CGL 21.04.2022" },
@@ -136,108 +255,215 @@
   { "q": "प्रथम 10 अभाज्य संख्याओं का औसत क्या होगा?", "options": ["12.9", "10.5", "15.2", "11.1"], "correct": 0, "exam": "पैटर्न अभ्यास" },
   { "q": "वह सबसे छोटी संख्या ज्ञात कीजिए जिसे 12, 15 और 20 से विभाजित करने पर प्रत्येक स्थिति में 4 शेष बचे।", "options": ["64", "124", "44", "24"], "correct": 0, "exam": "पैटर्न अभ्यास" },
   { "q": "7^105 का इकाई अंक क्या होगा?", "options": ["1", "3", "7", "9"], "correct": 2, "exam": "पैटर्न अभ्यास" },
-  { "q": "1 से 100 तक की गिनती में अंक 0 कितनी बार आता है?", "options": ["9", "10", "11", "12"], "correct": 2, "exam": "पैटर्न अभ्यास" }
+  { "q": "1 से 100 तक की गिनती में अंक 0 कितनी बार आता है?", "options": ["9", "10", "11", "12"], "correct": 2, "exam": "पैटर्न अभ्यास" },
+  
+
 
         ];
 
-        let currentIndex = 0;
-        let selectedAnswers = new Array(myQuestions.length).fill(null);
-        let time = 0;
-        let timer;
+        // Process questions to format HTML math
+        const quizData = rawData.map(item => ({
+            ...item,
+            q: formatText(item.q),
+            options: item.options.map(opt => formatText(opt))
+        }));
 
-        // क्विज़ शुरू करने के लिए
+        let currentQIndex = 0;
+        let selectedOptionIndex = null; // Store temp selection
+        let userAnswers = []; 
+
+        const dom = {
+            start: document.getElementById('start-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            result: document.getElementById('result-screen'),
+            qText: document.getElementById('question-text'),
+            options: document.getElementById('options-list'),
+            examTag: document.getElementById('exam-tag'),
+            currQ: document.getElementById('curr-q'),
+            totalQ: document.getElementById('total-q'),
+            startTotalQ: document.getElementById('start-total-q'),
+            bar: document.getElementById('progress-bar'),
+            nextBtn: document.getElementById('next-btn'),
+            skipBtn: document.getElementById('skip-btn')
+        };
+
+        // Initialize Start Screen stats
+        dom.startTotalQ.textContent = quizData.length;
+
         function startQuiz() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-            showQuestion();
-            timer = setInterval(() => {
-                time++;
-                let m = Math.floor(time/60).toString().padStart(2,'0');
-                let s = (time%60).toString().padStart(2,'0');
-                document.getElementById('timer').innerText = `${m}:${s}`;
-            }, 1000);
+            dom.start.classList.add('hidden');
+            dom.quiz.classList.remove('hidden');
+            dom.totalQ.textContent = quizData.length;
+            
+            // Reset state
+            currentQIndex = 0;
+            userAnswers = [];
+            loadQuestion();
         }
 
-        // सवाल दिखाने के लिए
-        function showQuestion() {
-            const data = myQuestions[currentIndex];
-            document.getElementById('progress-text').innerText = `प्रश्न ${currentIndex + 1} / ${myQuestions.length}`;
-            document.getElementById('question-label').innerText = data.q;
+        function loadQuestion() {
+            // Reset selection for new question
+            selectedOptionIndex = null;
+            dom.nextBtn.disabled = true;
+            dom.nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
             
-            const list = document.getElementById('options-list');
-            list.innerHTML = '';
+            const data = quizData[currentQIndex];
+            
+            dom.currQ.textContent = currentQIndex + 1;
+            dom.bar.style.width = `${((currentQIndex) / quizData.length) * 100}%`;
+            
+            // Exam Badge
+            if(data.exam) {
+                dom.examTag.innerHTML = `<span class="exam-badge"><i class="fas fa-history mr-1"></i> ${data.exam}</span>`;
+            } else {
+                dom.examTag.innerHTML = '';
+            }
 
-            data.options.forEach((opt, i) => {
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all ${selectedAnswers[currentIndex] === i ? 'active-option font-bold border-blue-500' : 'border-gray-100 hover:bg-gray-50'}`;
-                btn.innerHTML = `<span class="mr-3 font-bold opacity-50">${i+1}.</span> ${opt}`;
-                btn.onclick = () => { selectedAnswers[currentIndex] = i; showQuestion(); };
-                list.appendChild(btn);
+            dom.qText.innerHTML = data.q;
+            dom.options.innerHTML = '';
+
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-card bg-white/5 p-4 rounded-xl flex items-center mb-3 relative overflow-hidden group';
+                btn.innerHTML = `
+                    <div class="w-8 h-8 rounded-full border border-gray-500 flex items-center justify-center text-sm font-bold text-gray-400 mr-4 btn-circle transition-colors group-hover:border-white group-hover:text-white">${String.fromCharCode(65 + idx)}</div>
+                    <div class="text-gray-200 font-medium">${opt}</div>
+                `;
+                btn.onclick = () => selectOption(idx, btn);
+                dom.options.appendChild(btn);
             });
 
-            // सबमिट बटन केवल आखिरी सवाल पर दिखेगा
-            if(currentIndex === myQuestions.length - 1) {
-                document.getElementById('next-btn').classList.add('hidden');
-                document.getElementById('submit-btn').classList.remove('hidden');
+            // Update Next button text on last question
+            if (currentQIndex === quizData.length - 1) {
+                dom.nextBtn.innerHTML = `Submit Test <i class="fas fa-check-circle ml-2"></i>`;
+                dom.skipBtn.textContent = "Finish";
             } else {
-                document.getElementById('next-btn').classList.remove('hidden');
-                document.getElementById('submit-btn').classList.add('hidden');
+                dom.nextBtn.innerHTML = `Save & Next <i class="fas fa-chevron-right ml-2"></i>`;
+                dom.skipBtn.textContent = "Skip";
             }
         }
 
-        // सवाल बदलने के लिए (आगे या पीछे)
-        function changeQuestion(step) {
-            let nextIndex = currentIndex + step;
-            if(nextIndex >= 0 && nextIndex < myQuestions.length) {
-                currentIndex = nextIndex;
-                showQuestion();
+        function selectOption(idx, btnElement) {
+            // Remove selection from all others
+            const allBtns = dom.options.children;
+            Array.from(allBtns).forEach(b => {
+                b.classList.remove('option-selected');
+                b.querySelector('.btn-circle').style.backgroundColor = '';
+                b.querySelector('.btn-circle').style.borderColor = '';
+                b.querySelector('.btn-circle').style.color = '';
+            });
+
+            // Add selection to clicked one
+            btnElement.classList.add('option-selected');
+            selectedOptionIndex = idx;
+
+            // Enable Next Button
+            dom.nextBtn.disabled = false;
+            dom.nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function nextQuestion(isSkipped) {
+            // Logic to save answer
+            if (isSkipped) {
+                userAnswers.push({
+                    qIndex: currentQIndex,
+                    selected: null,
+                    correct: quizData[currentQIndex].correct,
+                    status: 'skipped'
+                });
+            } else {
+                const isCorrect = selectedOptionIndex === quizData[currentQIndex].correct;
+                userAnswers.push({
+                    qIndex: currentQIndex,
+                    selected: selectedOptionIndex,
+                    correct: quizData[currentQIndex].correct,
+                    status: isCorrect ? 'correct' : 'wrong'
+                });
+            }
+
+            // Move to next or finish
+            currentQIndex++;
+            if(currentQIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                calculateAndShowResult();
             }
         }
 
-        // टेस्ट खत्म करने और रिजल्ट दिखाने के लिए
-        function finishQuiz() {
-            clearInterval(timer);
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
+        function calculateAndShowResult() {
+            dom.quiz.classList.add('hidden');
+            dom.result.classList.remove('hidden');
 
-            let correct = 0, wrong = 0, skipped = 0;
-            const table = document.getElementById('analysis-table');
-            table.innerHTML = '';
+            // Calculation
+            const attempted = userAnswers.filter(a => a.status !== 'skipped').length;
+            const correctCount = userAnswers.filter(a => a.status === 'correct').length;
+            const wrongCount = userAnswers.filter(a => a.status === 'wrong').length;
+            
+            // Negative Marking Logic (Correct +1, Wrong -0.33)
+            const negativeMarks = wrongCount * 0.33;
+            const finalScore = correctCount - negativeMarks;
 
-            myQuestions.forEach((q, i) => {
-                let userPick = selectedAnswers[i];
-                let row = document.createElement('tr');
-                row.className = "border-b text-sm";
-                
-                let userAnsText = (userPick === null) ? "<span class='text-gray-400'>-</span>" : q.options[userPick];
-                let statusColor = "";
+            // Update Result UI
+            document.getElementById('res-attempted').textContent = attempted;
+            document.getElementById('res-correct').textContent = correctCount;
+            document.getElementById('res-wrong').textContent = wrongCount;
+            document.getElementById('res-score').textContent = finalScore.toFixed(2);
 
-                if (userPick === null) {
-                    skipped++;
-                } else if (userPick === q.correct) {
-                    correct++;
-                    statusColor = "text-green-600 font-bold";
+            generateReview();
+        }
+
+        function generateReview() {
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            userAnswers.forEach((ans, index) => {
+                const questionData = quizData[ans.qIndex];
+                let statusClass = '';
+                let statusBadge = '';
+
+                if(ans.status === 'correct') {
+                    statusClass = 'review-correct';
+                    statusBadge = '<span class="text-green-400 font-bold text-sm bg-green-400/10 px-2 py-1 rounded">Correct (+1)</span>';
+                } else if(ans.status === 'wrong') {
+                    statusClass = 'review-wrong';
+                    statusBadge = '<span class="text-red-400 font-bold text-sm bg-red-400/10 px-2 py-1 rounded">Wrong (-0.33)</span>';
                 } else {
-                    wrong++;
-                    statusColor = "text-red-600 font-bold";
+                    statusClass = 'review-skipped';
+                    statusBadge = '<span class="text-gray-400 font-bold text-sm bg-gray-500/10 px-2 py-1 rounded">Skipped</span>';
                 }
 
-                row.innerHTML = `
-                    <td class="p-3">${i+1}</td>
-                    <td class="p-3">${q.q}</td>
-                    <td class="p-3 ${statusColor}">${userAnsText}</td>
-                    <td class="p-3 font-bold text-green-700">${q.options[q.correct]}</td>
-                `;
-                table.appendChild(row);
-            });
+                const card = document.createElement('div');
+                card.className = `glass-card p-5 rounded-xl ${statusClass} relative review-card`;
+                
+                const userChoiceText = ans.selected !== null ? questionData.options[ans.selected] : "Not Attempted";
+                const correctChoiceText = questionData.options[ans.correct];
 
-            // स्कोर की गणना (नेगेटिव मार्किंग के साथ)
-            const score = (correct * 1) - (wrong * 0.33);
-            document.getElementById('final-score').innerText = score.toFixed(2);
-            document.getElementById('correct-count').innerText = correct;
-            document.getElementById('wrong-count').innerText = wrong;
-            document.getElementById('skipped-count').innerText = skipped;
-            window.scrollTo(0,0);
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="text-xs text-gray-500 font-bold bg-gray-800 px-2 py-1 rounded">Q${index + 1}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="mb-4 text-gray-200 font-medium leading-relaxed">${questionData.q}</div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div class="bg-black/20 p-3 rounded border border-white/5">
+                            <div class="text-gray-500 text-xs mb-1 uppercase tracking-wide">Your Answer</div>
+                            <div class="${ans.status === 'correct' ? 'text-green-400' : (ans.status === 'skipped' ? 'text-gray-400' : 'text-red-400')} font-medium">
+                                ${userChoiceText}
+                            </div>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded border border-white/5">
+                            <div class="text-gray-500 text-xs mb-1 uppercase tracking-wide">Correct Answer</div>
+                            <div class="text-green-400 font-medium">${correctChoiceText}</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        function scrollToReview() {
+             document.getElementById('review-container').scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
