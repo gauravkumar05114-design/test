@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UP Home Guard Practice - Exam Format</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --header-bg: #1e3a8a; /* Deep Navy Blue */
+            --body-bg: #cbd5e1;   /* Slate Grey */
+            --card-bg: #fffbeb;   /* Warm Cream */
+        }
+
+        body {
+            background-color: var(--body-bg);
+            font-family: 'Tiro Devanagari Hindi', serif;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header { padding-top: env(safe-area-inset-top); }
+
+        .scroller::-webkit-scrollbar { width: 6px; }
+        .scroller::-webkit-scrollbar-thumb { background-color: #64748b; border-radius: 10px; }
+        
+        .q-card {
+            background-color: var(--card-bg);
+            border-bottom: 4px solid #d1d5db;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-box {
+            background-color: white;
+            border: 2px solid #94a3b8;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .option-box:active { transform: scale(0.98); }
+        .option-box.selected {
+            background-color: #1e40af;
+            color: white;
+            border-color: #1e3a8a;
+        }
+        .option-box.selected .circle-marker { border-color: white; }
+        .option-box.selected .circle-inner { background-color: white; }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        .p-item {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        
+        /* Palette States */
+        .st-curr { border: 2px solid #1e3a8a; background: #fff; color: #1e3a8a; }
+        .st-ans { background: #16a34a; color: white; }
+        .st-not-ans { background: #dc2626; color: white; }
+        .st-review { background: #9333ea; color: white; }
+        .st-none { background: #e2e8f0; color: #475569; }
+
+        .exam-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.75rem;
+            font-family: sans-serif;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 600;
+            border: 1px solid #bae6fd;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="bg-blue-900 text-white shadow-lg z-30 flex-none h-16 flex items-center justify-between px-4">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-yellow-500 rounded-full flex items-center justify-center text-blue-900 font-bold shadow-md">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="leading-tight">
+                <h1 class="text-base font-bold text-yellow-400">UP होमगार्ड</h1>
+                <p class="text-[10px] text-blue-200">Practice Set 2025</p>
+            </div>
+        </div>
+
+        <div class="bg-blue-800 px-4 py-1.5 rounded-full border border-blue-600 flex items-center gap-2 shadow-inner">
+            <i class="fas fa-clock text-yellow-400 animate-pulse text-xs"></i>
+            <span id="timer" class="font-mono font-bold text-lg tracking-wider">02:00:00</span>
+        </div>
+
+        <button onclick="toggleDrawer()" class="lg:hidden text-white p-2">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 overflow-hidden relative">
+        <main class="flex-1 flex flex-col w-full h-full bg-slate-200">
+            <div class="w-full bg-slate-300 h-1.5">
+                <div id="progressBar" class="h-full bg-yellow-500 transition-all duration-300 w-0"></div>
+            </div>
+
+            <div id="questionContainer" class="flex-1 overflow-y-auto scroller p-4 pt-6 pb-32 md:p-8">
+                <div class="max-w-2xl mx-auto">
+                    <div class="flex justify-between items-end mb-3 px-1">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Question</span>
+                        <span class="text-slate-700 font-bold text-lg bg-white px-3 py-1 rounded-lg shadow-sm">
+                            Q. <span id="qNum" class="text-blue-800">1</span> / <span id="totalQ">20</span>
+                        </span>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="q-card p-5 md:p-8 mb-6 relative">
+                        <h2 id="qText" class="text-xl md:text-2xl text-slate-800 font-medium leading-relaxed"></h2>
+                        
+                        <!-- Exam Badge Display Area -->
+                        <div id="examBadge" class="exam-badge"><i class="fas fa-tag mr-1"></i> <span id="examText"></span></div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="space-y-3" id="optionsList"></div>
+                </div>
+            </div>
+
+            <!-- Bottom Nav -->
+            <div class="bg-white border-t border-slate-300 p-3 md:p-4 z-20 flex justify-between items-center shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
+                <div class="flex gap-2">
+                    <button onclick="changeQ(-1)" id="btnPrev" class="px-4 py-3 rounded-xl bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 disabled:opacity-50">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button onclick="markReview()" id="btnReview" class="px-4 py-3 rounded-xl bg-purple-100 text-purple-700 font-bold border border-purple-200">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                <button onclick="saveNext()" id="btnNext" class="px-8 py-3 rounded-xl bg-blue-800 text-white font-bold shadow-lg shadow-blue-300 active:scale-95 transition-transform flex items-center gap-2">
+                    अगला प्रश्न <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </main>
+
+        <!-- Sidebar -->
+        <aside id="drawer" class="fixed inset-y-0 right-0 w-72 bg-slate-50 shadow-2xl z-40 transform translate-x-full lg:translate-x-0 lg:static lg:block transition-transform duration-300 flex flex-col border-l border-slate-300">
+            <div class="bg-blue-900 text-white p-4 flex justify-between items-center lg:hidden">
+                <span class="font-bold">Question Palette</span>
+                <button onclick="toggleDrawer()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-4 flex-1 overflow-y-auto scroller">
+                <div class="palette-grid" id="paletteBox"></div>
+            </div>
+
+            <div class="p-4 bg-white border-t border-slate-200">
+                <div class="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-500 uppercase mb-4">
+                    <div class="flex items-center gap-1"><div class="w-3 h-3 bg-green-600 rounded"></div> Answered</div>
+                    <div class="flex items-center gap-1"><div class="w-3 h-3 bg-red-600 rounded"></div> Visited</div>
+                    <div class="flex items-center gap-1"><div class="w-3 h-3 bg-purple-600 rounded"></div> Review</div>
+                    <div class="flex items-center gap-1"><div class="w-3 h-3 bg-slate-200 rounded"></div> Pending</div>
+                </div>
+                <button onclick="finishTest()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-700">
+                    SUBMIT TEST
+                </button>
+            </div>
+        </aside>
+
+        <div id="overlay" onclick="toggleDrawer()" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden backdrop-blur-sm"></div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="resModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/95 hidden">
+        <div class="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl transform scale-100 transition-all">
+            <div class="bg-yellow-500 p-6 text-center text-blue-900">
+                <h2 class="text-2xl font-bold">परिणाम (Result)</h2>
+                <p class="text-sm font-semibold opacity-80">Practice Set Analysis</p>
+            </div>
+            <div class="p-6 text-center">
+                <div class="text-6xl font-bold text-slate-800 mb-2" id="scoreVal">0</div>
+                <p class="text-slate-500 uppercase text-xs font-bold tracking-widest mb-6">Total Score</p>
+                <div class="flex justify-between border-t border-b border-slate-100 py-4 mb-6">
+                    <div><div class="text-green-600 font-bold text-xl" id="rightVal">0</div><div class="text-[10px] uppercase">Correct</div></div>
+                    <div><div class="text-red-600 font-bold text-xl" id="wrongVal">0</div><div class="text-[10px] uppercase">Wrong</div></div>
+                    <div><div class="text-slate-600 font-bold text-xl" id="skipVal">0</div><div class="text-[10px] uppercase">Skipped</div></div>
+                </div>
+                <button onclick="location.reload()" class="w-full py-3 rounded-xl bg-blue-900 text-white font-bold shadow-lg">Re-Attempt</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- NEW DATA FORMAT ---
+        const data = [
+            
+  { "q": "उत्तर प्रदेश के वर्तमान मुख्यमंत्री कौन हैं?", "options": ["अखिलेश यादव", "योगी आदित्यनाथ", "मायावती", "केशव प्रसाद मौर्य"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का संविधान कब लागू हुआ था?", "options": ["15 अगस्त 1947", "26 नवंबर 1949", "26 जनवरी 1950", "30 जनवरी 1948"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "'दुधवा राष्ट्रीय उद्यान' उत्तर प्रदेश के किस जिले में स्थित है?", "options": ["लखीमपुर खीरी", "वाराणसी", "हमीरपुर", "इटावा"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "अर्जुन पुरस्कार किस क्षेत्र में दिया जाता है?", "options": ["विज्ञान", "साहित्य", "खेलकूद", "समाज सेवा"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश का राजकीय पुष्प कौन सा है?", "options": ["गुलाब", "गेंदा", "पलाश (टेसू)", "चमेली"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "सौरमंडल का सबसे बड़ा ग्रह कौन सा है?", "options": ["पृथ्वी", "शुक्र", "बृहस्पति", "मंगल"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "'रामचरितमानस' के लेखक कौन हैं?", "options": ["कबीरदास", "तुलसीदास", "सूरदास", "कालिदास"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "विश्व स्वास्थ्य दिवस कब मनाया जाता है?", "options": ["7 अप्रैल", "1 मई", "5 जून", "10 दिसंबर"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश में कुल कितने मंडल हैं?", "options": ["15", "18", "20", "75"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत की प्रथम महिला IPS अधिकारी कौन हैं?", "options": ["सरोजिनी नायडू", "किरण बेदी", "फातिमा बीबी", "अन्ना राजम मल्होत्रा"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का पेरिस किस शहर को कहा जाता है?", "options": ["जयपुर", "उदयपुर", "कानपुर", "दिल्ली"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "कथक किस राज्य का शास्त्रीय नृत्य है?", "options": ["केरल", "तमिलनाडु", "उत्तर प्रदेश", "ओडिशा"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "विटामिन सी का सबसे अच्छा स्रोत क्या है?", "options": ["दूध", "आंवला", "गाजर", "मांस"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "सौरमंडल में ग्रहों की कुल संख्या कितनी है?", "options": ["7", "8", "9", "10"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का सबसे ऊंचा बांध कौन सा है?", "options": ["भाखड़ा बांध", "टिहरी बांध", "हीराकुंड बांध", "नागार्जुन सागर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "कंप्यूटर का जनक किसे कहा जाता है?", "options": ["थॉमस एडिसन", "चार्ल्स बैबेज", "ग्राहम बेल", "न्यूटन"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत की सबसे लंबी नदी कौन सी है?", "options": ["यमुना", "ब्रह्मपुत्र", "गंगा", "गोदावरी"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "इंकलाब जिंदाबाद का नारा किसने दिया?", "options": ["चंद्रशेखर आजाद", "भगत सिंह", "लाला लाजपत राय", "सुभाष चंद्र बोस"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "शिक्षक दिवस किसकी याद में मनाया जाता है?", "options": ["महात्मा गांधी", "डॉ. सर्वपल्ली राधाकृष्णन", "नेहरू", "अंबेडकर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "गौतम बुद्ध का जन्म कहाँ हुआ था?", "options": ["गया", "लुम्बिनी", "सारनाथ", "कुशीनगर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत के प्रथम राष्ट्रपति कौन थे?", "options": ["डॉ. राजेंद्र प्रसाद", "डॉ. राधाकृष्णन", "जाकिर हुसैन", "वीवी गिरी"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "ओजोन परत किस मंडल में पाई जाती है?", "options": ["क्षोभ मंडल", "समताप मंडल", "मध्य मंडल", "आयन मंडल"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भाखड़ा नांगल परियोजना किस नदी पर है?", "options": ["गंगा", "सतलुज", "यमुना", "नर्मदा"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "हीराकुंड बांध किस राज्य में स्थित है?", "options": ["राजस्थान", "ओडिशा", "बिहार", "पंजाब"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का राष्ट्रीय खेल क्या है?", "options": ["क्रिकेट", "हॉकी", "फुटबॉल", "कबड्डी"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "बिहू किस राज्य का प्रसिद्ध त्योहार है?", "options": ["पंजाब", "असम", "केरल", "बिहार"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "जापानी संसद को क्या कहा जाता है?", "options": ["कांग्रेस", "संसद", "डायट", "सोरा"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "करो या मरो का नारा किसने दिया?", "options": ["भगत सिंह", "महात्मा गांधी", "सुभाष चंद्र बोस", "नेहरू"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "वायुमंडल में ऑक्सीजन का प्रतिशत कितना है?", "options": ["78%", "21%", "0.03%", "1%"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "मनुष्य के शरीर में कुल कितनी हड्डियाँ होती हैं?", "options": ["200", "206", "210", "250"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश का राजकीय पक्षी क्या है?", "options": ["मोर", "तोता", "सारस", "कोयल"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "सांची का स्तूप किसने बनवाया था?", "options": ["अकबर", "अशोक", "हुमायूँ", "शाहजहाँ"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत छोड़ो आंदोलन कब शुरू हुआ?", "options": ["1930", "1940", "1942", "1945"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "क्षेत्रफल की दृष्टि से भारत का विश्व में कौन सा स्थान है?", "options": ["5वाँ", "6वाँ", "7वाँ", "8वाँ"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश की विधानसभा सीटों की कुल संख्या कितनी है?", "options": ["400", "403", "405", "390"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "'डिस्कवरी ऑफ इंडिया' पुस्तक किसने लिखी?", "options": ["महात्मा गांधी", "जवाहरलाल नेहरू", "सरदार पटेल", "तिलक"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "प्रकाश संश्लेषण में कौन सी गैस बाहर निकलती है?", "options": ["CO2", "ऑक्सीजन", "नाइट्रोजन", "हाइड्रोजन"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का मैनचेस्टर किसे कहा जाता है?", "options": ["मुंबई", "अहमदाबाद", "सूरत", "कानपुर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "बुलंद दरवाजा कहाँ स्थित है?", "options": ["आगरा", "फतेहपुर सीकरी", "दिल्ली", "लखनऊ"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "आर्य समाज की स्थापना किसने की?", "options": ["स्वामी विवेकानंद", "स्वामी दयानंद सरस्वती", "राजा राममोहन राय", "केशव चंद्र"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "काजीरंगा राष्ट्रीय उद्यान किसके लिए प्रसिद्ध है?", "options": ["हाथी", "एक सींग वाला गेंडा", "शेर", "बाघ"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश में उच्च न्यायालय कहाँ स्थित है?", "options": ["लखनऊ", "प्रयागराज", "कानपुर", "मेरठ"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "सफेद हाथियों का देश किसे कहा जाता है?", "options": ["भारत", "थाईलैंड", "जापान", "श्रीलंका"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "जल का रासायनिक सूत्र क्या है?", "options": ["CO2", "H2O", "O2", "NH3"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "सौरमंडल का सबसे चमकीला ग्रह कौन सा है?", "options": ["बुध", "शुक्र", "मंगल", "बृहस्पति"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत के प्रथम प्रधानमंत्री कौन थे?", "options": ["राजेंद्र प्रसाद", "जवाहरलाल नेहरू", "पटेल", "शास्त्री"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "रक्त का थक्का जमने में कौन सा विटामिन सहायक है?", "options": ["विटामिन A", "विटामिन C", "विटामिन K", "विटामिन D"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "कुंभ मेला उत्तर प्रदेश के किस शहर में लगता है?", "options": ["वाराणसी", "अयोध्या", "प्रयागराज", "मथुरा"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "सिखों के अंतिम गुरु कौन थे?", "options": ["गुरु नानक", "गुरु तेग बहादुर", "गुरु गोविंद सिंह", "गुरु अंगद"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "गेटवे ऑफ इंडिया कहाँ स्थित है?", "options": ["दिल्ली", "कोलकाता", "मुंबई", "चेन्नई"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "भारत का राष्ट्रीय पशु क्या है?", "options": ["शेर", "बाघ", "हाथी", "चीता"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश का सबसे छोटा जिला (क्षेत्रफल में) कौन सा है?", "options": ["वाराणसी", "हापुड़", "भदोही", "महोबा"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "मसालों का बगीचा किस राज्य को कहा जाता है?", "options": ["कर्नाटक", "केरल", "तमिलनाडु", "आंध्र प्रदेश"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "इत्र नगरी के नाम से कौन सा शहर प्रसिद्ध है?", "options": ["अलीगढ़", "कन्नौज", "मेरठ", "गाजीपुर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "सूर्य के सबसे निकट का ग्रह कौन सा है?", "options": ["शुक्र", "पृथ्वी", "बुध", "मंगल"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "राज्यसभा के सदस्य का कार्यकाल कितने वर्ष का होता है?", "options": ["4 वर्ष", "5 वर्ष", "6 वर्ष", "2 वर्ष"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "पीतल के बर्तनों के लिए कौन सा शहर प्रसिद्ध है?", "options": ["अलीगढ़", "मुरादाबाद", "फिरोजाबाद", "सहारनपुर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत की खोज किसने की थी?", "options": ["फाह्यान", "वास्को डी गामा", "कोलंबस", "ह्वेनसांग"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "चिल्का झील किस राज्य में स्थित है?", "options": ["राजस्थान", "ओडिशा", "जम्मू कश्मीर", "केरल"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश विधानसभा के पहले अध्यक्ष कौन थे?", "options": ["मदन मोहन", "पुरुषोत्तम दास टंडन", "तिलक", "आजाद"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "कंप्यूटर की 'IC Chip' किसकी बनी होती है?", "options": ["तांबा", "सिलिकॉन", "लोहा", "प्लास्टिक"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "असहयोग आंदोलन किस वर्ष शुरू हुआ?", "options": ["1919", "1920", "1922", "1930"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का सर्वोच्च नागरिक सम्मान कौन सा है?", "options": ["पद्म भूषण", "भारत रत्न", "वीर चक्र", "पद्म श्री"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "नवाबों का शहर किसे कहा जाता है?", "options": ["हैदराबाद", "लखनऊ", "भोपाल", "रामपुर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "रेडियम की खोज किसने की थी?", "options": ["एडिसन", "मैडम क्यूरी", "न्यूटन", "मारकोनी"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश का स्थापना दिवस कब मनाया जाता है?", "options": ["15 अगस्त", "26 जनवरी", "24 जनवरी", "1 नवंबर"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "पानीपत की पहली लड़ाई कब हुई थी?", "options": ["1526", "1556", "1761", "1576"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "भारत का संविधान बनाने में कुल कितना समय लगा?", "options": ["2 साल", "2 साल 11 माह 18 दिन", "3 साल", "1 साल 8 माह"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "विश्व का सबसे बड़ा महाद्वीप कौन सा है?", "options": ["अफ्रीका", "यूरोप", "एशिया", "ऑस्ट्रेलिया"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "दांडी मार्च कब शुरू हुआ था?", "options": ["1920", "1930", "1940", "1942"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "मनुष्य के हृदय में कुल कितने कक्ष (Chambers) होते हैं?", "options": ["2", "3", "4", "5"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश का मुख्य लोकगीत कौन सा है?", "options": ["कव्वाली", "बिरहा", "टप्पा", "ध्रुपद"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "नीली क्रांति किससे संबंधित है?", "options": ["दुग्ध", "मत्स्य", "तेलहन", "अनाज"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत की पहली बोलती फिल्म कौन सी थी?", "options": ["राजा हरिश्चंद्र", "आलम आरा", "शोले", "मदर इंडिया"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "स्वर्ण मंदिर कहाँ स्थित है?", "options": ["दिल्ली", "अमृतसर", "आगरा", "जयपुर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश में तेल शोधक कारखाना कहाँ स्थित है?", "options": ["कानपुर", "मथुरा", "वाराणसी", "आगरा"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "संविधान के किस अनुच्छेद में मौलिक कर्तव्यों का वर्णन है?", "options": ["अनुच्छेद 51", "अनुच्छेद 51A", "अनुच्छेद 12", "अनुच्छेद 35"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "'गीत गोविंद' के रचयिता कौन हैं?", "options": ["कालिदास", "जयदेव", "मीराबाई", "सूरदास"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "कान्हा किसली राष्ट्रीय उद्यान कहाँ स्थित है?", "options": ["यूपी", "मध्य प्रदेश", "बिहार", "राजस्थान"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारतीय रिजर्व बैंक (RBI) का मुख्यालय कहाँ है?", "options": ["दिल्ली", "मुंबई", "कोलकाता", "चेन्नई"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश में राज्यसभा की कुल कितनी सीटें हैं?", "options": ["25", "31", "35", "40"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "लोधी वंश का संस्थापक कौन था?", "options": ["इब्राहिम लोधी", "बहलोल लोधी", "सिकंदर लोधी", "खिज्र खान"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारत का राष्ट्रीय गान किसने लिखा?", "options": ["बंकिम चंद्र", "रवींद्रनाथ टैगोर", "तुलसीदास", "सरोजिनी नायडू"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "पीलिया (Jaundice) किस अंग को प्रभावित करता है?", "options": ["हृदय", "यकृत (Liver)", "फेफड़े", "किडनी"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश का राजकीय वृक्ष क्या है?", "options": ["नीम", "बरगद", "अशोक", "पीपल"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "गिर राष्ट्रीय उद्यान कहाँ स्थित है?", "options": ["मध्य प्रदेश", "गुजरात", "राजस्थान", "महाराष्ट्र"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "जय जवान जय किसान का नारा किसने दिया?", "options": ["गांधी जी", "लाल बहादुर शास्त्री", "बोस", "नेहरू"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "टेलीफोन का आविष्कार किसने किया?", "options": ["एडिसन", "ग्राहम बेल", "मारकोनी", "न्यूटन"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश में सर्वाधिक साक्षरता वाला जिला कौन सा है?", "options": ["कानपुर", "गौतम बुद्ध नगर", "लखनऊ", "वाराणसी"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "रेफ्रिजरेटर में कौन सी गैस प्रयोग की जाती है?", "options": ["ऑक्सीजन", "नाइट्रोजन", "फ्रीऑन", "मीथेन"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "भारत के किस राज्य में सबसे लंबी तटरेखा है?", "options": ["महाराष्ट्र", "गुजरात", "आंध्र प्रदेश", "तमिलनाडु"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "विश्व योग दिवस कब मनाया जाता है?", "options": ["21 जून", "5 जून", "1 मई", "8 मार्च"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "चारमीनार कहाँ स्थित है?", "options": ["दिल्ली", "Hyderabad", "औरंगाबाद", "आगरा"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "भारतीय संविधान का जनक किसे कहा जाता है?", "options": ["गांधी जी", "नेहरू", "डॉ. बी.आर. अंबेडकर", "पटेल"], "correct": 2, "exam": "UP HG Practice Set" },
+  { "q": "मोहिनीअट्टम किस राज्य का प्रसिद्ध नृत्य है?", "options": ["कर्नाटक", "केरल", "आंध्र प्रदेश", "तमिलनाडु"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "ताला नगरी के नाम से कौन सा शहर प्रसिद्ध है?", "options": ["अलीगढ़", "मेरठ", "मुरादाबाद", "सहारनपुर"], "correct": 0, "exam": "UP HG Practice Set" },
+  { "q": "अंतरिक्ष में जाने वाले प्रथम भारतीय कौन थे?", "options": ["कल्पना चावला", "राकेश शर्मा", "सुनीता विलियम्स", "रवीश मल्होत्रा"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "उत्तर प्रदेश की वर्तमान राज्यपाल कौन हैं?", "options": ["राम नाईक", "आनंदीबेन पटेल", "कलराज मिश्र", "जगदीप धनखड़"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "वायुदाब मापने वाला यंत्र कौन सा है?", "options": ["थर्मामीटर", "बैरोमीटर", "लैक्टोमीटर", "हाइग्रोमीटर"], "correct": 1, "exam": "UP HG Practice Set" },
+  { "q": "सूर्य के प्रकाश से कौन सा विटामिन प्राप्त होता है?", "options": ["विटामिन A", "विटामिन B", "विटामिन C", "विटामिन D"], "correct": 3, "exam": "UP HG Practice Set" },
+        ];
+
+        let curr = 0;
+        let userAns = Array(data.length).fill(null);
+        let status = Array(data.length).fill(0); 
+        let time = 120 * 60;
+        let timerRef;
+
+        function init() {
+            document.getElementById('totalQ').innerText = data.length;
+            const box = document.getElementById('paletteBox');
+            box.innerHTML = '';
+            data.forEach((_, i) => {
+                const d = document.createElement('div');
+                d.className = 'p-item st-none';
+                d.innerText = i + 1;
+                d.onclick = () => jump(i);
+                d.id = `pal_${i}`;
+                box.appendChild(d);
+            });
+
+            timerRef = setInterval(() => {
+                time--;
+                let h = Math.floor(time/3600);
+                let m = Math.floor((time%3600)/60);
+                let s = time%60;
+                document.getElementById('timer').innerText = 
+                    `${h<10?'0':''}${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+                if(time<=0) finishTest();
+            }, 1000);
+
+            load(0);
+        }
+
+        function load(idx) {
+            if(status[curr] === 0) status[curr] = 1;
+            curr = idx;
+            if(status[curr] === 0) status[curr] = 1;
+
+            // Load Data using new keys
+            document.getElementById('qNum').innerText = idx + 1;
+            document.getElementById('qText').innerText = data[idx].q;
+            document.getElementById('examText').innerText = data[idx].exam;
+            
+            const list = document.getElementById('optionsList');
+            list.innerHTML = '';
+            
+            data[idx].options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                const isSel = userAns[idx] === i;
+                
+                div.className = `option-box p-4 rounded-xl cursor-pointer flex items-center gap-4 ${isSel ? 'selected' : ''}`;
+                div.onclick = () => select(i);
+                
+                div.innerHTML = `
+                    <div class="circle-marker w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+                        ${isSel ? '<div class="circle-inner w-2.5 h-2.5 bg-blue-600 rounded-full"></div>' : ''}
+                    </div>
+                    <span class="text-lg font-medium ${isSel ? 'text-white' : 'text-slate-700'}">${opt}</span>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('btnPrev').disabled = idx === 0;
+            const btnN = document.getElementById('btnNext');
+            if(idx === data.length - 1) {
+                btnN.innerHTML = 'SUBMIT <i class="fas fa-check"></i>';
+                btnN.className = "px-8 py-3 rounded-xl bg-green-600 text-white font-bold shadow-lg flex items-center gap-2";
+            } else {
+                btnN.innerHTML = 'अगला प्रश्न <i class="fas fa-arrow-right"></i>';
+                btnN.className = "px-8 py-3 rounded-xl bg-blue-800 text-white font-bold shadow-lg flex items-center gap-2";
+            }
+
+            const done = userAns.filter(x => x!==null).length;
+            document.getElementById('progressBar').style.width = `${(done/data.length)*100}%`;
+
+            updatePal();
+            if(window.innerWidth < 1024) toggleDrawer(false);
+        }
+
+        function select(optIdx) {
+            userAns[curr] = optIdx;
+            if(status[curr] !== 3) status[curr] = 2; 
+            load(curr);
+        }
+
+        function markReview() {
+            status[curr] = status[curr] === 3 ? (userAns[curr]!==null?2:1) : 3;
+            load(curr);
+        }
+
+        function saveNext() {
+            if(curr < data.length - 1) load(curr + 1);
+            else finishTest();
+        }
+
+        function changeQ(dir) {
+            if(curr+dir >= 0 && curr+dir < data.length) load(curr+dir);
+        }
+
+        function jump(i) { load(i); }
+
+        function updatePal() {
+            data.forEach((_, i) => {
+                const el = document.getElementById(`pal_${i}`);
+                el.className = 'p-item';
+                if(i === curr) el.classList.add('st-curr');
+                else if(status[i] === 3) el.classList.add('st-review');
+                else if(userAns[i] !== null) el.classList.add('st-ans');
+                else if(status[i] === 1) el.classList.add('st-not-ans');
+                else el.classList.add('st-none');
+            });
+        }
+
+        function toggleDrawer(force) {
+            const d = document.getElementById('drawer');
+            const o = document.getElementById('overlay');
+            const isOpen = !d.classList.contains('translate-x-full');
+            if(force === false || isOpen) {
+                d.classList.add('translate-x-full'); d.classList.remove('translate-x-0'); o.classList.add('hidden');
+            } else {
+                d.classList.remove('translate-x-full'); d.classList.add('translate-x-0'); o.classList.remove('hidden');
+            }
+        }
+
+        function finishTest() {
+            clearInterval(timerRef);
+            let cor = 0, wrg = 0;
+            userAns.forEach((a, i) => {
+                if(a !== null) {
+                    if(a === data[i].correct) cor++;
+                    else wrg++;
+                }
+            });
+            let score = cor - (wrg * 0.33);
+            if(score < 0) score = 0;
+
+            document.getElementById('scoreVal').innerText = score.toFixed(2);
+            document.getElementById('rightVal').innerText = cor;
+            document.getElementById('wrongVal').innerText = wrg;
+            document.getElementById('skipVal').innerText = data.length - (cor+wrg);
+            document.getElementById('resModal').classList.remove('hidden');
+        }
+
+        init();
+    </script>
+</body>
+</html>
