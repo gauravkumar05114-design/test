@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>इकाई अंक (Unit Digit) मास्टर क्विज़</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Tiro+Devanagari+Hindi&display=swap');
+        
+        body {
+            font-family: 'Outfit', 'Tiro Devanagari Hindi', sans-serif;
+            background: radial-gradient(circle at top left, #2d3748, #1a202c);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 24px;
+        }
+
+        .btn-grad {
+            background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 51%, #4facfe 100%);
+            transition: 0.5s;
+            background-size: 200% auto;
+            border: none;
+        }
+
+        .btn-grad:hover {
+            background-position: right center; /* change the direction of the change here */
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .option-card:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .correct-ans {
+            background: rgba(16, 185, 129, 0.2) !important;
+            border-color: #10B981 !important;
+            color: #6EE7B7 !important;
+        }
+
+        .wrong-ans {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #EF4444 !important;
+            color: #FCA5A5 !important;
+        }
+
+        /* Floating Animation for Start Screen */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .float-anim { animation: float 3s ease-in-out infinite; }
+
+        .hidden-scale {
+            display: none;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .visible-scale {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <!-- Main Container -->
+    <div class="w-full max-w-4xl relative">
+        
+        <!-- START SCREEN POPUP -->
+        <div id="start-screen" class="glass-card p-10 text-center relative z-20">
+            <div class="mb-6 float-anim">
+                <i class="fas fa-calculator text-6xl text-cyan-400"></i>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
+                Unit Digit Mastery
+            </h1>
+            <p class="text-gray-300 text-lg mb-8 max-w-lg mx-auto leading-relaxed">
+                क्या आप गणित के जादूगर बनने के लिए तैयार हैं? <br>
+                50 चुनौतीपूर्ण प्रश्न जो आपकी संख्या पद्धति (Number System) की समझ को परखेंगे।
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left max-w-2xl mx-auto">
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <i class="fas fa-bolt text-yellow-400 mb-2"></i>
+                    <h3 class="font-bold">50 प्रश्न</h3>
+                    <p class="text-xs text-gray-400">सभी नियमों का कवरेज</p>
+                </div>
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <i class="fas fa-brain text-purple-400 mb-2"></i>
+                    <h3 class="font-bold">तत्काल हल</h3>
+                    <p class="text-xs text-gray-400">विस्तृत व्याख्या के साथ</p>
+                </div>
+                <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                    <i class="fas fa-trophy text-green-400 mb-2"></i>
+                    <h3 class="font-bold">स्कोरकार्ड</h3>
+                    <p class="text-xs text-gray-400">अपनी प्रगति देखें</p>
+                </div>
+            </div>
+
+            <button onclick="startQuiz()" class="btn-grad text-white font-bold py-4 px-12 rounded-full text-xl shadow-2xl flex items-center justify-center mx-auto gap-3">
+                <span>Start Quiz</span> <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- QUIZ CONTAINER (Hidden Initially) -->
+        <div id="quiz-container" class="glass-card p-6 md:p-8 hidden-scale relative z-10">
+            
+            <!-- Top Bar -->
+            <div class="flex justify-between items-end mb-6 border-b border-gray-700 pb-4">
+                <div>
+                    <span id="topic-badge" class="inline-block bg-cyan-900/50 text-cyan-300 text-xs px-3 py-1 rounded-full border border-cyan-500/30 mb-2">
+                        <i class="fas fa-tag mr-1"></i> <span id="topic-text">Topic</span>
+                    </span>
+                    <h2 class="text-gray-400 text-sm">Question <span id="q-current">1</span> of 50</h2>
+                </div>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-cyan-400"><span id="score">0</span></div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">Score</div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-700 rounded-full h-1.5 mb-8 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-1.5 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+
+            <!-- Question Area -->
+            <div class="min-h-[120px] mb-6">
+                <h2 id="question-text" class="text-2xl md:text-3xl font-medium leading-normal text-white">
+                    Loading Question...
+                </h2>
+            </div>
+
+            <!-- Options Area -->
+            <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Options injected by JS -->
+            </div>
+
+            <!-- Explanation Box -->
+            <div id="explanation-box" class="hidden bg-gray-800/50 border border-gray-700 rounded-xl p-5 mb-6 animate-fade-in">
+                <div class="flex items-start gap-3">
+                    <div class="mt-1"><i class="fas fa-lightbulb text-yellow-400"></i></div>
+                    <div>
+                        <h4 class="font-bold text-gray-200 mb-1">समाधान (Solution)</h4>
+                        <p id="explanation-text" class="text-gray-400 text-sm leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Controls -->
+            <div class="flex justify-end pt-4">
+                <button id="next-btn" onclick="nextQuestion()" disabled class="bg-gray-700 text-gray-400 font-bold py-3 px-8 rounded-xl cursor-not-allowed transition-all opacity-50 flex items-center gap-2">
+                    Next Question <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- RESULT SCREEN (Hidden) -->
+        <div id="result-screen" class="glass-card p-10 text-center hidden-scale">
+            <div class="mb-6">
+                <i class="fas fa-medal text-7xl text-yellow-400 float-anim"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-2">Quiz Completed!</h2>
+            <p class="text-gray-400 mb-8">यहाँ आपका परिणाम है</p>
+
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8 inline-block min-w-[300px]">
+                <div class="text-sm text-gray-400 uppercase tracking-widest mb-2">Final Score</div>
+                <div class="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+                    <span id="final-score">0</span><span class="text-2xl text-gray-500">/50</span>
+                </div>
+                <div id="result-msg" class="mt-4 text-cyan-300 font-medium"></div>
+            </div>
+
+            <div class="flex justify-center gap-4">
+                <button onclick="location.reload()" class="bg-gray-700 hover:bg-gray-600 text-white py-3 px-6 rounded-xl transition-all">
+                    <i class="fas fa-home mr-2"></i> Home
+                </button>
+                <button onclick="restartQuiz()" class="btn-grad text-white font-bold py-3 px-8 rounded-xl shadow-lg">
+                    <i class="fas fa-redo mr-2"></i> Try Again
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- QUIZ DATA (50 Questions) ---
+        // Note: Logic logic preserved, only UI changed.
+        const quizData = [
+            // Set 1: Powers
+            { q: "2<sup>31</sup> का इकाई अंक क्या होगा?", options: ["2", "4", "6", "8"], ans: 3, topic: "Cyclicity", exp: "2 की चक्रियता 4 है।<br>31 ÷ 4 = शेषफल 3<br>2<sup>3</sup> = 8" },
+            { q: "7<sup>105</sup> का इकाई अंक क्या है?", options: ["1", "3", "7", "9"], ans: 2, topic: "Cyclicity", exp: "7 की चक्रियता 4 है।<br>105 ÷ 4 = शेषफल 1<br>7<sup>1</sup> = 7" },
+            { q: "(5627)<sup>153</sup> × (671)<sup>72</sup> का इकाई अंक?", options: ["1", "3", "7", "9"], ans: 2, topic: "Product", exp: "7<sup>153</sup> (शेष 1) → 7<br>1<sup>n</sup> → 1<br>7 × 1 = 7" },
+            { q: "3<sup>40</sup> का इकाई अंक क्या होगा?", options: ["1", "3", "7", "9"], ans: 0, topic: "Cyclicity", exp: "40, 4 से विभाज्य है (शेष 0)।<br>3<sup>4</sup> = 81 → 1" },
+            { q: "(2467)<sup>153</sup> × (341)<sup>72</sup> का इकाई अंक?", options: ["1", "3", "7", "9"], ans: 2, topic: "Product", exp: "7<sup>1</sup> × 1 = 7" },
+            { q: "4<sup>64</sup> का इकाई अंक क्या होगा?", options: ["4", "6", "0", "2"], ans: 1, topic: "Odd/Even Rule", exp: "4 की घात सम (Even) है → 6" },
+            { q: "9<sup>99</sup> का इकाई अंक ज्ञात कीजिए।", options: ["1", "9", "3", "7"], ans: 1, topic: "Odd/Even Rule", exp: "9 की घात विषम (Odd) है → 9" },
+            { q: "123<sup>123</sup> का इकाई अंक क्या है?", options: ["3", "9", "7", "1"], ans: 2, topic: "Cyclicity", exp: "3<sup>123</sup> (123÷4 शेष 3) → 3<sup>3</sup> = 27 → 7" },
+            { q: "8<sup>88</sup> का इकाई अंक क्या होगा?", options: ["8", "4", "2", "6"], ans: 3, topic: "Cyclicity", exp: "8 की घात 4 से विभाज्य है → 6" },
+            { q: "2137<sup>754</sup> का इकाई अंक क्या है?", options: ["1", "3", "7", "9"], ans: 3, topic: "Cyclicity", exp: "754 ÷ 4 = शेष 2 → 7<sup>2</sup> = 49 → 9" },
+
+            // Set 2: Add/Sub
+            { q: "(17<sup>1999</sup> + 11<sup>1999</sup> - 7<sup>1999</sup>) का इकाई अंक?", options: ["1", "2", "0", "7"], ans: 0, topic: "Simplification", exp: "7<sup>1999</sup> - 7<sup>1999</sup> = 0. बचा 11<sup>n</sup> → 1" },
+            { q: "(25<sup>625</sup> + 36<sup>528</sup> + 22<sup>11</sup>) का इकाई अंक?", options: ["4", "5", "9", "0"], ans: 2, topic: "Addition", exp: "5 + 6 + 2<sup>3</sup>(8) = 19 → 9" },
+            { q: "(1001<sup>2008</sup> + 1002) का इकाई अंक?", options: ["0", "3", "4", "6"], ans: 1, topic: "Addition", exp: "1 + 2 = 3" },
+            { q: "(7<sup>95</sup> - 3<sup>58</sup>) का इकाई अंक?", options: ["0", "4", "6", "7"], ans: 1, topic: "Subtraction", exp: "7<sup>3</sup>(3) - 3<sup>2</sup>(9) → 13 - 9 = 4" },
+            { q: "(4<sup>1</sup> + 4<sup>2</sup> + ... + 4<sup>10</sup>) का इकाई अंक?", options: ["0", "4", "6", "5"], ans: 0, topic: "Series", exp: "5 जोड़े (4+6=10) → इकाई अंक 0" },
+            { q: "(1<sup>5</sup> + 2<sup>5</sup> + ... + 10<sup>5</sup>) का इकाई अंक?", options: ["0", "5", "2", "4"], ans: 1, topic: "Series", exp: "घात 5 की चक्रियता घात 1 जैसी होती है। योग 55 → 5" },
+            { q: "(3<sup>25</sup> + 3<sup>26</sup> + 3<sup>27</sup> + 3<sup>28</sup>) का इकाई अंक?", options: ["0", "1", "2", "5"], ans: 0, topic: "Factoring", exp: "3<sup>25</sup>(1+3+9+27) = 3<sup>25</sup>(40) → 0" },
+            { q: "(6<sup>13</sup> - 5<sup>13</sup>) का इकाई अंक?", options: ["0", "1", "5", "6"], ans: 1, topic: "Subtraction", exp: "6 - 5 = 1" },
+            { q: "(111<sup>111</sup> + 222<sup>222</sup> + 333<sup>333</sup>) का इकाई अंक?", options: ["2", "5", "8", "9"], ans: 3, topic: "Addition", exp: "1 + 4 + 3 = 8" },
+            { q: "(8<sup>10</sup> - 5<sup>10</sup> - 3<sup>10</sup>) का इकाई अंक?", options: ["0", "1", "2", "5"], ans: 0, topic: "Subtraction", exp: "4 - 5 - 9 = -10 → 0" },
+
+            // Set 3: Multiplication
+            { q: "(1! + 2! + ... + 100!) का इकाई अंक?", options: ["0", "3", "5", "1"], ans: 1, topic: "Factorial", exp: "1+2+6+24+0... = 33 → 3" },
+            { q: "सभी अभाज्य संख्याओं (Prime Numbers) का गुणनफल?", options: ["0", "5", "2", "NA"], ans: 0, topic: "Primes", exp: "2 × 5 = 10 → 0" },
+            { q: "सभी 'विषम' अभाज्य संख्याओं का गुणनफल?", options: ["0", "5", "1", "9"], ans: 1, topic: "Primes", exp: "5 × विषम = 5" },
+            { q: "(3 × 38 × 537 × 1256) का इकाई अंक?", options: ["4", "2", "6", "8"], ans: 3, topic: "Basic Product", exp: "3×8=4, 4×7=8, 8×6=8" },
+            { q: "(13<sup>24</sup> × 68<sup>57</sup> × 24<sup>13</sup> × 57<sup>68</sup>) का इकाई अंक?", options: ["4", "6", "8", "2"], ans: 3, topic: "Product", exp: "1 × 8 × 4 × 1 = 32 → 2" },
+            { q: "1<sup>1</sup> × 2<sup>2</sup> × ... × 10<sup>10</sup> का इकाई अंक?", options: ["0", "5", "2", "1"], ans: 0, topic: "Product", exp: "2 और 5 दोनों मौजूद हैं → 0" },
+            { q: "(81 × 82 × ... × 89) का इकाई अंक?", options: ["0", "2", "6", "4"], ans: 0, topic: "Product", exp: "82(2) × 85(5) = 10 → 0" },
+            { q: "(444<sup>444</sup> + 999<sup>999</sup>) का इकाई अंक?", options: ["5", "0", "3", "7"], ans: 0, topic: "Addition", exp: "6 + 9 = 15 → 5" },
+            { q: "(2<sup>3<sup>4</sup></sup>) का इकाई अंक?", options: ["2", "4", "6", "8"], ans: 0, topic: "Power Tower", exp: "3<sup>4</sup> = 81. 2<sup>81</sup> (शेष 1) → 2" },
+            { q: "4<sup>1</sup> × 9<sup>2</sup> × ... × 9<sup>100</sup> का इकाई अंक?", options: ["1", "4", "6", "9"], ans: 2, topic: "Series", exp: "50 जोड़े (4×1=4). 4<sup>50</sup>(सम) → 6" },
+
+            // Set 4: Advanced
+            { q: "123! का इकाई अंक क्या है?", options: ["0", "3", "6", "1"], ans: 0, topic: "Factorial", exp: "5! से बड़ा कोई भी फैक्टोरियल 0 होता है।" },
+            { q: "(1!)<sup>1</sup> + (2!)<sup>2</sup> + (3!)<sup>3</sup> + (4!)<sup>4</sup> का इकाई अंक?", options: ["7", "1", "3", "0"], ans: 0, topic: "Factorial", exp: "1 + 4 + 6 + 6 = 17 → 7" },
+            { q: "32<sup>32<sup>32</sup></sup> का इकाई अंक?", options: ["2", "4", "6", "8"], ans: 2, topic: "Power Tower", exp: "घात 4 से विभाज्य है → 6" },
+            { q: "(3333)<sup>4444!</sup> का इकाई अंक?", options: ["1", "3", "7", "9"], ans: 0, topic: "Factorial Power", exp: "घात 4 से विभाज्य, आधार विषम → 1" },
+            { q: "(2222)<sup>5555!</sup> का इकाई अंक?", options: ["2", "4", "6", "8"], ans: 2, topic: "Factorial Power", exp: "घात 4 से विभाज्य, आधार सम → 6" },
+            { q: "1 से 100 तक पूर्ण वर्ग संख्याओं का योग?", options: ["0", "5", "1", "9"], ans: 1, topic: "Summation", exp: "योग का इकाई अंक 5 होता है।" },
+            { q: "(888<sup>9235!</sup> + 222<sup>9235!</sup>) का इकाई अंक?", options: ["0", "2", "4", "6"], ans: 1, topic: "Addition", exp: "6 + 6 = 12 → 2" },
+            { q: "(7<sup>1</sup> × 7<sup>2</sup> × ... × 7<sup>10</sup>) का इकाई अंक?", options: ["7", "9", "3", "1"], ans: 0, topic: "Product Series", exp: "घातों का योग 55. 7<sup>55</sup>(शेष 3) → 3" },
+            { q: "(1<sup>3</sup> + ... + 99<sup>3</sup>) का इकाई अंक?", options: ["0", "1", "5", "2"], ans: 0, topic: "Sum of Cubes", exp: "योग सूत्र के अंत में 0 आता है।" },
+            { q: "3<sup>98</sup> - 3<sup>89</sup> का इकाई अंक?", options: ["2", "6", "0", "4"], ans: 1, topic: "Subtraction", exp: "9 - 3 = 6" },
+
+            // Set 5: Misc
+            { q: "23<sup>4</sup> × 34<sup>5</sup> × 45<sup>6</sup> का इकाई अंक?", options: ["0", "5", "4", "6"], ans: 0, topic: "Product", exp: "5 × सम = 0" },
+            { q: "प्रथम 111 पूर्ण संख्याओं (Whole No.) का योग?", options: ["0", "5", "1", "9"], ans: 1, topic: "Sum", exp: "0 से 110 तक. योग 5" },
+            { q: "7<sup>71</sup> × 6<sup>63</sup> × 3<sup>65</sup> का इकाई अंक?", options: ["4", "2", "1", "8"], ans: 0, topic: "Product", exp: "3 × 6 × 3 = 54 → 4" },
+            { q: "2<sup>3<sup>4</sup></sup> × 3<sup>4<sup>5</sup></sup> × 4<sup>5<sup>6</sup></sup> का इकाई अंक?", options: ["4", "6", "2", "8"], ans: 3, topic: "Power Tower", exp: "2 × 1 × 4 = 8" },
+            { q: "यदि n = 433 × 456 × 43n का अंत (n+2) है, तो n?", options: ["1", "8", "3", "6"], ans: 3, topic: "Algebra", exp: "3×6×n = 18n → 8n. यदि n=6, 8×6=48 (8). 6+2=8. सही।" },
+            { q: "8<sup>121</sup> × 7<sup>122</sup> × 6<sup>123</sup> का इकाई अंक?", options: ["8", "6", "4", "2"], ans: 3, topic: "Product", exp: "8 × 9 × 6 = 2" },
+            { q: "(1! + 2! + 3! + 4!) का इकाई अंक?", options: ["1", "3", "5", "7"], ans: 1, topic: "Factorial", exp: "33 → 3" },
+            { q: "9<sup>9<sup>9</sup></sup> का इकाई अंक?", options: ["1", "9", "3", "7"], ans: 1, topic: "Power Tower", exp: "9 की घात विषम है → 9" },
+            { q: "11<sup>1</sup> + ... + 16<sup>6</sup> का इकाई अंक?", options: ["1", "9", "7", "5"], ans: 1, topic: "Addition", exp: "योग का अंत 9" },
+            { q: "1 × 3 × ... × 99 का इकाई अंक?", options: ["0", "5", "1", "9"], ans: 1, topic: "Product", exp: "5 × विषम = 5" }
+        ];
+
+        // Global Variables
+        let currentQIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const qText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const scoreDisplay = document.getElementById('score');
+        const progressBar = document.getElementById('progress-bar');
+        const nextBtn = document.getElementById('next-btn');
+        const expBox = document.getElementById('explanation-box');
+        const expText = document.getElementById('explanation-text');
+        
+        const qCurrent = document.getElementById('q-current');
+        const topicText = document.getElementById('topic-text');
+        const finalScore = document.getElementById('final-score');
+        const resultMsg = document.getElementById('result-msg');
+
+        // --- FUNCTIONS ---
+
+        function startQuiz() {
+            startScreen.classList.add('hidden-scale');
+            quizContainer.classList.remove('hidden-scale');
+            quizContainer.classList.add('visible-scale');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            const data = quizData[currentQIndex];
+            
+            // Text Updates
+            qCurrent.textContent = currentQIndex + 1;
+            topicText.textContent = data.topic;
+            qText.innerHTML = data.q;
+            scoreDisplay.textContent = score;
+
+            // Reset UI
+            optionsGrid.innerHTML = '';
+            expBox.classList.add('hidden');
+            nextBtn.disabled = true;
+            nextBtn.classList.remove('bg-cyan-500', 'text-white', 'hover:bg-cyan-600', 'shadow-lg');
+            nextBtn.classList.add('bg-gray-700', 'text-gray-400', 'opacity-50', 'cursor-not-allowed');
+            nextBtn.innerHTML = `Next Question <i class="fas fa-chevron-right"></i>`;
+
+            // Progress Bar
+            const progress = ((currentQIndex) / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Generate Options
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-card w-full text-left p-5 rounded-xl text-lg font-medium text-gray-200 transition-all focus:outline-none';
+                btn.innerHTML = `<span class="inline-block w-8 h-8 rounded-full bg-white/10 text-center text-sm leading-8 mr-3 font-bold text-gray-400 border border-white/5">${String.fromCharCode(65+idx)}</span> ${opt}`;
+                btn.onclick = () => checkAnswer(idx, btn);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx, btn) {
+            if (answered) return;
+            answered = true;
+
+            const data = quizData[currentQIndex];
+            const correctIdx = data.ans;
+            const buttons = optionsGrid.children;
+
+            if (selectedIdx === correctIdx) {
+                score++;
+                scoreDisplay.textContent = score;
+                btn.classList.add('correct-ans');
+                btn.innerHTML += ` <i class="fas fa-check-circle float-right text-green-400 mt-1"></i>`;
+            } else {
+                btn.classList.add('wrong-ans');
+                btn.innerHTML += ` <i class="fas fa-times-circle float-right text-red-400 mt-1"></i>`;
+                buttons[correctIdx].classList.add('correct-ans');
+                buttons[correctIdx].innerHTML += ` <i class="fas fa-check-circle float-right text-green-400 mt-1"></i>`;
+            }
+
+            // Disable all buttons
+            Array.from(buttons).forEach(b => b.disabled = true);
+
+            // Show Solution
+            expText.innerHTML = data.exp;
+            expBox.classList.remove('hidden');
+
+            // Enable Next Button
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('bg-gray-700', 'text-gray-400', 'opacity-50', 'cursor-not-allowed');
+            nextBtn.classList.add('bg-cyan-500', 'text-white', 'hover:bg-cyan-600', 'shadow-lg');
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < quizData.length - 1) {
+                currentQIndex++;
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizContainer.classList.add('hidden-scale');
+            quizContainer.classList.remove('visible-scale');
+            
+            resultScreen.classList.remove('hidden-scale');
+            resultScreen.classList.add('visible-scale');
+
+            finalScore.textContent = score;
+            
+            if (score === 50) resultMsg.textContent = "अविश्वसनीय! आप गणित के असली बादशाह हैं!";
+            else if (score >= 40) resultMsg.textContent = "शानदार प्रदर्शन! बहुत बढ़िया!";
+            else if (score >= 25) resultMsg.textContent = "अच्छा प्रयास! थोड़ा और अभ्यास करें।";
+            else resultMsg.textContent = "हार मत मानिए! अभ्यास करते रहें।";
+        }
+
+        function restartQuiz() {
+            currentQIndex = 0;
+            score = 0;
+            resultScreen.classList.add('hidden-scale');
+            resultScreen.classList.remove('visible-scale');
+            
+            // Go back to start screen or quiz directly? Let's go to quiz
+            quizContainer.classList.remove('hidden-scale');
+            quizContainer.classList.add('visible-scale');
+            loadQuestion();
+        }
+
+    </script>
+</body>
+</html>
