@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RRB NTPC CBT Exam Portal</title>
+    <style>
+        :root {
+            /* Railway NTPC Theme Colors */
+            --primary-color: #01579b; /* Railway Blue */
+            --primary-dark: #002f6c;
+            --secondary-color: #b71c1c; /* Brick Red/Maroon */
+            --bg-body: #eceff1; /* Light Grayish Blue */
+            --bg-sidebar: #fff;
+            --text-main: #263238;
+            --text-light: #546e7a;
+            --accent: #ffc107; /* Signal Yellow */
+            --success: #2e7d32;
+            --danger: #c62828;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- Screens --- */
+        .screen { display: none; width: 100%; height: 100%; position: relative; }
+        .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- 1. Login Screen --- */
+        #login-screen {
+            background: linear-gradient(135deg, #01579b 0%, #0288d1 100%);
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        #login-screen::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            border-top: 6px solid var(--secondary-color);
+            position: relative;
+            z-index: 2;
+        }
+
+        .rail-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            /* Using emoji as placeholder for Railway Logo */
+            font-size: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+        }
+
+        .brand-subtitle {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #455a64;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cfd8dc;
+            border-radius: 4px;
+            font-size: 15px;
+            background: #fcfcfc;
+            transition: 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 2px rgba(1, 87, 155, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-primary { 
+            background: var(--primary-color); 
+            width: 100%; 
+            margin-top: 10px;
+        }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); }
+        .btn-nav { background: #fff; color: var(--text-main); border: 1px solid #b0bec5; }
+        .btn-nav:hover { background: #eceff1; }
+
+        .one-time-warning {
+            margin-top: 20px;
+            background: #ffebee;
+            color: #b71c1c;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            border-left: 4px solid #b71c1c;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- 2. Instructions Screen --- */
+        .inst-container {
+            max-width: 900px;
+            width: 95%;
+            padding: 0;
+            box-shadow: var(--shadow);
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .inst-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .inst-body {
+            padding: 30px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .inst-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        .inst-table th, .inst-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .inst-table th { background: #f5f5f5; }
+
+        /* --- 3. Exam Interface (TCS iON Style) --- */
+        .cbt-header {
+            background: #363636; /* Dark Grey like TCS */
+            color: white;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 100;
+            position: relative;
+        }
+        
+        .cbt-subheader {
+            background: var(--primary-color);
+            color: white;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            position: relative;
+            height: 100%;
+            padding: 0 10px;
+        }
+        
+        .profile-section:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* --- HOVER DETAIL CARD (NEW) --- */
+        .user-details-popover {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: 50px; /* Below header */
+            right: 0;
+            background: white;
+            width: 280px;
+            padding: 0;
+            border-radius: 4px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            border-top: 4px solid var(--secondary-color);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            color: #333;
+            transform: translateY(-10px);
+        }
+
+        .profile-section:hover .user-details-popover {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .popover-header {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+        }
+
+        .popover-body {
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .popover-img {
+            width: 60px;
+            height: 60px;
+            background: #eee;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .popover-info div {
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Question Area */
+        .question-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fff;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Watermark - Train */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/2942/2942544.png'); /* Train Icon */
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .question-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .q-header {
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+
+        .q-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #000;
+            font-weight: 500;
+        }
+
+        /* Math Styles */
+        .frac { display: inline-block; position: relative; vertical-align: middle; letter-spacing: 0.001em; text-align: center; }
+        .frac > span { display: block; padding: 0.1em; }
+        .frac span.bottom { border-top: 1.5px solid #000; }
+        .sqrt-line { border-top: 1.5px solid #000; padding-top: 1px; }
+
+        .option {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            font-size: 1.1rem;
+        }
+        
+        .option input[type="radio"] {
+            margin-right: 15px;
+            margin-top: 6px;
+            transform: scale(1.5);
+        }
+
+        .option:hover { background: #f1f8e9; }
+        
+        /* Sidebar Palette */
+        .sidebar {
+            width: 280px;
+            background: #e0e0e0;
+            border-left: 1px solid #999;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+        }
+
+        .timer-box {
+            background: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #000;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .palette-area { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px; 
+            background: #eef1f6;
+        }
+        
+        .palette-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+        }
+
+        .pal-btn {
+            height: 35px;
+            background: #fff;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: #000;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 80%, 80% 100%, 0% 100%); /* Slight cut corner */
+        }
+
+        .pal-btn:hover { background: #ddd; }
+        .pal-btn.active { border: 2px solid #000; }
+        .pal-btn.answered { background: var(--success); color: white; border: none; clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 50% 100%, 0% 70%); } 
+        .pal-btn.not-answered { background: var(--danger); color: white; }
+        .pal-btn.reviewed { background: #5e35b1; color: white; border-radius: 50%; }
+
+        /* --- 4. Report Card (Official RRB Style) --- */
+        #report-screen { background: #546e7a; overflow-y: auto; padding: 20px; }
+        .report-paper {
+            background: white;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .rrb-header-strip {
+            background: #fdf2e9;
+            padding: 15px;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .score-table td, .score-table th {
+            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: left;
+        }
+        .score-table th { background: #f5f5f5; font-weight: 600; color: #333; }
+
+        .generic-avatar {
+            width: 100%; height: 100%; border-radius: 4px;
+            background: #cfd8dc; display: flex; align-items: center;
+            justify-content: center; font-size: 2rem; color: #546e7a;
+            border: 1px solid #b0bec5;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; order: -1; }
+            .palette-area { display: none; }
+            .sidebar.expanded .palette-area { display: block; height: 300px; }
+            .timer-box { display: flex; justify-content: space-between; }
+            .toggle-pal { display: block !important; padding: 5px 10px; background: #333; color: white; border-radius: 4px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="screen active">
+        <div class="login-card">
+            <div class="rail-logo">🚆</div>
+            <h2 class="brand-title">Railway Recruitment Board</h2>
+            <div class="brand-subtitle">CEN 01/2025 (NTPC) Computer Based Test</div>
+            
+            <div class="form-group">
+                <label class="form-label">Candidate Name</label>
+                <select id="user-select" class="form-control">
+                    <option value="">-- Select --</option>
+                    <option value="ram">Gaurav kumar (Reg: 251001)</option>
+                    <option value="sham">Sham Singh (Reg: 251002)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="password-input" class="form-control" placeholder="Enter Password">
+            </div>
+
+            <!-- PHOTO UPLOAD REMOVED -->
+
+            <button class="btn btn-primary" onclick="attemptLogin()">Login</button>
+
+            <div class="one-time-warning">
+                <span style="font-size: 1.5rem;">⚠️</span>
+                <div>
+                    <b>Important Note:</b> This examination link is valid for <b>ONE ATTEMPT</b> only. Once submitted, you cannot login again with the same credentials.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. INSTRUCTIONS -->
+    <div id="instruction-screen" class="screen" style="background: #eef2f6; align-items: center; justify-content: center;">
+        <div class="inst-container">
+            <div class="inst-header">
+                <div style="width: 60px; height: 60px;">
+                    <div class="generic-avatar">👤</div>
+                </div>
+                <div>
+                    <h2 style="margin: 0; font-size: 1.4rem;">RRB NTPC - CBT Instructions</h2>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">Candidate: <span id="inst-name">--</span></div>
+                </div>
+            </div>
+            
+            <div class="inst-body">
+                <p><strong>Please read the following instructions carefully:</strong></p>
+                <ol style="line-height: 1.6; color: #333;">
+                    <li>Total Duration: <strong>90 Minutes</strong>.</li>
+                    <li>Total Questions: <strong>100</strong> (Maths:30, Reasoning:30, GK:40).</li>
+                    <li><strong>Negative Marking:</strong> There will be negative marking of <strong>1/3rd (0.33) marks</strong> for each wrong answer.</li>
+                    <li>The Question Palette displayed on the right side of screen will show the status of each question.</li>
+                </ol>
+                
+                <table class="inst-table">
+                    <tr>
+                        <th>Section</th>
+                        <th>No. of Questions</th>
+                        <th>Marks</th>
+                    </tr>
+                    <tr>
+                        <td>Mathematics</td>
+                        <td>30</td>
+                        <td>30</td>
+                    </tr>
+                    <tr>
+                        <td>General Intelligence</td>
+                        <td>30</td>
+                        <td>30</td>
+                    </tr>
+                    <tr>
+                        <td>General Awareness</td>
+                        <td>40</td>
+                        <td>40</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td><strong>100</strong></td>
+                        <td><strong>100</strong></td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border: 1px solid #ffe0b2; border-radius: 4px;">
+                    <input type="checkbox" id="agree-chk">
+                    <label for="agree-chk" style="font-weight: 600; color: #e65100; cursor: pointer;">I have read and understood the instructions. I agree that I am not carrying any prohibited gadgets.</label>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <button class="btn btn-success" onclick="startExam()">I am ready to begin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. EXAM SCREEN -->
+    <div id="quiz-screen" class="screen">
+        <header class="cbt-header">
+            <div style="font-weight: bold; font-size: 1.1rem;">RRB NTPC Exam</div>
+            
+            <!-- User Profile Section with Hover Details -->
+            <div class="profile-section">
+                <span id="header-name" style="font-size: 0.9rem; margin-right: 5px;">Candidate Name</span>
+                <div style="width: 30px; height: 30px;">
+                    <div class="generic-avatar" style="font-size: 1rem;">👤</div>
+                </div>
+
+                <!-- Hover Popup -->
+                <div class="user-details-popover">
+                    <div class="popover-header">Candidate Details</div>
+                    <div class="popover-body">
+                        <div class="popover-img generic-avatar">👤</div>
+                        <div class="popover-info">
+                            <div style="font-weight: bold;" id="pop-name">--</div>
+                            <div style="color: #666;" id="pop-reg">Reg No: --</div>
+                            <div style="color: green; font-size: 0.8rem;">Status: Active</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="cbt-subheader">
+            <span>Subject: NTPC Full Mock</span>
+            <span>Language: English/Hindi</span>
+        </div>
+
+        <div class="main-layout">
+            <div class="question-container">
+                <div class="watermark"></div>
+                <div class="question-card">
+                    <div class="q-header">
+                        Question No. <span id="q-num" style="color: #b71c1c; font-size: 1.3rem;">1</span>
+                        <span style="float: right; font-size: 0.8rem; background: #e0e0e0; padding: 3px 8px; border-radius: 4px; color: #333;" id="q-section">General Awareness</span>
+                    </div>
+                    
+                    <div class="q-text" id="q-text">Loading Question...</div>
+                    
+                    <div id="options-area">
+                        <!-- Options injected here -->
+                    </div>
+
+                    <!-- Solution Box -->
+                    <div id="explanation-box" style="display: none; background: #e8f5e9; padding: 15px; margin-top: 20px; border: 1px solid #c8e6c9; color: #2e7d32;"></div>
+
+                    <div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px;">
+                        <button class="btn btn-nav" id="prev-btn" onclick="navQuestion(-1)">Previous</button>
+                        <button class="btn btn-primary" style="width: auto; float: right;" id="save-btn" onclick="saveAndNext()">Save & Next</button>
+                        <button class="btn btn-success" style="width: auto; float: right; display: none;" id="submit-btn" onclick="submitExam()">Submit Paper</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar" id="sidebar">
+                <div class="timer-box">
+                    <span class="toggle-pal" style="display: none; cursor: pointer;" onclick="togglePalette()">☰</span>
+                    Time Left: <span id="timer" style="color: #c62828;">90:00</span>
+                </div>
+                <div class="palette-area">
+                    <div style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; color: #555;">Questions Status:</div>
+                    <div class="palette-grid" id="palette-grid"></div>
+                    
+                    <div style="margin-top: 20px; font-size: 0.75rem;">
+                        <div style="margin-bottom: 5px;"><span style="display:inline-block;width:15px;height:15px;background:#2e7d32;vertical-align:middle; clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 50% 100%, 0% 70%);"></span> Answered</div>
+                        <div style="margin-bottom: 5px;"><span style="display:inline-block;width:15px;height:15px;background:#c62828;vertical-align:middle;"></span> Not Answered</div>
+                        <div><span style="display:inline-block;width:15px;height:15px;background:#fff;border:1px solid #ccc;vertical-align:middle;"></span> Not Visited</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. REPORT CARD -->
+    <div id="report-screen" class="screen">
+        <div class="report-paper">
+            <div class="rrb-header-strip">
+                <!-- Using generic symbol instead of image URL to avoid broken links -->
+                <div style="font-size: 40px;">🚆</div>
+                <div style="flex: 1; text-align: center;">
+                    <h2 style="margin: 0; color: #b71c1c; text-transform: uppercase;">Railway Recruitment Board</h2>
+                    <p style="margin: 5px 0; color: #01579b; font-weight: bold;">CEN 01/2025 (NTPC) - Score Card</p>
+                </div>
+                <div style="font-size: 40px;">🇮🇳</div>
+            </div>
+
+            <div style="padding: 30px;">
+                <table class="score-table">
+                    <tr>
+                        <td rowspan="4" style="width: 120px; text-align: center; vertical-align: top;">
+                            <div class="generic-avatar" style="height: 120px; font-size: 3rem;">👤</div>
+                        </td>
+                        <th style="width: 150px;">Registration No.</th>
+                        <td id="rep-reg">--</td>
+                    </tr>
+                    <tr>
+                        <th>Candidate Name</th>
+                        <td id="rep-name">--</td>
+                    </tr>
+                    <tr>
+                        <th>Applied RRB</th>
+                        <td id="rep-zone">--</td>
+                    </tr>
+                    <tr>
+                        <th>Exam Date</th>
+                        <td id="rep-date">--</td>
+                    </tr>
+                </table>
+
+                <h3 style="margin-top: 30px; color: #01579b; border-bottom: 2px solid #ddd; padding-bottom: 5px;">Provisional Score Details</h3>
+                
+                <table class="score-table">
+                    <tr>
+                        <th>Total Questions</th>
+                        <td>100</td>
+                        <th>Total Attempted</th>
+                        <td id="res-attempted">0</td>
+                    </tr>
+                    <tr>
+                        <th style="color: green;">Correct Answers</th>
+                        <td style="color: green; font-weight: bold;" id="res-correct">0</td>
+                        <th style="color: red;">Incorrect Answers</th>
+                        <td style="color: red; font-weight: bold;" id="res-wrong">0</td>
+                    </tr>
+                    <tr>
+                        <th style="background: #e3f2fd;">Raw Score (Marks)</th>
+                        <td colspan="3" style="font-size: 1.5rem; font-weight: bold; color: #01579b; background: #e3f2fd;" id="final-score">0.00</td>
+                    </tr>
+                </table>
+                
+                <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                    * Raw Score = (Correct × 1) - (Wrong × 0.33)
+                </div>
+
+                <div style="margin-top: 40px; text-align: center;" class="no-print">
+                    <button class="btn btn-primary" style="width: auto;" onclick="reviewSolutions()">View Question Paper</button>
+                    <button class="btn btn-nav" style="width: auto; margin-left: 10px;" onclick="window.print()">Print Score Card</button>
+                    <button class="btn btn-danger" style="width: auto; margin-left: 10px; background: #c62828; color: white;" onclick="location.reload()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DATA (100 Questions for RRB NTPC) ---
+        const generateQuestions = () => {
+            return [
+                // --- MATHEMATICS (1-30) ---
+                { id: 1, type: "Mathematics", q: "एक बेईमान दुकानदार 1 किलो के बजाय 850 ग्राम वजन का उपयोग करता है और क्रय मूल्य पर 10% लाभ भी कमाता है। उसका वास्तविक लाभ प्रतिशत क्या है?", opt: ["29.41%", "30.5%", "28.33%", "32.11%"], ans: 0, exp: "मानें CP = 1000 रु। SP (10% लाभ) = 1100 रु।<br>वास्तविक लागत (850g) = 850 रु।<br>लाभ = 250 रु।<br>% लाभ = (250/850)*100 = 29.41%." },
+                { id: 2, type: "Mathematics", q: `यदि x = <div class="frac"><span>&radic;3+1</span><span class="bottom">&radic;3-1</span></div> और y = <div class="frac"><span>&radic;3-1</span><span class="bottom">&radic;3+1</span></div>, तो x<sup>2</sup> + y<sup>2</sup> का मान क्या है?`, opt: ["10", "14", "12", "16"], ans: 1, exp: "x = 2+&radic;3, y = 2-&radic;3.<br>x+y=4, xy=1.<br>x^2+y^2 = (x+y)^2 - 2xy = 16-2 = 14." },
+                { id: 3, type: "Mathematics", q: "दो ट्रेनें समानांतर पटरियों पर 64 km/hr और 96 km/hr की गति से विपरीत दिशा में चल रही हैं। पहली ट्रेन एक पोस्ट को 5s में और दूसरी 6s में पार करती है। एक-दूसरे को पार करने में लगा समय?", opt: ["5.6 s", "6.2 s", "5.4 s", "6.5 s"], ans: 0, exp: "L1 = 64*(5/18)*5 = 800/9 m.<br>L2 = 96*(5/18)*6 = 160 m.<br>Rel Spd = 160*(5/18) = 400/9 m/s.<br>Time = (800/9 + 1440/9) / (400/9) = 2240/400 = 5.6s." },
+                { id: 4, type: "Mathematics", q: `एक समलंब (Trapezium) ABCD में AB||CD और AB=2CD है। यदि विकर्ण O पर काटते हैं और &Delta; AOB का क्षेत्रफल 84 cm<sup>2</sup> है, तो &Delta; COD का क्षेत्रफल क्या है?`, opt: ["21", "42", "12", "24"], ans: 0, exp: "Area Ratio = (Side Ratio)^2 = (2/1)^2 = 4:1.<br>Area(COD) = 84/4 = 21." },
+                { id: 5, type: "Mathematics", q: "15 पुरुष और 18 महिलाएं एक कार्य को 6 दिनों में कर सकते हैं। 1 पुरुष अकेले 150 दिनों में कर सकता है। 1 महिला अकेले कितने दिनों में करेगी?", opt: ["240", "270", "300", "225"], ans: 1, exp: "1M = 1/150.<br>15M+18W = 1/6 => 1/10 + 18W = 1/6.<br>18W = 1/6 - 1/10 = 2/30 = 1/15.<br>1W = 1/(15*18) = 1/270. Ans: 270 days." },
+                { id: 6, type: "Mathematics", q: `यदि sin&theta; + cos&theta; = &radic;2cos&theta;, तो (cos&theta; - sin&theta;) का मान क्या है?`, opt: ["&radic;2 sin&theta;", "&radic;2 cos&theta;", "2 sin&theta;", "0"], ans: 0, exp: "Squaring given: 1+2sin&theta;cos&theta; = 2cos&sup2;&theta;.<br>Let x = cos&theta;-sin&theta;. Squaring: x&sup2; = 1-2sin&theta;cos&theta;.<br>x&sup2; = 2-2cos&sup2;&theta; = 2sin&sup2;&theta; => x = &radic;2sin&theta;." },
+                { id: 7, type: "Mathematics", q: "एक बर्तन में दूध और पानी का अनुपात 7:5 है। यदि 9 लीटर मिश्रण निकालकर 9 लीटर पानी डाल दिया जाए, तो अनुपात 7:9 हो जाता है। प्रारंभ में दूध की मात्रा क्या थी?", opt: ["21 L", "28 L", "35 L", "14 L"], ans: 0, exp: "Total initial volume logic -> 36L.<br>Milk = 36 * (7/12) = 21L." },
+                { id: 8, type: "Mathematics", q: "दी गई आकृति में, जीवा AB और CD, P पर बाह्य रूप से प्रतिच्छेद करती हैं। यदि AB=4, BP=5, और PD=3 है, तो CD की लंबाई क्या है?", opt: ["10", "12", "15", "9"], ans: 1, exp: "PA * PB = PC * PD.<br>9 * 5 = PC * 3 => PC = 15.<br>CD = PC - PD = 15 - 3 = 12." },
+                { id: 9, type: "Mathematics", q: `यदि x<sup>4</sup> + <div class="frac"><span>1</span><span class="bottom">x<sup>4</sup></span></div> = 322, तो x<sup>3</sup> - <div class="frac"><span>1</span><span class="bottom">x<sup>3</sup></span></div> का मान क्या है?`, opt: ["36", "76", "18", "54"], ans: 1, exp: "x&sup2; + 1/x&sup2; = &radic;(322+2) = 18.<br>x - 1/x = &radic;(18-2) = 4.<br>x&sup3; - 1/x&sup3; = k&sup3; + 3k = 64+12 = 76." },
+                { id: 10, type: "Mathematics", q: "3 वर्ष के लिए 10% प्रति वर्ष की दर से साधारण ब्याज और चक्रवृद्धि ब्याज के बीच का अंतर 155 रुपये है। मूलधन क्या है?", opt: ["5500", "6000", "5000", "6500"], ans: 2, exp: "Diff = P(r/100)^2(3+r/100).<br>155 = P(0.01)(3.1).<br>P = 155 / 0.031 = 5000." },
+                { id: 11, type: "Mathematics", q: `एक समबाहु त्रिभुज की अंतःत्रिज्या (inradius) 4&radic;3 सेमी है। इसका परिमाप क्या है?`, opt: ["72 cm", "96 cm", "144 cm", "108 cm"], ans: 0, exp: "r = a/(2&radic;3) => a = 24. Perimeter = 72." },
+                { id: 12, type: "Mathematics", q: "दो संख्याओं का HCF 23 है और उनके LCM के अन्य दो गुणनखंड 13 और 14 हैं। बड़ी संख्या क्या है?", opt: ["299", "322", "345", "368"], ans: 1, exp: "Numbers: 23*13, 23*14. Larger = 322." },
+                { id: 13, type: "Mathematics", q: "एक शंकु को उसके आधार के समानांतर मध्य ऊंचाई पर काटा जाता है। ऊपरी भाग और शेष भाग के आयतनों का अनुपात क्या है?", opt: ["1:8", "1:7", "1:4", "1:3"], ans: 1, exp: "Vol Ratio = (h1/h2)^3 = (1/2)^3 = 1/8. Parts: 1 and 7." },
+                { id: 14, type: "Mathematics", q: "A, B से दोगुना कुशल है। वे मिलकर एक कार्य को 14 दिनों में पूरा करते हैं। A अकेले इसे कितने दिनों में करेगा?", opt: ["21", "28", "35", "42"], ans: 0, exp: "Total work = 3*14=42. A time = 42/2 = 21." },
+                { id: 15, type: "Mathematics", q: `&radic;<span class="sqrt-line">12+&radic;<span class="sqrt-line">12+...</span></span> का मान क्या है?`, opt: ["4", "3", "6", "12"], ans: 0, exp: "12 = 3*4. Answer is bigger factor: 4." },
+                { id: 16, type: "Mathematics", q: "2430 रुपये को A, B, C में 3:4:5 के अनुपात में बांटा गया जब क्रमशः 5, 10, 15 रुपये कम किए गए। B का हिस्सा?", opt: ["810", "800", "790", "820"], ans: 0, exp: "Rem sum=2400. B's part=800. Original=810." },
+                { id: 17, type: "Mathematics", q: `यदि 2<sup>x</sup> = 4<sup>y</sup> = 8<sup>z</sup> और <div class="frac"><span>1</span><span class="bottom">2x</span></div> + <div class="frac"><span>1</span><span class="bottom">4y</span></div> + <div class="frac"><span>1</span><span class="bottom">6z</span></div> = <div class="frac"><span>24</span><span class="bottom">7</span></div>, तो z?`, opt: ["7/16", "7/32", "7/48", "7/64"], ans: 2, exp: "x=2y=3z. Eq becomes 1/2z = 24/7. z=7/48." },
+                { id: 18, type: "Mathematics", q: "एक नाव धारा के अनुकूल 24 किमी और प्रतिकूल 16 किमी 6 घंटे में तय करती है। वही नाव 36 किमी अनुकूल और 12 किमी प्रतिकूल 6 घंटे में। धारा की गति?", opt: ["2 kmph", "3 kmph", "4 kmph", "1 kmph"], ans: 0, exp: "D=8, U=4. Stream = (8-4)/2 = 2." },
+                { id: 19, type: "Mathematics", q: "52 ताश के पत्तों से दो पत्ते निकाले जाते हैं। दोनों के बादशाह (King) होने की प्रायिकता?", opt: ["1/221", "1/169", "1/13", "1/26"], ans: 0, exp: "4C2 / 52C2 = 6/1326 = 1/221." },
+                { id: 20, type: "Mathematics", q: "एक बहुभुज के 44 विकर्ण हैं। भुजाओं की संख्या ज्ञात कीजिए।", opt: ["11", "10", "12", "13"], ans: 0, exp: "n(n-3)/2 = 44 => n=11." },
+                { id: 21, type: "Mathematics", q: "दो संख्याओं का औसत M है। यदि एक संख्या N है, तो दूसरी संख्या क्या है?", opt: ["2M - N", "2N - M", "M - N", "M/2"], ans: 0, exp: "Sum = 2M. Other = 2M - N." },
+                { id: 22, type: "Mathematics", q: "70L मिश्रण (दूध:पानी 3:2)। पानी:दूध 2:3 करने के लिए कितना पानी मिलाएं?", opt: ["30 L", "35 L", "20 L", "25 L"], ans: 1, exp: "M=42, W=28. New W must be 63. Add 35L." },
+                { id: 23, type: "Mathematics", q: "आयत: लंबाई +20%, चौड़ाई -10%। क्षेत्रफल में % परिवर्तन?", opt: ["8% वृद्धि", "10% वृद्धि", "8% कमी", "No Change"], ans: 0, exp: "20 - 10 - 2 = 8% inc." },
+                { id: 24, type: "Mathematics", q: "(secA - tanA)<sup>2</sup> = ?", opt: ["(1-sinA)/(1+sinA)", "(1+sinA)/(1-sinA)", "1", "secA + tanA"], ans: 0, exp: "Standard identity result." },
+                { id: 25, type: "Mathematics", q: `यदि x + <div class="frac"><span>1</span><span class="bottom">x</span></div> = &radic;3, तो x<sup>6</sup> + 1?`, opt: ["0", "1", "-1", "&radic;3"], ans: 0, exp: "x^6 = -1 => x^6+1=0." },
+                { id: 26, type: "Mathematics", q: "प्रथम 20 विषम प्राकृतिक संख्याओं का योग?", opt: ["400", "210", "420", "200"], ans: 0, exp: "n^2 = 400." },
+                { id: 27, type: "Mathematics", q: "त्रिभुज 3,4,5 cm। सबसे लंबी भुजा पर लंब की लंबाई?", opt: ["2.4 cm", "3 cm", "2 cm", "1.2 cm"], ans: 0, exp: "(3*4)/5 = 2.4." },
+                { id: 28, type: "Mathematics", q: `यदि log<sub>8</sub>x = <div class="frac"><span>2</span><span class="bottom">3</span></div>, तो x?`, opt: ["4", "2", "8", "16"], ans: 0, exp: "8^(2/3) = 4." },
+                { id: 29, type: "Mathematics", q: "A, B, C वृत्ताकार ट्रैक पर 24s, 36s, 30s में दौड़ते हैं। वे कब मिलेंगे?", opt: ["360 s", "120 s", "240 s", "60 s"], ans: 0, exp: "LCM(24,36,30) = 360." },
+                { id: 30, type: "Mathematics", q: "अंकित मूल्य 500। छूट 20% और 10%। विक्रय मूल्य?", opt: ["360", "400", "350", "380"], ans: 0, exp: "500*0.8*0.9 = 360." },
+
+                // --- REASONING (31-60) ---
+                { id: 31, type: "Reasoning", q: "घड़ी में 4:40 बजे घंटे और मिनट की सुई के बीच का कोण क्या है?", opt: ["100°", "110°", "120°", "90°"], ans: 0, exp: "Angle = |30H - 5.5M| = |120 - 220| = 100." },
+                { id: 32, type: "Reasoning", q: "कथन: सभी पेन पेंसिल हैं। कुछ पेंसिल रबर हैं।<br>निष्कर्ष:<br>I. कुछ पेन रबर हैं।<br>II. कोई पेन रबर नहीं है।", opt: ["या तो I या II", "केवल I", "केवल II", "दोनों"], ans: 0, exp: "Complementary pair (Either/Or)." },
+                { id: 33, type: "Reasoning", q: "निम्नलिखित श्रृंखला को पूरा करें: 2, 5, 11, 23, 47, ?", opt: ["95", "90", "85", "92"], ans: 0, exp: "*2 + 1 pattern." },
+                { id: 34, type: "Reasoning", q: "यदि A=26, SUN=27, तो CAT=?", opt: ["24", "57", "58", "26"], ans: 1, exp: "Reverse positional sum." },
+                { id: 35, type: "Reasoning", q: "P, Q का भाई है। R, Q की माँ है। S, R का पिता है। T, S की माँ है। P का T से क्या संबंध है?", opt: ["पड़पोता (Great Grandson)", "पोता", "भाई", "पुत्र"], ans: 0, exp: "Great Grandson." },
+                { id: 36, type: "Reasoning", q: "निम्नलिखित विकल्पों में से विषम संख्या चुनें: 125, 343, 729, 516", opt: ["516", "125", "343", "729"], ans: 0, exp: "516 is not a perfect cube." },
+                { id: 37, type: "Reasoning", q: "यदि 15 जनवरी 2004 को शुक्रवार था, तो 15 जनवरी 2005 को कौन सा दिन होगा?", opt: ["रविवार", "शनिवार", "सोमवार", "शुक्रवार"], ans: 0, exp: "Leap year involved (+2 days). Sunday." },
+                { id: 38, type: "Reasoning", q: "एक ही पासे की दो स्थितियाँ (1,3,5) और (1,2,3) दिखाई गई हैं। संख्या 5 के विपरीत कौन सी संख्या होगी?", opt: ["2", "4", "6", "1"], ans: 0, exp: "1,3 common. 5 opposite 2." },
+                { id: 39, type: "Reasoning", q: "कोडिंग डिकोडिंग: यदि GOAL = JRDO है, तो PLAN = ?", opt: ["SODQ", "SPLM", "SOBQ", "SPDQ"], ans: 0, exp: "+3 shift." },
+                { id: 40, type: "Reasoning", q: "लुप्त संख्या ज्ञात करें: 4, 18, ?, 100, 180, 294", opt: ["48", "50", "32", "40"], ans: 0, exp: "n^3 - n^2 pattern. 4^3 - 4^2 = 48." },
+                { id: 41, type: "Reasoning", q: "30 छात्रों की एक पंक्ति में, R दाएं छोर से 10वां है और W बाएं छोर से 15वां है। उनके बीच कितने छात्र हैं?", opt: ["5", "6", "4", "None"], ans: 0, exp: "30 - (10+15) = 5." },
+                { id: 42, type: "Reasoning", q: "कथन: क्या भारत में सभी ट्रेनों का निजीकरण किया जाना चाहिए?<br>तर्क 1: हाँ, इससे सेवा की गुणवत्ता में सुधार होगा।<br>तर्क 2: नहीं, इससे गरीब लोगों के लिए किराया बढ़ जाएगा।", opt: ["केवल 1 मजबूत है", "केवल 2 मजबूत है", "दोनों मजबूत हैं", "कोई नहीं"], ans: 2, exp: "Both arguments are strong." },
+                { id: 43, type: "Reasoning", q: "यदि '×' का अर्थ '-', '÷' का अर्थ '+', और '+' का अर्थ '×' है, तो (16 × 5) + 5 ÷ 3 का मान क्या होगा?", opt: ["58", "60", "55", "62"], ans: 0, exp: "11 * 5 + 3 = 58." },
+                { id: 44, type: "Reasoning", q: "शब्द 'QUALITY' की सही दर्पण छवि (Mirror Image) कौन सी होगी?", opt: ["YTILAUQ", "YTIJAUQ", "YTILAQU", "None"], ans: 0, exp: "Lateral inversion." },
+                { id: 45, type: "Reasoning", q: "निम्नलिखित में से कौन सा वेन आरेख 'फ़र्नीचर, कुर्सी, और टेबल' के बीच के संबंध को सर्वोत्तम रूप से दर्शाता है?", opt: ["एक बड़ा सर्कल दो अलग छोटे सर्कल", "तीनों अलग", "तीनों एक के अंदर", "एक दूसरे को काटते हुए"], ans: 0, exp: "Furniture contains Chair and Table separately." },
+                { id: 46, type: "Reasoning", q: "जिस प्रकार 7 का संबंध 56 से है, उसी प्रकार 9 का संबंध किससे होगा?", opt: ["90", "81", "72", "99"], ans: 0, exp: "n(n+1). 9*10=90." },
+                { id: 47, type: "Reasoning", q: "यदि दक्षिण-पूर्व (SE) 'उत्तर' बन जाता है, उत्तर-पूर्व (NE) 'पश्चिम' बन जाता है, तो 'पश्चिम' क्या बनेगा?", opt: ["दक्षिण-पूर्व", "उत्तर-पश्चिम", "दक्षिण-पश्चिम", "उत्तर-पूर्व"], ans: 0, exp: "135 deg ACW rotation." },
+                { id: 48, type: "Reasoning", q: "शब्द 'EXTRAORDINARY' के अक्षरों का उपयोग करके निम्नलिखित में से कौन सा शब्द नहीं बनाया जा सकता है?", opt: ["RARE", "DAIRY", "TRAY", "WINTER"], ans: 3, exp: "No 'W'." },
+                { id: 49, type: "Reasoning", q: "अक्षर श्रृंखला को पूरा करें: az, cx, fu, ?", opt: ["jq", "kp", "ir", "jq"], ans: 0, exp: "Gaps increase: a..c..f..j (+2,+3,+4)." },
+                { id: 50, type: "Reasoning", q: "एक आदमी ने एक महिला से कहा, 'तुम्हारी माँ के पति की बहन मेरी बुआ है'। महिला का उस आदमी से क्या संबंध है?", opt: ["बहन", "बेटी", "पोती", "माँ"], ans: 0, exp: "Sister." },
+                { id: 51, type: "Reasoning", q: "निम्नलिखित में से विषम शब्द चुनें: तेंदुआ, शेर, बाघ, भेड़िया", opt: ["भेड़िया", "शेर", "बाघ", "तेंदुआ"], ans: 0, exp: "Wolf is Canidae." },
+                { id: 52, type: "Reasoning", q: "कथन: सभी कारें बसें हैं। सभी बसें ट्रक हैं।<br>निष्कर्ष: सभी ट्रक कारें हैं।", opt: ["गलत", "सही", "संभव", "कुछ नहीं कह सकते"], ans: 0, exp: "Reverse all is not true." },
+                { id: 53, type: "Reasoning", q: "दी गई आकृति (एक वर्ग जिसमें दोनों विकर्ण हों) में कुल कितने त्रिभुज हैं?", opt: ["8", "6", "4", "10"], ans: 0, exp: "8 triangles." },
+                { id: 54, type: "Reasoning", q: "पाँच मित्र P, Q, R, S और T हैं। Q केवल T से छोटा है और P केवल S से लंबा है। यदि उन्हें ऊंचाई के घटते क्रम में व्यवस्थित किया जाए, तो मध्य में कौन होगा?", opt: ["R", "Q", "P", "S"], ans: 0, exp: "T > Q > R > P > S. Middle is R." },
+                { id: 55, type: "Reasoning", q: "लुप्त संख्या ज्ञात करें:<br>6, 8, 48<br>5, 9, 45<br>7, 4, ?", opt: ["28", "21", "56", "11"], ans: 0, exp: "Product." },
+                { id: 56, type: "Reasoning", q: "निम्नलिखित शब्दों को शब्दकोश के क्रम में व्यवस्थित करें: 1. Science 2. Scramble 3. Script 4. Scripture", opt: ["1, 2, 3, 4", "1, 2, 4, 3", "2, 1, 3, 4", "1, 3, 2, 4"], ans: 0, exp: "Alpha order." },
+                { id: 57, type: "Reasoning", q: "यदि A=1, FAT=27, तो FAITH=?", opt: ["44", "42", "40", "45"], ans: 0, exp: "Sum of positions." },
+                {
+    id: 58, // ID change kar lena apne hisaab se
+    type: "Mathematics",
+    q: `यदि <span class="math-expr">x = <div class="frac"><span>&radic;5 - &radic;3</span><span class="bottom">&radic;5 + &radic;3</span></div></span> और <span class="math-expr">y = <div class="frac"><span>&radic;5 + &radic;3</span><span class="bottom">&radic;5 - &radic;3</span></div></span> है, तो <div class="frac"><span>x<sup>2</sup> + xy + y<sup>2</sup></span><span class="bottom">x<sup>2</sup> - xy + y<sup>2</sup></span></div> का मान क्या होगा?`,
+    opt: ["63/61", "65/63", "67/65", "61/59"],
+    ans: 0,
+    exp: "यहाँ x और y एक-दूसरे के व्युत्क्रम (Reciprocal) हैं, इसलिए xy = 1.<br>सूत्र: x + y = <div class='frac'><span>2(a + b)</span><span class='bottom'>a - b</span></div> = <div class='frac'><span>2(5 + 3)</span><span class='bottom'>5 - 3</span></div> = 8.<br>अब, x<sup>2</sup> + y<sup>2</sup> = (x + y)<sup>2</sup> - 2xy = (8)<sup>2</sup> - 2(1) = 62.<br>अतः, <div class='frac'><span>62 + 1</span><span class='bottom'>62 - 1</span></div> = <div class='frac'><span>63</span><span class='bottom'>61</span></div>."
+},
+                { id: 59, type: "Reasoning", q: "A, B का पिता है, लेकिन B, A का पुत्र नहीं है। तो B का A से क्या संबंध है?", opt: ["B पुत्री है", "B पिता है", "B पत्नी है", "संभव नहीं"], ans: 0, exp: "Daughter." },
+                { id: 60, type: "Reasoning", q: "एक व्यक्ति 5 किमी पूर्व की ओर चलता है, फिर 3 किमी दक्षिण की ओर, और अंत में 5 किमी पश्चिम की ओर चलता है। वह अपने प्रारंभिक बिंदु से कितनी दूर है?", opt: ["3 km", "5 km", "0 km", "13 km"], ans: 0, exp: "Displacement." },
+
+                // --- GK & CURRENT AFFAIRS (61-100) ---
+                { id: 61, type: "General Awareness", q: "भारतीय संविधान के किस संशोधन को 'लघु संविधान' (Mini Constitution) के रूप में जाना जाता है?", opt: ["42वां संशोधन", "44वां संशोधन", "86वां संशोधन", "61वां संशोधन"], ans: 0, exp: "42nd Amendment." },
+                { id: 62, type: "General Awareness", q: "मानव शरीर की सबसे बड़ी मिश्रित ग्रंथि (Mixed Gland) कौन सी है?", opt: ["अग्न्याशय (Pancreas)", "यकृत (Liver)", "थायराइड", "पिट्यूटरी"], ans: 0, exp: "Pancreas." },
+                { id: 63, type: "General Awareness", q: "भारत में 'रेपो रेट' (Repo Rate) का निर्धारण किसके द्वारा किया जाता है?", opt: ["RBI", "वित्त मंत्रालय", "SEBI", "SBI"], ans: 0, exp: "RBI MPC." },
+                { id: 64, type: "General Awareness", q: "कोशिका का 'पावरहाउस' (Powerhouse of the Cell) किसे कहा जाता है?", opt: ["माइटोकॉन्ड्रिया", "राइबोसोम", "न्यूक्लियस", "लाइसोसोम"], ans: 0, exp: "Mitochondria." },
+                { id: 65, type: "General Awareness", q: "वर्ष 1916 में हुए लखनऊ समझौते (Lucknow Pact) पर किनके मध्य हस्ताक्षर हुए थे?", opt: ["कांग्रेस और मुस्लिम लीग", "नरम दल और गरम दल", "गांधी और जिन्ना", "अंग्रेज और कांग्रेस"], ans: 0, exp: "Congress & Muslim League." },
+                { id: 66, type: "General Awareness", q: "ध्वनि की गति (Speed of Sound) निम्नलिखित में से किस माध्यम में अधिकतम होती है?", opt: ["ठोस (Steel)", "तरल (Water)", "गैस (Air)", "निर्वात (Vacuum)"], ans: 0, exp: "Solids." },
+                { id: 67, type: "General Awareness", q: "भारतीय राष्ट्रीय कांग्रेस के प्रथम मुस्लिम अध्यक्ष कौन थे?", opt: ["बदरुद्दीन तैयबजी", "मौलाना अबुल कलाम आजाद", "रफी अहमद किदवई", "हकीम अजमल खान"], ans: 0, exp: "Badruddin Tyabji." },
+                { id: 68, type: "General Awareness", q: "'सांभर झील' (Sambhar Lake) भारत के किस राज्य में स्थित है?", opt: ["राजस्थान", "ओडिशा", "केरल", "मणिपुर"], ans: 0, exp: "Rajasthan." },
+                { id: 69, type: "General Awareness", q: "विटामिन C का रासायनिक नाम (Chemical Name) क्या है?", opt: ["एस्कर्बिक एसिड", "रेटिनॉल", "कैल्सीफेरोल", "टोकोफेरोल"], ans: 0, exp: "Ascorbic Acid." },
+                { id: 70, type: "General Awareness", q: "निम्नलिखित में से किस नदी को 'दक्षिण गंगा' के नाम से जाना जाता है?", opt: ["गोदावरी", "कावेरी", "कृष्णा", "महानदी"], ans: 0, exp: "Godavari." },
+                { id: 71, type: "General Awareness", q: "वस्तु एवं सेवा कर (GST) परिषद का अध्यक्ष कौन होता है?", opt: ["केंद्रीय वित्त मंत्री", "प्रधानमंत्री", "RBI गवर्नर", "गृह मंत्री"], ans: 0, exp: "Union Finance Minister." },
+                { id: 72, type: "General Awareness", q: "न्यूटन के गति के प्रथम नियम (First Law of Motion) को और किस नाम से जाना जाता है?", opt: ["जड़त्व का नियम (Law of Inertia)", "संवेग का नियम", "क्रिया-प्रतिक्रिया का नियम", "ऊर्जा संरक्षण का नियम"], ans: 0, exp: "Law of Inertia." },
+                { id: 73, type: "General Awareness", q: "बक्सर का युद्ध (Battle of Buxar) किस वर्ष लड़ा गया था?", opt: ["1764", "1757", "1761", "1857"], ans: 0, exp: "1764." },
+                { id: 74, type: "General Awareness", q: "भारत की प्रथम महिला मुख्य चुनाव आयुक्त (Chief Election Commissioner) कौन थीं?", opt: ["वी.एस. रमादेवी", "सरोजिनी नायडू", "किरण बेदी", "सुचेता कृपलानी"], ans: 0, exp: "V.S. Ramadevi." },
+                { id: 75, type: "General Awareness", q: "हाइड्रोजन बम (Hydrogen Bomb) किस वैज्ञानिक सिद्धांत पर आधारित है?", opt: ["नाभिकीय संलयन (Nuclear Fusion)", "नाभिकीय विखंडन (Nuclear Fission)", "रासायनिक प्रतिक्रिया", "इनमें से कोई नहीं"], ans: 0, exp: "Fusion." },
+                { id: 76, type: "General Awareness", q: "महात्मा गांधी ने 'करो या मरो' (Do or Die) का नारा किस आंदोलन के दौरान दिया था?", opt: ["भारत छोड़ो आंदोलन 1942", "असहयोग आंदोलन 1920", "सविनय अवज्ञा आंदोलन 1930", "चंपारण सत्याग्रह 1917"], ans: 0, exp: "Quit India Movement." },
+                { id: 77, type: "General Awareness", q: "मानव रक्त का pH मान लगभग कितना होता है?", opt: ["7.4", "6.4", "8.4", "7.0"], ans: 0, exp: "7.4." },
+                { id: 78, type: "General Awareness", q: "दुनिया का एकमात्र तैरता हुआ राष्ट्रीय उद्यान 'केबुल लामजाओ' (Keibul Lamjao) किस राज्य में स्थित है?", opt: ["मणिपुर", "मिजोरम", "असम", "मेघालय"], ans: 0, exp: "Manipur." },
+                { id: 79, type: "General Awareness", q: "संसद के दोनों सदनों की संयुक्त बैठक (Joint Sitting) की अध्यक्षता कौन करता है?", opt: ["लोकसभा अध्यक्ष", "राष्ट्रपति", "उपराष्ट्रपति", "प्रधानमंत्री"], ans: 0, exp: "Speaker of Lok Sabha." },
+                { id: 80, type: "General Awareness", q: "पीतल (Brass) किन धातुओं का मिश्र धातु (Alloy) है?", opt: ["तांबा और जस्ता (Cu+Zn)", "तांबा और टिन", "लोहा और कार्बन", "सीसा और टिन"], ans: 0, exp: "Copper+Zinc." },
+                { id: 81, type: "General Awareness", q: "'सत्यमेव जयते' शब्द किस उपनिषद से लिया गया है?", opt: ["मुंडक उपनिषद", "ऋग्वेद", "रामायण", "महाभारत"], ans: 0, exp: "Mundaka Upanishad." },
+                { id: 82, type: "General Awareness", q: "कंप्यूटर शब्दावली में RAM का पूर्ण रूप (Full Form) क्या है?", opt: ["Random Access Memory", "Read Access Memory", "Ready Application Module", "Remote Access Machine"], ans: 0, exp: "Random Access Memory." },
+                { id: 83, type: "General Awareness", q: "एशियाई विकास बैंक (ADB) का मुख्यालय कहाँ स्थित है?", opt: ["मनीला, फिलीपींस", "काठमांडू, नेपाल", "जकार्ता, इंडोनेशिया", "टोक्यो, जापान"], ans: 0, exp: "Manila." },
+                { id: 84, type: "General Awareness", q: "भारत का सबसे ऊँचा जलप्रपात 'कुंचिकल' (Kunchikal Falls) किस राज्य में स्थित है?", opt: ["कर्नाटक", "केरल", "तमिलनाडु", "मेघालय"], ans: 0, exp: "Karnataka." },
+                { id: 85, type: "General Awareness", q: "भारी जल (Heavy Water) का रासायनिक सूत्र क्या है?", opt: ["D2O", "H2O2", "H2O", "D2O2"], ans: 0, exp: "D2O." },
+                { id: 86, type: "General Awareness", q: "भारतीय संविधान में मौलिक कर्तव्यों (Fundamental Duties) को किस समिति की सिफारिश पर शामिल किया गया था?", opt: ["स्वर्ण सिंह समिति", "वर्मा समिति", "सरकारिया आयोग", "पुंछी आयोग"], ans: 0, exp: "Swaran Singh Committee." },
+                { id: 87, type: "General Awareness", q: "'विंग्स ऑफ फायर' (Wings of Fire) किसकी आत्मकथा है?", opt: ["ए.पी.जे. अब्दुल कलाम", "जवाहरलाल नेहरू", "महात्मा गांधी", "सचिन तेंदुलकर"], ans: 0, exp: "APJ Abdul Kalam." },
+                { id: 88, type: "General Awareness", q: "सोडा वाटर (Soda Water) में कौन सी गैस पाई जाती है?", opt: ["कार्बन डाइऑक्साइड", "ऑक्सीजन", "नाइट्रोजन", "हाइड्रोजन"], ans: 0, exp: "CO2." },
+                { id: 89, type: "General Awareness", q: "प्राचीन भारत के किस शासक को 'भारत का नेपोलियन' कहा जाता है?", opt: ["समुद्रगुप्त", "चंद्रगुप्त मौर्य", "अशोक", "हर्षवर्धन"], ans: 0, exp: "Samudragupta." },
+                { id: 90, type: "General Awareness", q: "विश्व पर्यावरण दिवस (World Environment Day) प्रतिवर्ष कब मनाया जाता है?", opt: ["5 जून", "22 अप्रैल", "11 जुलाई", "1 दिसंबर"], ans: 0, exp: "5 June." },
+                { id: 91, type: "General Awareness", q: "दिसंबर 2025 में, इसरो (ISRO) ने PSLV-C62 मिशन के तहत किस उपग्रह को सफलतापूर्वक लॉन्च किया?", opt: ["EOS-N1", "Cartosat-4", "RISAT-3", "GSAT-30"], ans: 0, exp: "EOS-N1." },
+                { id: 92, type: "General Awareness", q: "दिसंबर 2025 में संपन्न हुए 'विश्व स्क्वैश कप' (World Squash Cup) की मेजबानी किस भारतीय शहर ने की?", opt: ["चेन्नई", "मुंबई", "नई दिल्ली", "कोच्चि"], ans: 0, exp: "Chennai." },
+                { id: 93, type: "General Awareness", q: "दिसंबर 2025 में किस भारतीय बैडमिंटन जोड़ी ने BWF वर्ल्ड टूर फाइनल्स के फाइनल में जगह बनाई?", opt: ["सात्विकसाईराज रंकीरेड्डी और चिराग शेट्टी", "पी.वी. सिंधु और अश्विनी", "लक्ष्य सेन और प्रणय", "इनमें से कोई नहीं"], ans: 0, exp: "Satwik-Chirag." },
+                { id: 94, type: "General Awareness", q: "25 दिसंबर 2025 को 'सुशासन दिवस' (Good Governance Day) के अवसर पर सरकार ने किस प्रमुख पहल की शुरुआत की?", opt: ["डिजिटल पंचायत 2.0 (Digital Panchayat 2.0)", "हर घर जल 3.0", "पीएम किसान बोनस योजना", "विकसित भारत पोर्टल"], ans: 0, exp: "Digital Panchayat." },
+                { id: 95, type: "General Awareness", q: "दिसंबर 2025 में आयोजित 'विश्व पुरुष मुक्केबाजी चैम्पियनशिप' में भारत ने कुल कितने पदक जीते?", opt: ["3", "5", "7", "1"], ans: 0, exp: "3." },
+                { id: 96, type: "General Awareness", q: "दिसंबर 2025 में पुरुषों के 'जूनियर हॉकी विश्व कप' (Junior Hockey World Cup) का आयोजन किस देश में किया गया?", opt: ["भारत", "जर्मनी", "बेल्जियम", "ऑस्ट्रेलिया"], ans: 0, exp: "India." },
+                { id: 97, type: "General Awareness", q: "26 दिसंबर को मनाया जाने वाला 'वीर बाल दिवस' किनके सम्मान में मनाया जाता है?", opt: ["गुरु गोबिंद सिंह जी के साहिबजादे", "छत्रपति शिवाजी महाराज", "भगत सिंह", "सुभाष चंद्र बोस"], ans: 0, exp: "Guru Gobind Singh's sons." },
+                { id: 98, type: "General Awareness", q: "1 दिसंबर 2025 को मनाए गए 'विश्व एड्स दिवस' (World AIDS Day) की थीम क्या थी?", opt: ["Take the Rights Path", "End Inequalities", "Global Solidarity", "Communities Lead"], ans: 0, exp: "Take the Rights Path." },
+                { id: 99, type: "General Awareness", q: "दिसंबर 2025 में टेनिस के किस मिश्रित टीम टूर्नामेंट (Mixed Team Event) का नया सत्र शुरू हुआ?", opt: ["United Cup", "Davis Cup", "Laver Cup", "Hopman Cup"], ans: 0, exp: "United Cup." },
+                { id: 100, type: "General Awareness", q: "दिसंबर 2025 में नौसेना दिवस समारोह के दौरान भारतीय नौसेना ने किस नए युद्धपोत का प्रदर्शन किया?", opt: ["INS Surat", "INS Vindhyagiri", "INS Mahendragiri", "INS Taragiri"], ans: 0, exp: "INS Surat." }
+            ];
+        };
+
+        const questions = generateQuestions();
+        const userDB = {
+            "ram": { id: "251001", name: "Gaurav kumar", pass: "12345", photo: "candidate1.JPG" },
+            "sham": { id: "251002", name: "Sham Singh", pass: "Sham#Exam", photo: "candidate2.JPG" }
+        };
+
+        let currentQIdx = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let timeLeft = 5400; // 90 Minutes
+        let timerInterval;
+        let isReview = false;
+        let currentUser = null;
+
+        // --- LOGIN LOGIC (ROBUST) ---
+        function attemptLogin() {
+            try {
+                // Modified: No Zone check
+                const userVal = document.getElementById('user-select').value;
+                const passVal = document.getElementById('password-input').value.trim();
+
+                if(!userVal) { alert("Please select a candidate."); return; }
+                
+                // One-Time Check
+                if(localStorage.getItem('ntpc_exam_' + userDB[userVal].id)) {
+                    alert("⚠️ Access Denied.\nYou have already submitted this exam.\n(Duplicate attempt prevented)");
+                    return;
+                }
+
+                if(userDB[userVal].pass !== passVal) {
+                    alert("Incorrect Password. Please try again.");
+                    return;
+                }
+
+                currentUser = userDB[userVal];
+                
+                // Set UI Details
+                document.getElementById('inst-name').innerText = currentUser.name;
+                document.getElementById('header-name').innerText = currentUser.name;
+                document.getElementById('pop-name').innerText = currentUser.name;
+                document.getElementById('pop-reg').innerText = "Reg No: " + currentUser.id;
+                
+                document.getElementById('rep-name').innerText = currentUser.name;
+                document.getElementById('rep-reg').innerText = currentUser.id;
+                document.getElementById('rep-zone').innerText = "RRB General";
+
+                // Update Images from hardcoded paths
+                const userPhotoUrl = currentUser.photo;
+                document.querySelectorAll('.generic-avatar').forEach(el => {
+                    el.innerHTML = ''; // Remove default emoji
+                    el.style.background = `url('${userPhotoUrl}') center/cover no-repeat, #ccc`; // Fallback to gray
+                });
+                const popImg = document.querySelector('.popover-img');
+                if(popImg) {
+                    popImg.innerHTML = '';
+                    popImg.style.background = `url('${userPhotoUrl}') center/cover no-repeat, #ccc`;
+                }
+
+                switchScreen('instruction-screen');
+
+            } catch(e) {
+                console.error(e);
+                alert("Login System Error: " + e.message);
+            }
+        }
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startExam() {
+            if(!document.getElementById('agree-chk').checked) {
+                alert("Please acknowledge the instructions by checking the box.");
+                return;
+            }
+            switchScreen('quiz-screen');
+            renderPalette();
+            loadQuestion(0);
+            startTimer();
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+            questions.forEach((q, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'pal-btn';
+                btn.innerText = i + 1;
+                btn.id = `pal-${i}`;
+                btn.onclick = () => loadQuestion(i);
+                grid.appendChild(btn);
+            });
+        }
+
+        function loadQuestion(index) {
+            currentQIdx = index;
+            const q = questions[index];
+
+            document.getElementById('q-num').innerText = index + 1;
+            document.getElementById('q-section').innerText = q.type;
+            document.getElementById('q-text').innerHTML = q.q;
+
+            // Nav Button States
+            document.getElementById('prev-btn').disabled = index === 0;
+            const isLast = index === questions.length - 1;
+            
+            document.getElementById('save-btn').style.display = isLast ? 'none' : 'block';
+            document.getElementById('submit-btn').style.display = isLast && !isReview ? 'block' : 'none';
+
+            // Options
+            const area = document.getElementById('options-area');
+            area.innerHTML = '';
+
+            q.opt.forEach((optText, i) => {
+                const div = document.createElement('label'); // Using label for better click area
+                div.className = 'option';
+                
+                // Check if selected
+                const isSelected = userAnswers[index] === i;
+                if(isSelected) div.classList.add('selected');
+
+                // Review Colors
+                if(isReview) {
+                    div.style.pointerEvents = 'none';
+                    if(i === q.ans) div.classList.add('correct');
+                    else if(isSelected && i !== q.ans) div.classList.add('wrong');
+                } else {
+                    div.onclick = () => selectOption(i);
+                }
+
+                // Radio Button + Text
+                div.innerHTML = `
+                    <input type="radio" name="opt" ${isSelected ? 'checked' : ''}>
+                    <span>${optText}</span>
+                `;
+                area.appendChild(div);
+            });
+
+            updatePaletteUI();
+
+            // Explanation
+            const expBox = document.getElementById('explanation-box');
+            if(isReview) {
+                expBox.style.display = 'block';
+                const correctOptChar = String.fromCharCode(65 + q.ans); // 0->A, 1->B...
+                expBox.innerHTML = `<strong>Correct Answer: Option ${correctOptChar}</strong><br><br><strong>Explanation:</strong> ${q.exp}`;
+            } else {
+                expBox.style.display = 'none';
+            }
+        }
+
+        function selectOption(optIndex) {
+            if(isReview) return;
+            userAnswers[currentQIdx] = optIndex;
+            loadQuestion(currentQIdx); // Refresh to update UI
+        }
+
+        function saveAndNext() {
+            // Update Palette status to 'Answered' green
+            const btn = document.getElementById(`pal-${currentQIdx}`);
+            if(userAnswers[currentQIdx] !== null) {
+                btn.classList.add('answered');
+                btn.classList.remove('not-answered');
+            } else {
+                // If skipped, mark red
+                btn.classList.add('not-answered');
+            }
+            
+            if(currentQIdx < questions.length - 1) loadQuestion(currentQIdx + 1);
+        }
+
+        function navQuestion(dir) {
+            const newIdx = currentQIdx + dir;
+            if(newIdx >= 0 && newIdx < questions.length) loadQuestion(newIdx);
+        }
+
+        function updatePaletteUI() {
+            document.querySelectorAll('.pal-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`pal-${currentQIdx}`).classList.add('active');
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                
+                if(timeLeft <= 0) submitExam();
+            }, 1000);
+        }
+
+        function submitExam() {
+            clearInterval(timerInterval);
+            
+            // Lock submission
+            if(currentUser && currentUser.id) {
+                localStorage.setItem('ntpc_exam_' + currentUser.id, 'true');
+            }
+
+            let correct = 0;
+            let wrong = 0;
+            let attempted = 0;
+
+            userAnswers.forEach((ans, i) => {
+                if (ans !== null) {
+                    attempted++;
+                    if (ans === questions[i].ans) {
+                        correct++;
+                    } else {
+                        wrong++;
+                    }
+                }
+            });
+
+            // NTPC Scoring: +1 for Correct, -0.33 for Wrong (1/3rd Negative)
+            const rawScore = (correct * 1) - (wrong * 0.33);
+            
+            document.getElementById('res-attempted').innerText = attempted;
+            document.getElementById('res-correct').innerText = correct;
+            document.getElementById('res-wrong').innerText = wrong;
+            document.getElementById('final-score').innerText = rawScore.toFixed(2);
+            document.getElementById('rep-date').innerText = new Date().toLocaleDateString();
+            
+            switchScreen('report-screen');
+        }
+
+        function reviewSolutions() {
+            isReview = true;
+            // Change header color to indicate review mode
+            document.querySelector('.cbt-header').style.background = "#4a148c"; 
+            switchScreen('quiz-screen');
+            loadQuestion(0);
+            
+            // Mark palette specifically for review
+            document.querySelectorAll('.pal-btn').forEach(b => b.classList.add('reviewed'));
+            
+            // Hide action buttons
+            document.getElementById('save-btn').style.display = 'none';
+            document.getElementById('submit-btn').style.display = 'none';
+        }
+
+        function togglePalette() {
+            document.getElementById('sidebar').classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>
