@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CBT Mock Test System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap');
+        
+        :root {
+            /* Fallback for standard vh */
+            --doc-height: 100vh;
+        }
+
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #f0f4f8;
+            /* Prevent text selection to mimic real CBT */
+            -webkit-user-select: none;
+            user-select: none;
+            /* Real native app height */
+            height: 100vh;
+            height: 100dvh; 
+        }
+
+        /* Allow typing and selection ONLY in input fields */
+        input, select, textarea {
+            -webkit-user-select: auto !important;
+            user-select: auto !important;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Question Palette Colors */
+        .status-not-visited { background-color: #e2e8f0; color: #475569; } /* Gray */
+        .status-not-answered { background-color: #ef4444; color: white; } /* Red */
+        .status-answered { background-color: #22c55e; color: white; } /* Green */
+        .status-marked { background-color: #8b5cf6; color: white; } /* Purple */
+        .status-marked-answered { background-color: #8b5cf6; color: white; position: relative;} /* Purple with green dot */
+        .status-marked-answered::after {
+            content: ''; position: absolute; bottom: 2px; right: 2px;
+            width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background-color: white; color: black; height: auto; display: block; overflow: visible; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .print-container { padding: 20px; max-width: 100%; margin: 0; }
+            .print-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 10px; }
+            .print-student-info { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+            .print-student-info img { width: 100px; height: 120px; object-fit: cover; border: 1px solid #000; }
+            .print-student-details { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
+            
+            /* Two Column Layout for Questions */
+            #print-questions-list {
+                column-count: 2;
+                column-gap: 30px;
+                column-rule: 1px solid #eee;
+            }
+            
+            .print-question { 
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 20px; 
+                border: 1px solid #e5e7eb; 
+                padding: 12px;
+                border-radius: 8px;
+                background-color: #fafafa;
+                display: block; /* Required for break-inside to work properly */
+            }
+            
+            /* Grid Layout for A B C D Options */
+            .print-options-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .print-opt-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+        
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="w-full overflow-hidden flex flex-col">
+
+    <!-- Header with Coaching Center Logo -->
+    <header class="bg-blue-900 text-white p-2 md:p-3 flex justify-between items-center shadow-md no-print shrink-0 border-b-4 border-yellow-500 z-20 relative">
+        <div class="flex items-center gap-3 md:gap-4">
+            <!-- Coaching Logo Here -->
+            <img src="coaching_logo.png" alt="Logo" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=C+C&background=fff&color=0D8ABC&size=120';" class="h-10 w-auto border-2 border-white rounded shadow-sm bg-white p-0.5">
+            <div class="text-sm md:text-xl font-bold tracking-wider leading-tight">
+                MOCK EXAM<br class="md:hidden"><span class="hidden md:inline"> CBT SYSTEM</span>
+            </div>
+        </div>
+        <div id="student-info-header" class="hidden flex items-center gap-2 md:gap-4">
+            <div class="bg-white text-blue-900 font-bold px-3 md:px-5 py-1.5 md:py-2 rounded-md border-2 border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)] flex items-center gap-2">
+                <svg class="w-4 h-4 md:w-5 md:h-5 text-blue-600 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="hidden sm:inline text-sm md:text-base">Time Left:</span> 
+                <span id="timer" class="text-base md:text-xl">90:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="login-screen" class="flex-1 flex justify-center items-center bg-gray-200 no-print overflow-y-auto px-4 py-8 relative">
+        <!-- Abstract Background -->
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
+        
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-lg border-t-8 border-blue-800 z-10 my-auto">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-blue-900">Candidate Login</h2>
+                <p class="text-gray-500 text-xs md:text-sm mt-1">Please verify your details before starting the exam</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4 md:space-y-5">
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Select Roll Number</label>
+                    <select id="roll-number" required onchange="autoFillName()" class="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-0 focus:border-blue-600 outline-none bg-gray-50 text-base md:text-lg font-semibold transition cursor-pointer">
+                        <option value="" disabled selected>-- Select Roll No --</option>
+                        <!-- Options generated by JS -->
+                    </select>
+                </div>
+
+                <!-- Graphic Preview of Student Profile on Login -->
+                <div id="login-profile-preview" class="hidden bg-blue-50 border border-blue-200 p-3 md:p-4 rounded-lg flex gap-4 items-center shadow-inner">
+                    <img id="login-preview-img" src="" alt="Student Photo" class="w-16 h-20 md:w-20 md:h-24 object-cover border-2 border-white shadow-md rounded">
+                    <div class="flex-1 text-xs md:text-sm text-gray-800 space-y-1">
+                        <p><strong>Name:</strong> <span id="login-preview-name"></span></p>
+                        <p><strong>Father:</strong> <span id="login-preview-father"></span></p>
+                        <p><strong>DOB:</strong> <span id="login-preview-dob"></span></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" required class="w-full px-4 py-3 border-2 border-gray-300 rounded-md focus:ring-0 focus:border-blue-600 outline-none text-base md:text-lg transition" placeholder="Enter password">
+                </div>
+                
+                <!-- Dynamic Error Message -->
+                <div id="login-error" class="hidden text-red-600 text-xs md:text-sm font-bold text-center mt-2 bg-red-100 p-2 rounded">
+                    <!-- Error message injected via JS -->
+                </div>
+
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 md:py-4 px-4 rounded-md shadow-lg transform transition active:scale-95 text-base md:text-lg mt-4 flex justify-center items-center gap-2">
+                    Proceed 
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Instructions Modal Popup (Shows after login) -->
+    <div id="instructions-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[70] no-print p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden">
+            <div class="bg-blue-900 text-white p-4 md:p-5 flex justify-between items-center shrink-0">
+                <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    General Instructions
+                </h2>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 text-gray-700 text-sm md:text-base space-y-5">
+                <p class="font-semibold text-gray-800">Please read the following instructions carefully before starting the examination:</p>
+                
+                <ul class="list-disc pl-5 space-y-3">
+                    <li><strong>Total Duration:</strong> The total duration of the examination is <strong>90 Minutes</strong>.</li>
+                    <li><strong>Total Questions:</strong> The test contains exactly <strong>100 Multiple Choice Questions (MCQs)</strong>.</li>
+                    <li><strong>Marking Scheme:</strong> For every correct answer, <strong>+1 Mark</strong> will be awarded.</li>
+                    <li class="text-red-600 bg-red-50 p-2 rounded border border-red-200"><strong>Negative Marking:</strong> There is a penalty for wrong answers. <strong>1/3rd (0.33) mark</strong> will be deducted for each incorrect answer.</li>
+                    <li>No marks will be deducted for unattempted questions.</li>
+                    <li>You can navigate between questions using the Question Palette on the right side or by clicking 'Previous' and 'Save & Next' buttons.</li>
+                    <li>Clicking on 'Mark for Review' allows you to revisit the question later. However, marked questions that are answered will be evaluated.</li>
+                </ul>
+
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded shadow-inner mt-4">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        <input type="checkbox" id="agree-checkbox" class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" onchange="toggleStartBtn()">
+                        <span class="font-bold text-blue-900">I have read and understood the instructions. I agree to abide by the rules and regulations of the CBT Mock Test.</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-gray-100 rounded-b-xl border-t shrink-0 flex justify-end">
+                <button id="start-exam-btn" disabled onclick="startExamAfterInstructions()" class="px-8 py-3 bg-gray-400 cursor-not-allowed text-white font-bold rounded shadow-lg transition text-sm md:text-base flex items-center gap-2">
+                    I am ready to begin
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. CBT TEST SCREEN -->
+    <div id="test-screen" class="hidden flex-1 flex w-full h-full overflow-hidden no-print relative">
+        
+        <!-- Left Side: Question Area -->
+        <div class="flex-1 flex flex-col bg-white h-full min-w-0">
+            <!-- Question Header -->
+            <div class="bg-gray-100 p-3 border-b border-gray-300 flex justify-between items-center font-bold text-gray-700 shadow-sm shrink-0">
+                <h3 id="question-number-display" class="text-base md:text-xl text-blue-800">Question 1</h3>
+                
+                <!-- Mobile Palette Toggle Button -->
+                <button onclick="togglePalette()" type="button" class="md:hidden bg-white text-blue-800 px-3 py-1.5 rounded flex items-center gap-1.5 text-sm border border-blue-300 shadow-sm font-bold active:bg-blue-50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Palette
+                </button>
+            </div>
+            
+            <!-- Question Content (Scrollable) -->
+            <div class="p-4 md:p-8 overflow-y-auto flex-1 text-base md:text-lg">
+                <p id="question-text" class="font-bold text-gray-800 mb-6 md:mb-8 leading-relaxed text-lg md:text-xl"></p>
+                <div id="options-container" class="space-y-3 md:space-y-4 max-w-3xl pb-4">
+                    <!-- Options will be injected here -->
+                </div>
+            </div>
+
+            <!-- Action Buttons Footer (Fixed at bottom) -->
+            <div class="bg-gray-100 p-2 md:p-4 border-t-2 border-gray-300 flex flex-col sm:flex-row justify-between items-center gap-2 shrink-0 z-10">
+                <div class="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:gap-3">
+                    <button onclick="markForReview()" class="px-2 py-2.5 md:px-5 md:py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded shadow-md transition text-xs md:text-base whitespace-nowrap overflow-hidden text-ellipsis">Review & Next</button>
+                    <button onclick="clearResponse()" class="px-2 py-2.5 md:px-5 md:py-2.5 bg-white border border-gray-400 hover:bg-gray-200 text-gray-800 font-bold rounded shadow-sm transition text-xs md:text-base">Clear</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:gap-3 mt-1 sm:mt-0">
+                    <button onclick="prevQuestion()" class="px-2 py-2.5 md:px-8 md:py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded shadow-md transition text-xs md:text-base">Previous</button>
+                    <button onclick="saveAndNext()" class="px-2 py-2.5 md:px-8 md:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-md transition text-xs md:text-base">Save & Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Palette Overlay for Mobile -->
+        <div id="palette-overlay" onclick="togglePalette()" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden transition-opacity"></div>
+
+        <!-- Right Side: Question Palette & Student Info (Drawer on Mobile) -->
+        <div id="palette-sidebar" class="fixed inset-y-0 right-0 z-40 w-4/5 max-w-[320px] bg-[#eef2f6] transform translate-x-full md:translate-x-0 md:relative md:w-80 transition-transform duration-300 ease-in-out flex flex-col h-full border-l border-gray-300 shadow-2xl md:shadow-none pt-[64px] md:pt-0">
+            
+            <!-- Close button for Mobile Drawer -->
+            <button onclick="togglePalette()" class="md:hidden absolute top-4 right-4 bg-white text-gray-800 p-1.5 rounded-full shadow-md border border-gray-200 z-50">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Graphic Profile Section -->
+            <div class="bg-white p-4 md:p-5 border-b-2 border-gray-200 flex flex-col items-center shadow-sm shrink-0 relative">
+                <div class="relative mb-2 md:mb-3">
+                    <img id="palette-photo" src="" alt="Candidate Photo" 
+                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Student&background=0D8ABC&color=fff&size=128';" 
+                         class="w-20 h-24 md:w-24 md:h-28 object-cover border-4 border-gray-200 shadow-md rounded-md bg-gray-100">
+                </div>
+                <div class="text-center w-full px-2">
+                    <h3 id="palette-name" class="font-bold text-base md:text-lg text-blue-900 truncate">Candidate Name</h3>
+                    <div class="bg-gray-100 text-gray-700 text-[10px] md:text-xs font-semibold py-1 px-2 rounded mt-1 inline-block border border-gray-200">
+                        Roll: <span id="palette-roll"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legends -->
+            <div class="p-2 md:p-3 border-b border-gray-300 text-[10px] md:text-xs grid grid-cols-2 gap-2 font-bold bg-white shrink-0">
+                <div class="flex items-center gap-1.5 md:gap-2"><span class="w-6 h-6 md:w-7 md:h-7 rounded shadow-sm status-answered flex items-center justify-center text-xs md:text-sm" id="cnt-answered">0</span> Answered</div>
+                <div class="flex items-center gap-1.5 md:gap-2"><span class="w-6 h-6 md:w-7 md:h-7 rounded shadow-sm status-not-answered flex items-center justify-center text-xs md:text-sm" id="cnt-not-answered">0</span> Not Answered</div>
+                <div class="flex items-center gap-1.5 md:gap-2"><span class="w-6 h-6 md:w-7 md:h-7 rounded shadow-sm status-not-visited flex items-center justify-center text-xs md:text-sm" id="cnt-not-visited">0</span> Not Visited</div>
+                <div class="flex items-center gap-1.5 md:gap-2"><span class="w-6 h-6 md:w-7 md:h-7 rounded shadow-sm status-marked flex items-center justify-center text-xs md:text-sm" id="cnt-marked">0</span> Marked</div>
+            </div>
+
+            <!-- Palette Grid -->
+            <div class="flex-1 overflow-y-auto p-3 md:p-4 bg-blue-50/50">
+                <h4 class="font-extrabold text-gray-700 mb-2 md:mb-3 text-xs md:text-sm tracking-wide">QUESTION PALETTE :</h4>
+                <div id="palette-grid" class="flex flex-wrap gap-1.5 md:gap-2 justify-start pb-4">
+                    <!-- Buttons will be injected here -->
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="p-3 md:p-4 bg-white border-t-2 border-gray-300 shrink-0">
+                <button onclick="showSubmitModal()" class="w-full py-2.5 md:py-3 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-lg shadow-lg text-base md:text-lg uppercase tracking-wider transition transform active:scale-95">
+                    Submit Test
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Modal -->
+    <div id="submit-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] no-print backdrop-blur-sm p-4">
+        <div class="bg-white rounded-xl p-6 md:p-8 max-w-md w-full mx-auto shadow-2xl transform scale-100 transition-transform">
+            <div class="text-center mb-5 md:mb-6">
+                <div class="w-12 h-12 md:w-16 md:h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-gray-800">Confirm Submission</h3>
+            </div>
+            <p id="submit-message" class="text-gray-600 mb-6 md:mb-8 text-center text-sm md:text-lg bg-gray-50 p-3 md:p-4 rounded border">Are you sure you want to submit the test?</p>
+            <div class="flex justify-center gap-3 md:gap-4">
+                <button onclick="closeSubmitModal()" class="px-4 py-2 md:px-6 md:py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-lg transition w-1/2 text-sm md:text-base">Cancel</button>
+                <button onclick="submitTest()" class="px-4 py-2 md:px-6 md:py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition w-1/2 text-sm md:text-base">Yes, Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. RESULT SCREEN (Screen + Print) -->
+    <div id="result-screen" class="hidden flex-1 overflow-y-auto bg-gray-200 p-4 md:p-6 no-print w-full h-full">
+        <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl border-t-8 border-green-600">
+            <div class="text-center mb-6 md:mb-8 border-b pb-4 md:pb-6">
+                <h2 class="text-2xl md:text-4xl font-extrabold text-blue-900 mb-1 md:mb-2">SCORE CARD</h2>
+                <p class="text-gray-500 font-semibold text-xs md:text-base">Centralized Computer Based Test (Mock Exam)</p>
+            </div>
+            
+            <!-- Graphic Detail Box on Result -->
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 mb-8 md:mb-10">
+                <!-- Candidate Info Card -->
+                <div class="flex-1 bg-gradient-to-br from-blue-50 to-white p-4 md:p-6 rounded-xl border border-blue-200 shadow-sm flex items-start gap-4 md:gap-6">
+                    <img id="res-photo" src="" alt="Photo" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Candidate&background=random';" class="w-20 h-24 md:w-28 md:h-36 object-cover border-2 md:border-4 border-white shadow-lg rounded">
+                    <div class="space-y-1.5 md:space-y-2 text-xs md:text-sm text-gray-800 flex-1">
+                        <h3 class="font-extrabold text-base md:text-xl text-blue-900 border-b border-blue-100 pb-1 md:pb-2 mb-2 md:mb-3">Candidate Details</h3>
+                        <p class="flex justify-between"><strong>Name:</strong> <span id="res-name" class="font-semibold text-right"></span></p>
+                        <p class="flex justify-between"><strong>Roll No:</strong> <span id="res-roll" class="font-semibold text-right"></span></p>
+                        <p class="flex justify-between"><strong>Father:</strong> <span id="res-father" class="font-semibold text-right"></span></p>
+                        <p class="flex justify-between hidden md:flex"><strong>DOB:</strong> <span id="res-dob" class="font-semibold text-right"></span></p>
+                        <p class="flex justify-between hidden md:flex"><strong>Mobile:</strong> <span id="res-mobile" class="font-semibold text-right"></span></p>
+                    </div>
+                </div>
+
+                <!-- Score Summary Card -->
+                <div class="flex-1 bg-gradient-to-br from-green-50 to-white p-4 md:p-6 rounded-xl border border-green-200 shadow-sm flex flex-col justify-center">
+                    <h3 class="font-extrabold text-base md:text-xl text-green-900 border-b border-green-200 pb-1 md:pb-2 mb-3 md:mb-4 text-center">Score Summary</h3>
+                    
+                    <div class="grid grid-cols-3 gap-2 md:gap-3 text-center mb-3 md:mb-4">
+                        <div class="bg-white p-2 rounded shadow-sm border border-gray-100 flex flex-col justify-center">
+                            <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase">Total Qs</p>
+                            <p class="text-lg md:text-2xl font-black text-blue-600" id="res-total">0</p>
+                        </div>
+                        <div class="bg-white p-2 rounded shadow-sm border border-gray-100 flex flex-col justify-center">
+                            <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase">Attempted</p>
+                            <p class="text-lg md:text-2xl font-black text-orange-500" id="res-attempted">0</p>
+                        </div>
+                        <div class="bg-white p-2 rounded shadow-sm border border-gray-100 flex flex-col justify-center">
+                            <p class="text-[10px] md:text-xs text-green-600 font-bold uppercase">Correct</p>
+                            <p class="text-lg md:text-2xl font-black text-green-600" id="res-correct">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-red-50 p-2 rounded text-center border border-red-200 mb-3 flex justify-between items-center px-4">
+                        <span class="text-xs md:text-sm font-bold text-red-800 uppercase">Incorrect Answers:</span>
+                        <span class="text-lg font-black text-red-600" id="res-incorrect">0</span>
+                    </div>
+
+                    <div class="bg-green-100 p-3 md:p-4 rounded text-center border border-green-300 shadow-inner relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-bl">1/3 Negative applied</div>
+                        <p class="text-xs md:text-sm font-bold text-green-800 uppercase mb-1 mt-1">Final Score</p>
+                        <p class="text-3xl md:text-4xl font-black text-green-600" id="res-score-final">0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4 md:gap-6 border-t pt-6 md:pt-8">
+                <button onclick="window.print()" class="w-full sm:w-auto justify-center px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-lg shadow-xl flex items-center gap-2 md:gap-3 transition transform active:scale-95 text-sm md:text-base">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Print Report
+                </button>
+                <button onclick="location.reload()" class="w-full sm:w-auto justify-center px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg shadow-xl flex items-center gap-2 md:gap-3 transition transform active:scale-95 text-sm md:text-base">
+                    <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Log Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Only Container -->
+    <div id="print-area" class="print-only print-container">
+        <div class="print-header">
+            <!-- Coaching Logo for Print -->
+            <img src="coaching_logo.png" alt="Coaching Logo" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Coaching+Center&background=eee&color=000&size=150';" style="height: 70px; margin-bottom: 10px; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 5px;">MOCK CBT EXAMINATION REPORT</h1>
+            <p style="color: #555;">Final Score and Detailed Answer Key</p>
+        </div>
+        
+        <div class="print-student-info">
+            <!-- Print Image -->
+            <img id="print-photo" src="" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Candidate&background=eee';">
+            
+            <div class="print-student-details">
+                <p><strong>Name:</strong> <span id="print-name"></span></p>
+                <p><strong>Roll No:</strong> <span id="print-roll"></span></p>
+                <p><strong>Father's Name:</strong> <span id="print-father"></span></p>
+                <p><strong>DOB:</strong> <span id="print-dob"></span></p>
+                <p><strong>Mobile No:</strong> <span id="print-mobile"></span></p>
+                <p><strong>Email:</strong> <span id="print-email"></span></p>
+                
+                <div style="grid-column: span 2; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-top: 10px; font-size: 16px;">
+                    <p style="margin-bottom: 5px;"><strong>Attempted:</strong> <span id="print-attempted"></span> | <strong>Correct:</strong> <span id="print-correct" style="color: green;"></span> | <strong>Incorrect:</strong> <span id="print-incorrect" style="color: red;"></span></p>
+                    <p style="font-size: 18px;"><strong>FINAL SCORE (After 1/3 Negative Marking):</strong> <span id="print-score" style="color: green; font-weight: bold; font-size: 20px;"></span> / <span id="print-total" style="font-weight: bold;"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="print-questions-list">
+            <!-- Questions and answers injected here for printing -->
+        </div>
+    </div>
+
+    <script>
+        // --- 0. Expanded Student Database with Full Details ---
+        const studentDatabase = [
+            { 
+                roll: '1001', 
+                name: 'VISHAL NIRWAL', 
+                password: 'VISHAL@12', 
+                photo: 'student_1.jpg',
+                fatherName: 'Anil kumar',
+                dob: '05/05/2004',
+                mobile: '+91 7078148417',
+                email: 'vishal.nirwal@example.com'
+            },
+            { 
+                roll: '1002', 
+                name: 'Vishal pal', 
+                password: 'Vishal 123', 
+                photo: 'student_2.jpg',
+                fatherName: 'Ramesh pal',
+                dob: '01/01/2026',
+                mobile: '+91 8006806473',
+                email: 'vishal.pal1@example.com'
+            },
+            { 
+                roll: '1003', 
+                name: 'Vishal pal', 
+                password: 'Vishal 123', 
+                photo: 'student_3.jpg',
+                fatherName: 'Ramesh pal',
+                dob: '01/01/2026',
+                mobile: '+91 8006806473',
+                email: 'vishal.pal2@example.com'
+            },
+            { 
+                roll: '1004', 
+                name: 'Pooja', 
+                password: '7060443750', 
+                photo: 'student_4.jpg',
+                fatherName: 'Raju',
+                dob: '12/12/2006',
+                mobile: '+91 9193161672',
+                email: 'pooja@example.com'
+            },
+            { 
+                roll: '1005', 
+                name: 'Sameer Ansari', 
+                password: 'Sameer___265', 
+                photo: 'student_5.jpg',
+                fatherName: 'Saleem Ansari',
+                dob: '03/12/2006',
+                mobile: '+91 9520318393',
+                email: 'sameer.ansari@example.com'
+            },
+            { 
+                roll: '1006', 
+                name: 'Arya garg', 
+                password: 'Aryagarg', 
+                photo: 'student_6.jpg',
+                fatherName: 'Mr balram',
+                dob: '24/02/2004',
+                mobile: '+91 7253018175',
+                email: 'arya.garg@example.com'
+            },
+            { 
+                roll: '1007', 
+                name: 'Abhishek pundir', 
+                password: 'Abhishek @12', 
+                photo: 'student_7.jpg',
+                fatherName: 'Amreesh',
+                dob: '24/02/2005',
+                mobile: '+91 8650096448',
+                email: 'abhishek.pundir@example.com'
+            },
+            { 
+                roll: '1008', 
+                name: 'Aryan chauhan', 
+                password: 'Aryan@123', 
+                photo: 'student_8.jpg',
+                fatherName: 'Mr pradeep kumar',
+                dob: '03/04/2008',
+                mobile: '+91 8650798097',
+                email: 'aryan.chauhan@example.com'
+            }
+        ];
+
+        // Populate Roll Number Dropdown on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            const rollSelect = document.getElementById('roll-number');
+            studentDatabase.forEach(student => {
+                const opt = document.createElement('option');
+                opt.value = student.roll;
+                opt.textContent = `Roll No: ${student.roll} - ${student.name}`;
+                rollSelect.appendChild(opt);
+            });
+        });
+
+        // Show Graphic Preview on Roll Select
+        function autoFillName() {
+            const roll = document.getElementById('roll-number').value;
+            const student = studentDatabase.find(s => s.roll === roll);
+            if (student) {
+                document.getElementById('login-preview-img').src = student.photo;
+                // Add fallback to preview image dynamically
+                document.getElementById('login-preview-img').onerror = function() {
+                    this.onerror=null; 
+                    this.src=`https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=0D8ABC&color=fff`;
+                };
+                
+                document.getElementById('login-preview-name').innerText = student.name;
+                document.getElementById('login-preview-father').innerText = student.fatherName;
+                document.getElementById('login-preview-dob').innerText = student.dob;
+                
+                document.getElementById('login-profile-preview').classList.remove('hidden');
+            }
+        }
+
+        // --- 1. Question Data (JSON Format) ---
+        const questionData = [
+            {
+                "text": "भारत और चीन के बीच सीमा-रेखा को क्या कहा जाता है?",
+                "options": ["(A) रेडक्लिफ रेखा", "(B) इन्दिरा प्वाइंट", "(C) डूरण्ड रेखा", "(D) मैकमोहन रेखा"],
+                "correct": 3  // 3 means Option D is correct
+            },
+            {
+                "text": "निम्नलिखित किस पहाड़ी पर पूर्वी घाट पश्चिमी घाट से मिलता है?",
+                "options": ["(A) पलानी पहाड़ी", "(B) अनाइमुडी पहाड़ी", "(C) नीलगिरि पहाड़ी", "(D) शेवरोय पहाड़ी"],
+                "correct": 2  // 2 means Option C is correct
+            },
+            {
+                "text": "निम्नलिखित राज्यों/केन्द्रशासित प्रदेशों में से किसमें जुआरी नदी प्रवाहित होती है?",
+                "options": ["(A) दमन एवं दीव", "(B) गोवा", "(C) पुदुचेरी", "(D) अंडमान एवं निकोबार"],
+                "correct": 1  // 1 means Option B is correct
+            },
+            {
+                "text": "किस नदी पर शिवसमुद्रम जलप्रपात अवस्थित है?",
+                "options": ["(A) कावेरी", "(B) कृष्णा", "(C) गोदावरी", "(D) महानदी"],
+                "correct": 0  // 0 means Option A is correct
+            },
+            {
+                "text": "भारत के निम्नलिखित क्षेत्रों में से कहाँ उष्णकटिबंधीय आर्द्र सदाबहार वन नहीं उगते हैं?",
+                "options": ["(A) पूर्वी घाट", "(B) पश्चिमी घाट", "(C) अण्डमान द्वीप", "(D) उत्तर-पूर्वी क्षेत्र"],
+                "correct": 0
+            },
+            {
+                "text": "'नागार्जुन सागर बहु-उद्देशीय परियोजना' कौन-सी नदी पर स्थित है?",
+                "options": ["(A) ताप्ती", "(B) कोसी", "(C) गोदावरी", "(D) कृष्णा"],
+                "correct": 3
+            },
+            {
+                "text": "भारत में खाद्य प्रबन्धन का निम्न में से कौन-सा एक उद्देश्य नहीं है?",
+                "options": ["(A) खाद्यान्नों का वितरण", "(B) खाद्यान्नों की खरीद", "(C) खाद्यान्नों के बफर स्टॉक का रख-रखाव", "(D) खाद्यान्नों का निर्यात"],
+                "correct": 3
+            },
+            {
+                "text": "'काली क्रांति' सम्बन्धित है-",
+                "options": ["(A) मत्स्य उत्पादन", "(B) कोयला उत्पादन", "(C) कच्चा तेल उत्पादन", "(D) सरसों उत्पादन"],
+                "correct": 2
+            },
+            {
+                "text": "पाकिस्तान के लरकाना जिले में सिन्धु नदी के तट पर स्थित सिन्धु घाटी सभ्यता का एक प्रमुख शहर निम्नलिखित में से कौन-सा है?",
+                "options": ["(A) मोहनजोदड़ो", "(B) हड़प्पा", "(C) लोथल", "(D) आलमगीरपुर"],
+                "correct": 0
+            },
+            {
+                "text": "भारतीय कोयला उद्योग की निम्नलिखित समस्याओं पर विचार करें- I. निम्न कोटि का कोयला एवं कोयला संचालन में बाधा। II. धुलाई संस्थानों की उपयोग क्षमता में कमी। III. कोकिंग कोयला के आयात पर बढ़ती निर्भरता। IV. कार्य संचालन की कीमतें। उपर्युक्त में से कौन-से सही हैं?",
+                "options": ["(A) II, III तथा IV", "(B) I, II, III तथा IV", "(C) I, III, तथा IV", "(D) I, II तथा III"],
+                "correct": 1
+            }
+        ];
+        
+        let questions = [];
+
+        // --- 2. State Variables ---
+        let currentStudent = null;
+        let currentIdx = 0;
+        let timeRemaining = 90 * 60; // 90 minutes
+        let timerInterval;
+        
+        let qStatus = [];
+        let answers = []; 
+
+        // --- 3. Login & Initialization Flow ---
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const roll = document.getElementById('roll-number').value;
+            const pass = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            // --- SINGLE ATTEMPT CHECK ---
+            let attemptedStudents = JSON.parse(localStorage.getItem('attemptedStudents') || '[]');
+            if (attemptedStudents.includes(roll)) {
+                errorDiv.innerText = "❌ Aap pehle hi test submit kar chuke hain. Dubara attempt allowed nahi hai.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            const validStudent = studentDatabase.find(s => s.roll === roll && s.password === pass);
+            
+            if (!validStudent) {
+                errorDiv.innerText = "❌ Invalid Password! Please try again.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            errorDiv.classList.add('hidden');
+            currentStudent = { ...validStudent };
+            
+            // Set Graphic Profile Info on Test Screen
+            document.getElementById('palette-photo').src = currentStudent.photo;
+            // Generate fallback avatar dynamically with name initials
+            document.getElementById('palette-photo').onerror = function() {
+                this.onerror=null; 
+                this.src=`https://ui-avatars.com/api/?name=${encodeURIComponent(currentStudent.name)}&background=0D8ABC&color=fff&size=128`;
+            };
+            
+            document.getElementById('palette-name').innerText = currentStudent.name;
+            document.getElementById('palette-roll').innerText = currentStudent.roll;
+            
+            // Setup Headers
+            document.getElementById('student-info-header').classList.remove('hidden');
+            
+            // Transition to Instructions Modal instead of Test Screen directly
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('instructions-modal').classList.remove('hidden');
+        });
+
+        // Toggle the 'Start Exam' button based on Checkbox
+        function toggleStartBtn() {
+            const btn = document.getElementById('start-exam-btn');
+            if(document.getElementById('agree-checkbox').checked) {
+                btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                btn.disabled = false;
+            } else {
+                btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                btn.disabled = true;
+            }
+        }
+
+        // Final transition to Start Exam
+        function startExamAfterInstructions() {
+            document.getElementById('instructions-modal').classList.add('hidden');
+            document.getElementById('test-screen').classList.remove('hidden');
+            
+            initTest();
+        }
+
+        function initTest() {
+            // Load questions from JSON
+            questions = [...questionData];
+            
+            // Generate EXACTLY 100 mock questions by duplicating JSON data (for mock exam length)
+            while(questions.length < 100) {
+                questions = questions.concat(questionData);
+            }
+            questions = questions.slice(0, 100); 
+
+            qStatus = new Array(questions.length).fill(0);
+            answers = new Array(questions.length).fill(null);
+            
+            const palette = document.getElementById('palette-grid');
+            palette.innerHTML = '';
+            for(let i=0; i<questions.length; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'w-8 h-8 md:w-10 md:h-10 rounded font-bold text-xs md:text-sm flex items-center justify-center transition status-not-visited border hover:border-blue-500 shadow-sm';
+                btn.innerText = i + 1;
+                btn.onclick = () => jumpToQuestion(i);
+                btn.id = 'pal-btn-' + i;
+                palette.appendChild(btn);
+            }
+            
+            loadQuestion(0);
+            startTimer();
+        }
+
+        // --- Mobile Palette Drawer Logic ---
+        function togglePalette() {
+            const sidebar = document.getElementById('palette-sidebar');
+            const overlay = document.getElementById('palette-overlay');
+            
+            if (sidebar.classList.contains('translate-x-full')) {
+                // Open drawer
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                // Close drawer
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function closePaletteIfMobile() {
+            if (window.innerWidth < 768) { // md breakpoint
+                const sidebar = document.getElementById('palette-sidebar');
+                const overlay = document.getElementById('palette-overlay');
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // --- 4. Test Navigation & Actions ---
+        function loadQuestion(index) {
+            currentIdx = index;
+            const q = questions[index];
+            
+            if(qStatus[index] === 0) qStatus[index] = 1; 
+            updatePaletteUI();
+
+            document.getElementById('question-number-display').innerText = `Question ${index + 1} of ${questions.length}`;
+            document.getElementById('question-text').innerText = q.text;
+            
+            const optContainer = document.getElementById('options-container');
+            optContainer.innerHTML = '';
+            
+            q.options.forEach((opt, i) => {
+                const isChecked = answers[index] === i ? 'checked' : '';
+                optContainer.innerHTML += `
+                    <label class="flex items-start gap-3 md:gap-4 p-3 md:p-4 border-2 rounded-xl cursor-pointer hover:bg-blue-50 transition ${isChecked ? 'bg-blue-50 border-blue-500 shadow-md' : 'border-gray-200'}">
+                        <input type="radio" name="q_option" value="${i}" class="mt-0.5 md:mt-1 w-4 h-4 md:w-5 md:h-5 text-blue-600 focus:ring-blue-500" ${isChecked} onchange="selectOption(this, ${i})">
+                        <span class="text-gray-700 font-semibold text-sm md:text-lg leading-snug">${opt}</span>
+                    </label>
+                `;
+            });
+        }
+
+        function selectOption(radio, optIndex) {
+            const labels = document.getElementById('options-container').querySelectorAll('label');
+            labels.forEach(l => {
+                l.classList.remove('bg-blue-50', 'border-blue-500', 'shadow-md');
+                l.classList.add('border-gray-200');
+            });
+            radio.closest('label').classList.add('bg-blue-50', 'border-blue-500', 'shadow-md');
+            radio.closest('label').classList.remove('border-gray-200');
+        }
+
+        function saveAndNext() {
+            saveCurrentAnswer();
+            if(answers[currentIdx] !== null) {
+                qStatus[currentIdx] = 2;
+            } else {
+                qStatus[currentIdx] = 1;
+            }
+            goToNext();
+        }
+
+        function markForReview() {
+            saveCurrentAnswer();
+            if(answers[currentIdx] !== null) {
+                qStatus[currentIdx] = 4;
+            } else {
+                qStatus[currentIdx] = 3; 
+            }
+            goToNext();
+        }
+
+        function clearResponse() {
+            answers[currentIdx] = null;
+            qStatus[currentIdx] = 1; 
+            loadQuestion(currentIdx);
+        }
+
+        function goToNext() {
+            updatePaletteUI();
+            if(currentIdx < questions.length - 1) {
+                loadQuestion(currentIdx + 1);
+            }
+        }
+
+        function prevQuestion() {
+            saveCurrentAnswer();
+            updatePaletteUI();
+            if(currentIdx > 0) {
+                loadQuestion(currentIdx - 1);
+            }
+        }
+
+        function jumpToQuestion(index) {
+            saveCurrentAnswer();
+            updatePaletteUI();
+            loadQuestion(index);
+            closePaletteIfMobile(); // Auto-close drawer on mobile when jumping to question
+        }
+
+        function saveCurrentAnswer() {
+            const selected = document.querySelector('input[name="q_option"]:checked');
+            if(selected) {
+                answers[currentIdx] = parseInt(selected.value);
+            }
+        }
+
+        // --- 5. Palette UI & Timer ---
+        function updatePaletteUI() {
+            let counts = [0, 0, 0, 0, 0]; 
+            
+            for(let i=0; i<questions.length; i++) {
+                const btn = document.getElementById('pal-btn-' + i);
+                let st = qStatus[i];
+                counts[st]++;
+                
+                btn.className = 'w-8 h-8 md:w-10 md:h-10 rounded font-bold text-xs md:text-sm flex items-center justify-center transition border shadow-sm ';
+                
+                if(i === currentIdx) btn.classList.add('ring-4', 'ring-yellow-400', 'scale-110', 'z-10');
+                else btn.classList.add('border-gray-300');
+                
+                if(st === 0) btn.classList.add('status-not-visited');
+                else if(st === 1) btn.classList.add('status-not-answered');
+                else if(st === 2) btn.classList.add('status-answered');
+                else if(st === 3) btn.classList.add('status-marked');
+                else if(st === 4) btn.classList.add('status-marked-answered');
+            }
+            
+            document.getElementById('cnt-not-visited').innerText = counts[0];
+            document.getElementById('cnt-not-answered').innerText = counts[1];
+            document.getElementById('cnt-answered').innerText = counts[2] + counts[4];
+            document.getElementById('cnt-marked').innerText = counts[3] + counts[4];
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                if(timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    submitTest();
+                }
+                const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+                const s = (timeRemaining % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+                
+                // Red warning when less than 5 minutes
+                if(timeRemaining < 300) {
+                    document.getElementById('timer').parentElement.classList.replace('text-blue-900', 'text-red-600');
+                    document.getElementById('timer').parentElement.classList.replace('border-yellow-400', 'border-red-500');
+                }
+            }, 1000);
+        }
+
+        // --- 6. Submit & Results ---
+        function showSubmitModal() {
+            saveCurrentAnswer();
+            updatePaletteUI();
+            
+            const answered = answers.filter(a => a !== null).length;
+            document.getElementById('submit-message').innerHTML = `You have answered <strong>${answered}</strong> out of <strong>${questions.length}</strong> questions.<br><br>Are you sure you want to submit the test?`;
+            
+            document.getElementById('submit-modal').classList.remove('hidden');
+            closePaletteIfMobile(); // Close sidebar if open behind modal
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').classList.add('hidden');
+        }
+
+        function submitTest() {
+            closeSubmitModal();
+            clearInterval(timerInterval);
+            
+            // --- SAVE ATTEMPT TO PREVENT RETAKING ---
+            let attemptedStudents = JSON.parse(localStorage.getItem('attemptedStudents') || '[]');
+            if(!attemptedStudents.includes(currentStudent.roll)) {
+                attemptedStudents.push(currentStudent.roll);
+                localStorage.setItem('attemptedStudents', JSON.stringify(attemptedStudents));
+            }
+
+            document.getElementById('test-screen').classList.add('hidden');
+            document.getElementById('test-screen').classList.remove('flex');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            calculateResult();
+            generatePrintReport();
+        }
+
+        function calculateResult() {
+            let correctCount = 0;
+            let attemptedCount = 0;
+            
+            answers.forEach((ans, idx) => {
+                if(ans !== null) {
+                    attemptedCount++;
+                    if(ans === questions[idx].correct) correctCount++;
+                }
+            });
+
+            // 1/3rd Negative Marking Calculation
+            let incorrectCount = attemptedCount - correctCount;
+            let finalScore = correctCount - (incorrectCount / 3);
+            
+            // Format to 2 decimal places to make it look clean
+            finalScore = finalScore.toFixed(2);
+            
+            // --- Fill UI Result Screen ---
+            
+            // Set Graphic Profile Info on Result Screen
+            document.getElementById('res-photo').src = currentStudent.photo;
+            document.getElementById('res-photo').onerror = function() {
+                this.onerror=null; 
+                this.src=`https://ui-avatars.com/api/?name=${encodeURIComponent(currentStudent.name)}&background=0D8ABC&color=fff&size=200`;
+            };
+
+            document.getElementById('res-name').innerText = currentStudent.name;
+            document.getElementById('res-roll').innerText = currentStudent.roll;
+            document.getElementById('res-father').innerText = currentStudent.fatherName;
+            document.getElementById('res-dob').innerText = currentStudent.dob;
+            document.getElementById('res-mobile').innerText = currentStudent.mobile;
+
+            document.getElementById('res-total').innerText = questions.length;
+            document.getElementById('res-attempted').innerText = attemptedCount;
+            document.getElementById('res-correct').innerText = correctCount;
+            document.getElementById('res-incorrect').innerText = incorrectCount;
+            document.getElementById('res-score-final').innerText = finalScore;
+            
+            // --- Fill Print Container Details ---
+            
+            document.getElementById('print-photo').src = currentStudent.photo;
+            document.getElementById('print-photo').onerror = function() {
+                this.onerror=null; 
+                this.src=`https://ui-avatars.com/api/?name=${encodeURIComponent(currentStudent.name)}&background=eee&size=150`;
+            };
+
+            document.getElementById('print-name').innerText = currentStudent.name;
+            document.getElementById('print-roll').innerText = currentStudent.roll;
+            document.getElementById('print-father').innerText = currentStudent.fatherName;
+            document.getElementById('print-dob').innerText = currentStudent.dob;
+            document.getElementById('print-mobile').innerText = currentStudent.mobile;
+            document.getElementById('print-email').innerText = currentStudent.email;
+
+            document.getElementById('print-attempted').innerText = attemptedCount;
+            document.getElementById('print-correct').innerText = correctCount;
+            document.getElementById('print-incorrect').innerText = incorrectCount;
+            
+            document.getElementById('print-score').innerText = finalScore;
+            document.getElementById('print-total').innerText = questions.length;
+        }
+
+        function generatePrintReport() {
+            const listDiv = document.getElementById('print-questions-list');
+            listDiv.innerHTML = '';
+            
+            questions.forEach((q, idx) => {
+                const studentAns = answers[idx];
+                const isCorrect = studentAns === q.correct;
+                
+                let html = `
+                <div class="print-question">
+                    <p style="font-size: 14px; margin-bottom: 8px; font-weight: 600;">Q${idx + 1}. ${q.text}</p>
+                    <div class="print-options-grid" style="font-size: 13px;">
+                `;
+                
+                q.options.forEach((opt, oIdx) => {
+                    let style = "color: #333;";
+                    let icon = "○";
+                    
+                    if(oIdx === q.correct) {
+                        style = "color: green; font-weight: bold;";
+                        icon = "✓";
+                    } else if (oIdx === studentAns) {
+                        style = "color: red; text-decoration: line-through;";
+                        icon = "✗";
+                    }
+                    
+                    html += `<div class="print-opt-item" style="${style}"><span style="display:inline-block; width:15px; font-weight:bold;">${icon}</span> <span>${opt}</span></div>`;
+                });
+                
+                html += `</div>`; // Close grid
+                
+                // Score indicator for this specific question
+                html += `<div style="margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 5px; font-size: 12px; display: flex; justify-content: space-between;">`;
+                if(studentAns === null) {
+                    html += `<span style="color: gray; font-style: italic;">Not Attempted</span>`;
+                    html += `<span style="color: gray; font-weight: bold;">Marks: 0.00</span>`;
+                } else {
+                    if(isCorrect) {
+                        html += `<span style="color: green; font-weight: bold;">Correct</span>`;
+                        html += `<span style="color: green; font-weight: bold;">Marks: +1.00</span>`;
+                    } else {
+                        html += `<span style="color: red; font-weight: bold;">Incorrect</span>`;
+                        html += `<span style="color: red; font-weight: bold;">Marks: -0.33</span>`;
+                    }
+                }
+                
+                html += `</div></div>`;
+                listDiv.innerHTML += html;
+            });
+        }
+    </script>
+</body>
+</html>
