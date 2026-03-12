@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST SERIES 0.01 BY GAURAV KUMAR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .active-option { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- 1. स्टार्ट स्क्रीन -->
+    <div id="start-screen" class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 text-center">
+        <h1 class="text-3xl font-bold mb-6 text-blue-600">उत्तर प्रदेश होम गार्ड् TEST <br>BY<br>GAURAV KUMAR</h1>
+        <div class="text-left bg-blue-50 p-4 rounded-xl mb-6">
+             <p>• TEST CODE: <span class="text-red-600 font-bold">       0002</span></p>
+            <p>• प्रत्येक सही उत्तर: <span class="text-green-600 font-bold">    +1 अंक</span></p>
+            <p>• गलत उत्तर (नेगेटिव): <span class="text-red-600 font-bold">-0.33 अंक</span></p>
+            <p>• परिणाम अंत में डैशबोर्ड पर दिखेगा।</p>
+            <p>• Question :100</p>
+        </div>
+        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold">शुरू करें</button>
+    </div>
+
+    <!-- 2. क्विज़ स्क्रीन -->
+    <div id="quiz-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden hidden mt-6">
+        <div class="bg-blue-600 p-4 text-white flex justify-between">
+            <span id="progress-text" class="font-bold">प्रश्न 1</span>
+            <span id="timer" class="font-mono">00:00</span>
+        </div>
+        <div class="p-6">
+            <h2 id="question-label" class="text-xl font-bold mb-6 min-h-[60px]">सवाल यहाँ आएगा</h2>
+            <div id="options-list" class="space-y-3">
+                <!-- बटन यहाँ अपने आप बनेंगे -->
+            </div>
+            <div class="flex gap-4 mt-8 border-t pt-6">
+                <button onclick="changeQuestion(-1)" class="bg-gray-200 px-6 py-2 rounded-lg font-bold">पीछे</button>
+                <button id="next-btn" onclick="changeQuestion(1)" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">अगला</button>
+                <button id="submit-btn" onclick="finishQuiz()" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hidden">सबमिट करें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. रिजल्ट डैशबोर्ड स्क्रीन -->
+    <div id="result-screen" class="max-w-4xl mx-auto hidden mt-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 border-t-8 border-blue-600 text-center">
+            <h2 class="text-3xl font-bold mb-6">आपका स्कोर कार्ड</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-sm text-gray-500">कुल स्कोर</p>
+                    <p id="final-score" class="text-3xl font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <p class="text-sm text-gray-500">सही</p>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl">
+                    <p class="text-sm text-gray-500">गलत</p>
+                    <p id="wrong-count" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-xl">
+                    <p class="text-sm text-gray-500">छोड़े</p>
+                    <p id="skipped-count" class="text-3xl font-bold">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-2 rounded-lg">फिर से टेस्ट दें</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-xl font-bold mb-4">उत्तरों की समीक्षा:</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 uppercase text-xs">
+                            <th class="p-3">#</th>
+                            <th class="p-3">प्रश्न</th>
+                            <th class="p-3">आपका उत्तर</th>
+                            <th class="p-3">सही उत्तर</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // यहाँ अपने नए सवाल जोड़ें
+        // correct: 0 का मतलब है पहला ऑप्शन सही है, 1 का मतलब दूसरा...
+        // ==========================================
+        const myQuestions = [
+        
+ 
+  { "q": "इतिहास के जनक (Father of History) किसे कहा जाता है?", "options": ["अरस्तू", "सुकरात", "हेरोडोटस", "प्लेटो"], "correct": 2 },
+  { "q": "'हिस्टोरिका' नामक पुस्तक की रचना किसने की थी?", "options": ["हेरोडोटस", "मेगस्थनीज", "चाणक्य", "प्लिनी"], "correct": 0 },
+  { "q": "भारतवर्ष शब्द का सर्वप्रथम उल्लेख किस अभिलेख में मिलता है?", "options": ["एरण अभिलेख", "हाथीगुम्फा अभिलेख", "जूनागढ़ अभिलेख", "प्रयाग प्रशस्ति"], "correct": 1 },
+  { "q": "मनुष्य द्वारा बोई गई सबसे पहली फसल कौन सी थी?", "options": ["गेहूँ", "चावल", "जौ (यव)", "मक्का"], "correct": 2 },
+  { "q": "संस्कृत व्याकरण की प्रसिद्ध पुस्तक 'अष्टाध्यायी' के लेखक कौन हैं?", "options": ["पाणिनी", "पतंजलि", "कलहण", "तुलसीदास"], "correct": 0 },
+  { "q": "आग का आविष्कार किस काल में हुआ था?", "options": ["नवपाषाण काल", "पुरापाषाण काल", "मध्यपाषाण काल", "ताम्रपाषाण काल"], "correct": 1 },
+  { "q": "पहिये का आविष्कार किस काल की देन है?", "options": ["पुरापाषाण काल", "मध्यपाषाण काल", "नवपाषाण काल", "लौह काल"], "correct": 2 },
+  { "q": "मनुष्य ने सबसे पहले किस जानवर को पालतू बनाया था?", "options": ["गाय", "बकरी", "बिल्ली", "कुत्ता"], "correct": 3 },
+  { "q": "मनुष्य द्वारा प्रयोग की जाने वाली प्रथम धातु कौन सी थी?", "options": ["लोहा", "ताँबा", "कांसा", "सोना"], "correct": 1 },
+  { "q": "हड़प्पा सभ्यता का स्थल 'आलमगीरपुर' उत्तर प्रदेश के किस जिले में है?", "options": ["बाघपत", "मेरठ", "सहारनपुर", "बुलंदशहर"], "correct": 1 },
+  { "q": "मोहनजोदड़ो का शाब्दिक अर्थ क्या है?", "options": ["जीवितों का टीला", "मृतकों का टीला", "महान नगर", "काली चूड़ियाँ"], "correct": 1 },
+  { "q": "हड़प्पा सभ्यता का प्रमुख बंदरगाह कौन सा था?", "options": ["कालीबंगा", "रोपड़", "लोथल", "बनावली"], "correct": 2 },
+  { "q": "सिंधु घाटी सभ्यता की लिपि किस प्रकार की थी?", "options": ["ब्राह्मी", "खरोष्ठी", "भावात्मक (चित्रात्मक)", "देवनागरी"], "correct": 2 },
+  { "q": "कांस्य की नर्तकी की मूर्ति किस सिंधु घाटी स्थल से प्राप्त हुई है?", "options": ["हड़प्पा", "मोहनजोदड़ो", "लोथल", "राखीगढ़ी"], "correct": 1 },
+  { "q": "सिंधु घाटी सभ्यता के लोग किसकी पूजा करते थे?", "options": ["इन्द्र", "वरुण", "मातृ देवी", "विष्णु"], "correct": 2 },
+  { "q": "वेदों की कुल संख्या कितनी है?", "options": ["2", "3", "4", "5"], "correct": 2 },
+  { "q": "भारतीय संगीत का जनक किस वेद को कहा जाता है?", "options": ["ऋग्वेद", "सामवेद", "यजुर्वेद", "अथर्ववेद"], "correct": 1 },
+  { "q": "गायत्री मंत्र का उल्लेख ऋग्वेद के किस मंडल में है?", "options": ["पहले", "तीसरे", "नवें", "दसवें"], "correct": 1 },
+  { "q": "जादू-टोना और तंत्र-मंत्र का उल्लेख किस वेद में मिलता है?", "options": ["ऋग्वेद", "सामवेद", "यजुर्वेद", "अथर्ववेद"], "correct": 3 },
+  { "q": "पुराणों की कुल संख्या कितनी मानी गई है?", "options": ["12", "18", "108", "24"], "correct": 1 },
+  { "q": "सत्यमेव जयते किस उपनिषद से लिया गया है?", "options": ["कठोपनिषद", "मुण्डकोपनिषद", "छांदोग्य उपनिषद", "केनोपनिषद"], "correct": 1 },
+  { "q": "जैन धर्म के प्रथम तीर्थंकर कौन थे?", "options": ["पार्श्वनाथ", "ऋषभदेव", "महावीर स्वामी", "अरिष्टनेमि"], "correct": 1 },
+  { "q": "महावीर स्वामी का प्रतीक चिन्ह क्या है?", "options": ["साँप", "हाथी", "सिंह", "बैल"], "correct": 2 },
+  { "q": "जैन साहित्य को क्या कहा जाता है?", "options": ["त्रिपिटक", "आगम", "वेद", "पुराण"], "correct": 1 },
+  { "q": "बुद्ध ने अपना प्रथम उपदेश कहाँ दिया था?", "options": ["लुम्बिनी", "बोधगया", "सारनाथ", "कुशीनगर"], "correct": 2 },
+  { "q": "'एशिया का ज्योति पुंज' (Light of Asia) किसे कहा जाता है?", "options": ["महावीर स्वामी", "गौतम बुद्ध", "अशोक", "अकबर"], "correct": 1 },
+  { "q": "गौतम बुद्ध ने अपने उपदेश किस भाषा में दिए थे?", "options": ["संस्कृत", "प्राकृत", "पालि", "हिंदी"], "correct": 2 },
+  { "q": "ईसाई धर्म का प्रमुख ग्रंथ कौन सा है?", "options": ["कुरान", "बाइबिल", "गुरु ग्रंथ साहिब", "तोरह"], "correct": 1 },
+  { "q": "सिख धर्म की स्थापना किसने की थी?", "options": ["गुरू अंगद", "गुरू नानक देव", "गुरू अर्जुन देव", "गुरू गोविन्द सिंह"], "correct": 1 },
+  { "q": "'खालसा पंथ' की स्थापना किस गुरु ने की थी?", "options": ["गुरू तेग बहादुर", "गुरू नानक", "गुरू गोविन्द सिंह", "गुरू रामदास"], "correct": 2 },
+  { "q": "सिकन्दर का गुरु कौन था?", "options": ["प्लेटो", "सुकरात", "अरस्तू", "सेल्यूकस"], "correct": 2 },
+  { "q": "पाटलिपुत्र नगर की स्थापना किसने की थी?", "options": ["बिम्बिसार", "अजातशत्रु", "उदयिन", "अशोक"], "correct": 2 },
+  { "q": "मौर्य वंश का संस्थापक कौन था?", "options": ["बिन्दुसार", "अशोक", "चंद्रगुप्त मौर्य", "बृहद्रथ"], "correct": 2 },
+  { "q": "'इंडिका' नामक पुस्तक के लेखक कौन हैं?", "options": ["चाणक्य", "मेगस्थनीज", "इत्सिंग", "फाह्यान"], "correct": 1 },
+  { "q": "अशोक ने कलिंग पर आक्रमण कब किया था?", "options": ["261 ई.पू.", "269 ई.पू.", "273 ई.पू.", "322 ई.पू."], "correct": 0 },
+  { "q": "गुप्त वंश का वास्तविक संस्थापक किसे माना जाता है?", "options": ["श्रीगुप्त", "चन्द्रगुप्त प्रथम", "समुद्रगुप्त", "स्कंदगुप्त"], "correct": 1 },
+  { "q": "भारत का नेपोलियन किसे कहा जाता है?", "options": ["चंद्रगुप्त मौर्य", "समुद्रगुप्त", "हर्षवर्धन", "कनिष्क"], "correct": 1 },
+  { "q": "चीनी यात्री फाह्यान किसके शासनकाल में भारत आया था?", "options": ["चन्द्रगुप्त प्रथम", "समुद्रगुप्त", "चन्द्रगुप्त द्वितीय", "हर्षवर्धन"], "correct": 2 },
+  { "q": "भारतीय संविधान सभा की प्रथम बैठक कब हुई थी?", "options": ["9 दिसंबर 1946", "11 दिसंबर 1946", "26 नवंबर 1949", "26 जनवरी 1950"], "correct": 0 },
+  { "q": "संविधान के किस भाग में मौलिक अधिकारों का वर्णन है?", "options": ["भाग 2", "भाग 3", "भाग 4", "भाग 9"], "correct": 1 },
+  { "q": "भारतीय संविधान में एकल नागरिकता का प्रावधान किस देश से लिया गया है?", "options": ["अमेरिका", "ब्रिटेन", "कनाडा", "आयरलैंड"], "correct": 1 },
+  { "q": "नीति निदेशक तत्व (DPSP) किस देश के संविधान से प्रेरित हैं?", "options": ["आयरलैंड", "दक्षिण अफ्रीका", "ऑस्ट्रेलिया", "रूस"], "correct": 0 },
+  { "q": "संविधान के किस अनुच्छेद के तहत राष्ट्रपति पर महाभियोग लगाया जा सकता है?", "options": ["अनुच्छेद 52", "अनुच्छेद 61", "अनुच्छेद 72", "अनुच्छेद 123"], "correct": 1 },
+  { "q": "अस्पृश्यता का अंत (Abolition of Un觸ability) किस अनुच्छेद में है?", "options": ["अनुच्छेद 14", "अनुच्छेद 15", "अनुच्छेद 17", "अनुच्छेद 18"], "correct": 2 },
+  { "q": "भारतीय संविधान की 8वीं अनुसूची का संबंध किससे है?", "options": ["दलबदल", "पंचायती राज", "भाषाएं", "वेतन"], "correct": 2 },
+  { "q": "लोकसभा का सदस्य बनने के लिए न्यूनतम आयु सीमा क्या है?", "options": ["18 वर्ष", "21 वर्ष", "25 वर्ष", "30 वर्ष"], "correct": 2 },
+  { "q": "स्वतंत्र भारत के प्रथम राष्ट्रपति कौन थे?", "options": ["डॉ. सर्वपल्ली राधाकृष्णन", "डॉ. राजेंद्र प्रसाद", "डॉ. जाकिर हुसैन", "वी.वी. गिरी"], "correct": 1 },
+  { "q": "भारत का 'संवैधानिक प्रधान' कौन होता है?", "options": ["प्रधानमंत्री", "राष्ट्रपति", "मुख्य न्यायाधीश", "राज्यपाल"], "correct": 1 },
+  { "q": "राष्ट्रपति को पद की शपथ कौन दिलाता है?", "options": ["प्रधानमंत्री", "उपराष्ट्रपति", "भारत का मुख्य न्यायाधीश", "लोकसभा अध्यक्ष"], "correct": 2 },
+  { "q": "संसद के संयुक्त अधिवेशन की अध्यक्षता कौन करता है?", "options": ["राष्ट्रपति", "उपराष्ट्रपति", "प्रधानमंत्री", "लोकसभा अध्यक्ष"], "correct": 3 },
+  { "q": "संविधान के किस अनुच्छेद में धन विधेयक (Money Bill) को परिभाषित किया गया है?", "options": ["अनुच्छेद 108", "अनुच्छेद 110", "अनुच्छेद 112", "अनुच्छेद 360"], "correct": 1 },
+  { "q": "भारत का सबसे ऊँचा न्यायालय कौन सा है?", "options": ["उच्च न्यायालय", "सर्वोच्च न्यायालय", "जिला न्यायालय", "फास्ट ट्रैक कोर्ट"], "correct": 1 },
+  { "q": "वित्त आयोग का गठन संविधान के किस अनुच्छेद के अंतर्गत होता है?", "options": ["अनुच्छेद 250", "अनुच्छेद 280", "अनुच्छेद 312", "अनुच्छेद 324"], "correct": 1 },
+  { "q": "निर्वाचन आयोग का उल्लेख संविधान के किस अनुच्छेद में है?", "options": ["अनुच्छेद 324", "अनुच्छेद 352", "अनुच्छेद 356", "अनुच्छेद 360"], "correct": 0 },
+  { "q": "भारतीय संविधान में संशोधन की प्रक्रिया किस देश से ली गई है?", "options": ["कनाडा", "ऑस्ट्रेलिया", "दक्षिण अफ्रीका", "जर्मनी"], "correct": 2 },
+  { "q": "पंचायती राज को संवैधानिक दर्जा किस संशोधन द्वारा दिया गया?", "options": ["42वां", "44वां", "73वां", "74वां"], "correct": 2 },
+  { "q": "उत्तर प्रदेश के प्रथम मुख्यमंत्री कौन थे?", "options": ["कल्याण सिंह", "गोविंद बल्लभ पंत", "मुलायम सिंह यादव", "मायावती"], "correct": 1 },
+  { "q": "उत्तर प्रदेश की स्थापना (स्थापना दिवस) कब मनाई जाती है?", "options": ["1 नवंबर", "24 जनवरी", "15 अगस्त", "2 अक्टूबर"], "correct": 1 },
+  { "q": "उत्तर प्रदेश में सर्वाधिक विधानसभा सीटों वाला जिला कौन सा है?", "options": ["लखनऊ", "प्रयागराज", "कानपुर", "मेरठ"], "correct": 1 },
+  { "q": "भारत का प्रथम परमाणु केंद्र कहाँ स्थापित किया गया?", "options": ["तारापुर", "नरोरा", "कलपक्कम", "रावतभाटा"], "correct": 0 },
+  { "q": "गोदावरी नदी का उद्गम स्थल कहाँ है?", "options": ["अमरकंटक", "त्र्यंबकेश्वर", "महाबलेश्वर", "ब्रह्मगिरी"], "correct": 1 },
+  { "q": "कावेरी नदी किस पर्वत श्रेणी से निकलती है?", "options": ["अरावली", "विंध्याचल", "ब्रह्मगिरी", "सतपुड़ा"], "correct": 2 },
+  { "q": "अमजद अली खान का संबंध किस वाद्ययंत्र से है?", "options": ["तबला", "सितार", "सरोद", "बांसुरी"], "correct": 2 },
+  { "q": "कथक किस राज्य का शास्त्रीय नृत्य है?", "options": ["केरल", "तमिलनाडु", "उत्तर प्रदेश", "आंध्र प्रदेश"], "correct": 2 },
+  { "q": "पलासी का युद्ध (1757) किसके बीच लड़ा गया था?", "options": ["सिराजुद्दौला और अंग्रेज", "मीर कासिम और अंग्रेज", "टीपू सुल्तान और अंग्रेज", "अकबर और अंग्रेज"], "correct": 0 },
+  { "q": "बक्सर का युद्ध किस वर्ष हुआ था?", "options": ["1757", "1761", "1764", "1857"], "correct": 2 },
+  { "q": "1857 के विद्रोह का नेतृत्व लखनऊ से किसने किया था?", "options": ["रानी लक्ष्मीबाई", "बेगम हजरत महल", "कुंवर सिंह", "तात्या टोपे"], "correct": 1 },
+  { "q": "'वेदों की ओर लौटो' का नारा किसने दिया था?", "options": ["स्वामी विवेकानंद", "दयानंद सरस्वती", "राजा राममोहन राय", "ज्योतिबा फुले"], "correct": 1 },
+  { "q": "मोपला विद्रोह (1921) कहाँ हुआ था?", "options": ["बंगाल", "केरल", "बिहार", "पंजाब"], "correct": 1 },
+  { "q": "स्वतंत्र भारत के प्रथम भारतीय गवर्नर जनरल कौन थे?", "options": ["लॉर्ड माउंटबेटन", "सी. राजगोपालाचारी", "डॉ. राजेंद्र प्रसाद", "नेहरू"], "correct": 1 },
+  { "q": "भारत का मैनचेस्टर किसे कहा जाता है?", "options": ["कानपुर", "अहमदाबाद", "मुंबई", "सूरत"], "correct": 1 },
+  { "q": "एशिया का सबसे बड़ा मरुस्थल कौन सा है?", "options": ["थार", "सहारा", "गोबी", "अटाकामा"], "correct": 2 },
+  { "q": "भूमध्य रेखा को दो बार काटने वाली नदी कौन सी है?", "options": ["नील", "कांगो", "अमेजन", "लिम्पोपो"], "correct": 1 },
+  { "q": "विश्व का सबसे ऊँचा जलप्रपात कौन सा है?", "options": ["नियाग्रा", "एंजिल", "विक्टोरिया", "जोग"], "correct": 1 },
+  { "q": "सौरमंडल का सबसे बड़ा ग्रह कौन सा है?", "options": ["पृथ्वी", "शनि", "बृहस्पति", "मंगल"], "correct": 2 },
+  { "q": "नीला ग्रह (Blue Planet) किसे कहा जाता है?", "options": ["मंगल", "शुक्र", "पृथ्वी", "शनि"], "correct": 2 },
+  { "q": "वायुमंडल की किस परत में मौसम संबंधी घटनाएं होती हैं?", "options": ["समताप मंडल", "क्षोभ मंडल", "मध्य मंडल", "आयन मंडल"], "correct": 1 },
+  { "q": "विश्व पर्यावरण दिवस कब मनाया जाता है?", "options": ["5 जून", "21 जून", "22 अप्रैल", "11 जुलाई"], "correct": 0 },
+  { "q": "होम्योपैथी के जनक कौन हैं?", "options": ["हैनिमैन", "चरक", "हिप्पोक्रेट्स", "सुश्रुत"], "correct": 0 },
+  { "q": "हाइड्रोजन की खोज किसने की थी?", "options": ["प्रिस्टले", "कैवेन्डिश", "रदरफोर्ड", "डाल्टन"], "correct": 1 },
+  { "q": "ब्रेल लिपि की खोज किसने की थी?", "options": ["लुई ब्रेल", "मैडम क्यूरी", "हेलेन केलर", "एडिसन"], "correct": 0 },
+  { "q": "विकासवाद का सिद्धांत (Theory of Evolution) किसने दिया था?", "options": ["चार्ल्स डार्विन", "लेमार्क", "मेंडल", "खुराना"], "correct": 0 },
+  { "q": "उत्तर प्रदेश पुलिस का आदर्श वाक्य (Motto) क्या है?", "options": ["सेवा सुरक्षा शांति", "सुरक्षा आपकी, संकल्प हमारा", "सत्यमेव जयते", "वीरभोग्य वसुंधरा"], "correct": 1 },
+  { "q": "उत्तर प्रदेश पुलिस का मुख्यालय (Signature Building) कहाँ है?", "options": ["कानपुर", "प्रयागराज", "लखनऊ", "वाराणसी"], "correct": 2 },
+  { "q": "विश्व जनसंख्या दिवस कब मनाया जाता है?", "options": ["1 जुलाई", "11 जुलाई", "15 अगस्त", "1 दिसंबर"], "correct": 1 },
+  { "q": "राष्ट्रीय विज्ञान दिवस कब मनाया जाता है?", "options": ["12 जनवरी", "28 फरवरी", "8 मार्च", "5 जून"], "correct": 1 },
+  { "q": "प्रवासी भारतीय दिवस कब मनाया जाता है?", "options": ["9 जनवरी", "12 जनवरी", "15 जनवरी", "26 जनवरी"], "correct": 0 },
+  { "q": "उत्तर प्रदेश का राजकीय खेल कौन सा है?", "options": ["क्रिकेट", "फुटबॉल", "हॉकी", "कबड्डी"], "correct": 2 },
+  { "q": "चूना पत्थर का उपयोग मुख्य रूप से किस उद्योग में होता है?", "options": ["सीमेंट", "लोहा", "कागज", "चीनी"], "correct": 0 },
+  { "q": "श्वेत सोना (White Gold) किसे कहा जाता है?", "options": ["चांदी", "प्लेटिनम", "कपास", "दूध"], "correct": 2 },
+  { "q": "हरा सोना (Green Gold) किसे कहा जाता है?", "options": ["वन", "चाय", "घास", "बांस"], "correct": 1 },
+  { "q": "द्रव स्वर्ण (Liquid Gold) किसे कहते हैं?", "options": ["सोना", "पारा", "पेट्रोल", "शहद"], "correct": 2 },
+  { "q": "GST (वस्तु एवं सेवा कर) दिवस कब मनाया जाता है?", "options": ["1 अप्रैल", "1 जुलाई", "15 अगस्त", "26 जनवरी"], "correct": 1 },
+  { "q": "भारत रत्न से सम्मानित प्रथम महिला कौन थी?", "options": ["सरोजिनी नायडू", "इंदिरा गांधी", "मदर टेरेसा", "लता मंगेशकर"], "correct": 1 },
+  { "q": "उत्तर प्रदेश में विधानसभा की कितनी सीटें हैं?", "options": ["400", "403", "80", "100"], "correct": 1 },
+  { "q": "राज्यसभा का पदेन अध्यक्ष कौन होता है?", "options": ["राष्ट्रपति", "उपराष्ट्रपति", "प्रधानमंत्री", "लोकसभा अध्यक्ष"], "correct": 1 },
+  { "q": "संविधान के किस अनुच्छेद में ग्राम पंचायतों का गठन है?", "options": ["अनुच्छेद 32", "अनुच्छेद 40", "अनुच्छेद 44", "अनुच्छेद 51"], "correct": 1 },
+  { "q": "विश्व का सबसे बड़ा संविधान किस देश का है?", "options": ["अमेरिका", "ब्रिटेन", "भारत", "रूस"], "correct": 2 },
+  { "q": "कर्क रेखा उत्तर प्रदेश के किस जिले से गुजरती है?", "options": ["वाराणसी", "सोनभद्र", "लखनऊ", "उत्तर प्रदेश से नहीं गुजरती"], "correct": 3 },
+  { "q": "भारत का राष्ट्रीय जलीय जीव क्या है?", "options": ["मगरमच्छ", "कछुआ", "गंगा डॉल्फिन", "शार्क"], "correct": 2 }
+
+
+        ];
+
+        let currentIndex = 0;
+        let selectedAnswers = new Array(myQuestions.length).fill(null);
+        let time = 0;
+        let timer;
+
+        // क्विज़ शुरू करने के लिए
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+            timer = setInterval(() => {
+                time++;
+                let m = Math.floor(time/60).toString().padStart(2,'0');
+                let s = (time%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // सवाल दिखाने के लिए
+        function showQuestion() {
+            const data = myQuestions[currentIndex];
+            document.getElementById('progress-text').innerText = `प्रश्न ${currentIndex + 1} / ${myQuestions.length}`;
+            document.getElementById('question-label').innerText = data.q;
+            
+            const list = document.getElementById('options-list');
+            list.innerHTML = '';
+
+            data.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all ${selectedAnswers[currentIndex] === i ? 'active-option font-bold border-blue-500' : 'border-gray-100 hover:bg-gray-50'}`;
+                btn.innerHTML = `<span class="mr-3 font-bold opacity-50">${i+1}.</span> ${opt}`;
+                btn.onclick = () => { selectedAnswers[currentIndex] = i; showQuestion(); };
+                list.appendChild(btn);
+            });
+
+            // सबमिट बटन केवल आखिरी सवाल पर दिखेगा
+            if(currentIndex === myQuestions.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
+            }
+        }
+
+        // सवाल बदलने के लिए (आगे या पीछे)
+        function changeQuestion(step) {
+            let nextIndex = currentIndex + step;
+            if(nextIndex >= 0 && nextIndex < myQuestions.length) {
+                currentIndex = nextIndex;
+                showQuestion();
+            }
+        }
+
+        // टेस्ट खत्म करने और रिजल्ट दिखाने के लिए
+        function finishQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let correct = 0, wrong = 0, skipped = 0;
+            const table = document.getElementById('analysis-table');
+            table.innerHTML = '';
+
+            myQuestions.forEach((q, i) => {
+                let userPick = selectedAnswers[i];
+                let row = document.createElement('tr');
+                row.className = "border-b text-sm";
+                
+                let userAnsText = (userPick === null) ? "<span class='text-gray-400'>-</span>" : q.options[userPick];
+                let statusColor = "";
+
+                if (userPick === null) {
+                    skipped++;
+                } else if (userPick === q.correct) {
+                    correct++;
+                    statusColor = "text-green-600 font-bold";
+                } else {
+                    wrong++;
+                    statusColor = "text-red-600 font-bold";
+                }
+
+                row.innerHTML = `
+                    <td class="p-3">${i+1}</td>
+                    <td class="p-3">${q.q}</td>
+                    <td class="p-3 ${statusColor}">${userAnsText}</td>
+                    <td class="p-3 font-bold text-green-700">${q.options[q.correct]}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            // स्कोर की गणना (नेगेटिव मार्किंग के साथ)
+            const score = (correct * 1) - (wrong * 0.33);
+            document.getElementById('final-score').innerText = score.toFixed(2);
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+            document.getElementById('skipped-count').innerText = skipped;
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
