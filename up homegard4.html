@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST SERIES 0.01 BY GAURAV KUMAR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .active-option { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- 1. स्टार्ट स्क्रीन -->
+    <div id="start-screen" class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 text-center">
+        <h1 class="text-3xl font-bold mb-6 text-blue-600">Homegard TEST <br>BY<br>GAURAV KUMAR</h1>
+        <div class="text-left bg-blue-50 p-4 rounded-xl mb-6">
+             <p>• TEST CODE: <span class="text-red-600 font-bold">       0004</span></p>
+            <p>• प्रत्येक सही उत्तर: <span class="text-green-600 font-bold">    +1 अंक</span></p>
+            <p>• गलत उत्तर (नेगेटिव): <span class="text-red-600 font-bold">-0.33 अंक</span></p>
+            <p>• परिणाम अंत में डैशबोर्ड पर दिखेगा।</p>
+            <p>• Question :100</p>
+        </div>
+        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold">शुरू करें</button>
+    </div>
+
+    <!-- 2. क्विज़ स्क्रीन -->
+    <div id="quiz-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden hidden mt-6">
+        <div class="bg-blue-600 p-4 text-white flex justify-between">
+            <span id="progress-text" class="font-bold">प्रश्न 1</span>
+            <span id="timer" class="font-mono">00:00</span>
+        </div>
+        <div class="p-6">
+            <h2 id="question-label" class="text-xl font-bold mb-6 min-h-[60px]">सवाल यहाँ आएगा</h2>
+            <div id="options-list" class="space-y-3">
+                <!-- बटन यहाँ अपने आप बनेंगे -->
+            </div>
+            <div class="flex gap-4 mt-8 border-t pt-6">
+                <button onclick="changeQuestion(-1)" class="bg-gray-200 px-6 py-2 rounded-lg font-bold">पीछे</button>
+                <button id="next-btn" onclick="changeQuestion(1)" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">अगला</button>
+                <button id="submit-btn" onclick="finishQuiz()" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hidden">सबमिट करें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. रिजल्ट डैशबोर्ड स्क्रीन -->
+    <div id="result-screen" class="max-w-4xl mx-auto hidden mt-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 border-t-8 border-blue-600 text-center">
+            <h2 class="text-3xl font-bold mb-6">आपका स्कोर कार्ड</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-sm text-gray-500">कुल स्कोर</p>
+                    <p id="final-score" class="text-3xl font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <p class="text-sm text-gray-500">सही</p>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl">
+                    <p class="text-sm text-gray-500">गलत</p>
+                    <p id="wrong-count" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-xl">
+                    <p class="text-sm text-gray-500">छोड़े</p>
+                    <p id="skipped-count" class="text-3xl font-bold">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-2 rounded-lg">फिर से टेस्ट दें</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-xl font-bold mb-4">उत्तरों की समीक्षा:</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 uppercase text-xs">
+                            <th class="p-3">#</th>
+                            <th class="p-3">प्रश्न</th>
+                            <th class="p-3">आपका उत्तर</th>
+                            <th class="p-3">सही उत्तर</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // यहाँ अपने नए सवाल जोड़ें
+        // correct: 0 का मतलब है पहला ऑप्शन सही है, 1 का मतलब दूसरा...
+        // ==========================================
+        const myQuestions = [
+        
+ 
+ 
+  
+  
+  { "q": "गांधीजी ने 'असहयोग आंदोलन' किस वर्ष शुरू किया था?", "options": ["1919", "1920", "1921", "1922"], "correct": 1 },
+  { "q": "महात्मा गांधी ने किस एकमात्र कांग्रेस अधिवेशन की अध्यक्षता की थी?", "options": ["बेलगाम 1924", "कलकत्ता 1920", "हरिपुरा 1938", "मेरठ 1946"], "correct": 0 },
+  { "q": "भारत का सबसे पुराना तेल शोधक कारखाना (Oil Refinery) कहाँ है?", "options": ["हल्दिया", "बरौनी", "डिगबोई", "मथुरा"], "correct": 2 },
+  { "q": "हीराकुंड बांध किस नदी पर बनाया गया है?", "options": ["कृष्णा", "कावेरी", "महानदी", "नर्मदा"], "correct": 2 },
+  { "q": "भारत की सबसे बड़ी झील 'चिल्का' किस राज्य में स्थित है?", "options": ["आंध्र प्रदेश", "ओडिशा", "तमिलनाडु", "केरल"], "correct": 1 },
+  { "q": "कर्क रेखा भारत के किस राज्य से होकर नहीं गुजरती?", "options": ["गुजरात", "राजस्थान", "ओडिशा", "त्रिपुरा"], "correct": 2 },
+  { "q": "क्षेत्रफल की दृष्टि से भारत का सबसे छोटा राज्य कौन सा है?", "options": ["सिक्किम", "गोवा", "त्रिपुरा", "मणिपुर"], "correct": 1 },
+  { "q": "मानस राष्ट्रीय उद्यान किस राज्य में स्थित है?", "options": ["असम", "सिक्किम", "अरुणाचल प्रदेश", "मेघालय"], "correct": 0 },
+  { "q": "भारतीय संविधान में 'आपातकाल' का सिद्धांत किस देश से लिया गया है?", "options": ["कनाडा", "जर्मनी", "ब्रिटेन", "अमेरिका"], "correct": 1 },
+  { "q": "संपत्ति के अधिकार को किस संशोधन द्वारा मौलिक अधिकारों से हटाया गया?", "options": ["42वां", "44वां", "52वां", "61वां"], "correct": 1 },
+  { "q": "भारतीय संविधान में 'मूल कर्तव्य' किस समिति की सिफारिश पर जोड़े गए?", "options": ["वर्मा समिति", "स्वर्ण सिंह समिति", "सरकारिया आयोग", "बलवंत राय समिति"], "correct": 1 },
+  { "q": "भारत के उपराष्ट्रपति का कार्यकाल कितने वर्ष का होता है?", "options": ["4 वर्ष", "5 वर्ष", "6 वर्ष", "निर्धारित नहीं"], "correct": 1 },
+  { "q": "संसद के दो सत्रों के बीच अधिकतम कितना अंतराल हो सकता है?", "options": ["3 माह", "6 माह", "9 माह", "1 वर्ष"], "correct": 1 },
+  { "q": "लोकसभा का प्रथम सत्र कब शुरू हुआ था?", "options": ["1950", "1951", "1952", "1953"], "correct": 2 },
+  { "q": "भारत में अब तक कितनी बार 'वित्तीय आपात' घोषित किया गया है?", "options": ["एक बार", "दो बार", "तीन बार", "कभी नहीं"], "correct": 3 },
+  { "q": "उत्तर प्रदेश के किस जिले को 'इत्र नगरी' के नाम से जाना जाता है?", "options": ["कन्नौज", "फर्रुखाबाद", "हरदोई", "इटावा"], "correct": 0 },
+  { "q": "उत्तर प्रदेश में सुप्रसिद्ध 'माघ मेला' कहाँ आयोजित होता है?", "options": ["वाराणसी", "प्रयागराज", "अयोध्या", "हरिद्वार"], "correct": 1 },
+  { "q": "उत्तर प्रदेश का सबसे पुराना विश्वविद्यालय कौन सा है?", "options": ["BHU वाराणसी", "अलीगढ़ मुस्लिम विश्वविद्यालय", "इलाहाबाद विश्वविद्यालय", "लखनऊ विश्वविद्यालय"], "correct": 2 },
+  { "q": "उत्तर प्रदेश में प्रथम चीनी मिल कहाँ स्थापित की गई थी?", "options": ["देवरिया (प्रतापपुर)", "मेरठ", "गोरखपुर", "बस्ती"], "correct": 0 },
+  { "q": "उत्तर प्रदेश में तेल शोधक कारखाना (Refinery) कहाँ स्थित है?", "options": ["मथुरा", "आगरा", "कानपुर", "लखनऊ"], "correct": 0 },
+  { "q": "उत्तर प्रदेश का एकमात्र 'मुक्त विश्वविद्यालय' कौन सा है?", "options": ["राजर्षि टंडन", "इग्नू", "बीआर अंबेडकर", "लखनऊ विश्वविद्यालय"], "correct": 0 },
+  { "q": "उत्तर प्रदेश में विधानसभा परिषद की कितनी सीटें हैं?", "options": ["80", "100", "108", "403"], "correct": 1 },
+  { "q": "भारतीय दलहन अनुसंधान संस्थान कहाँ स्थित है?", "options": ["लखनऊ", "कानपुर", "मेरठ", "झांसी"], "correct": 1 },
+  { "q": "लाल बहादुर शास्त्री अंतर्राष्ट्रीय हवाई अड्डा कहाँ स्थित है?", "options": ["लखनऊ", "कानपुर", "वाराणसी", "प्रयागराज"], "correct": 2 },
+  { "q": "उत्तर प्रदेश में चरकुला नृत्य किस क्षेत्र से संबंधित है?", "options": ["ब्रज", "बुंदेलखंड", "पूर्वांचल", "अवध"], "correct": 0 },
+  { "q": "विटामिन A की कमी से कौन सा रोग होता है?", "options": ["बेरी-बेरी", "रतौंधी", "स्कर्वी", "एनीमिया"], "correct": 1 },
+  { "q": "दूध की शुद्धता किस यंत्र से मापी जाती है?", "options": ["लैक्टोमीटर", "बैरोमीटर", "हाइग्रोमीटर", "थर्मामीटर"], "correct": 0 },
+  { "q": "इंसुलिन का स्राव शरीर के किस अंग से होता है?", "options": ["यकृत", "अग्न्याशय (Pancreas)", "पीयूष ग्रंथि", "प्लीहा"], "correct": 1 },
+  { "q": "शुद्ध जल का सर्वाधिक घनत्व किस तापमान पर होता है?", "options": ["0°C", "4°C", "10°C", "100°C"], "correct": 1 },
+  { "q": "विद्युत धारा का मात्रक क्या है?", "options": ["वोल्ट", "ओम", "एम्पियर", "वॉट"], "correct": 2 },
+  { "q": "रक्त का थक्का बनने में कौन सा विटामिन सहायक है?", "options": ["विटामिन K", "विटामिन D", "विटामिन C", "विटामिन B"], "correct": 0 },
+  { "q": "मछलियां किसके द्वारा श्वसन करती हैं?", "options": ["नाक", "फेफड़े", "गलफड़े (Gills)", "त्वचा"], "correct": 2 },
+  { "q": "हंसाने वाली गैस (Laughing Gas) का रासायनिक नाम क्या है?", "options": ["नाइट्रिक ऑक्साइड", "नाइट्रस ऑक्साइड", "नाइट्रोजन डाइऑक्साइड", "अमोनिया"], "correct": 1 },
+  { "q": "रसोई गैस (LPG) में मुख्य रूप से कौन सी गैस होती है?", "options": ["मीथेन", "ब्यूटेन और प्रोपेन", "ईथेन", "हाइड्रोजन"], "correct": 1 },
+  { "q": "सौरमंडल का लाल ग्रह किसे कहा जाता है?", "options": ["शुक्र", "मंगल", "बुध", "बृहस्पति"], "correct": 1 },
+  { "q": "विश्व का सबसे ऊँचा पठार कौन सा है?", "options": ["पामीर का पठार", "दक्कन का पठार", "तिब्बत का पठार", "कोलंबिया पठार"], "correct": 2 },
+  { "q": "विश्व में सर्वाधिक चाय उत्पादक देश कौन सा है?", "options": ["भारत", "चीन", "श्रीलंका", "केन्या"], "correct": 1 },
+  { "q": "सार्क (SAARC) का मुख्यालय कहाँ स्थित है?", "options": ["नई दिल्ली", "ढाका", "काठमांडू", "इस्लामाबाद"], "correct": 2 },
+  { "q": "अंतर्राष्ट्रीय महिला दिवस कब मनाया जाता है?", "options": ["8 मार्च", "10 मार्च", "21 मार्च", "5 अप्रैल"], "correct": 0 },
+  { "q": "मानव अधिकार दिवस कब मनाया जाता है?", "options": ["1 दिसंबर", "10 दिसंबर", "15 दिसंबर", "26 जनवरी"], "correct": 1 },
+  { "q": "संयुक्त राष्ट्र संघ (UNO) की स्थापना कब हुई थी?", "options": ["1942", "1944", "1945", "1950"], "correct": 2 },
+  { "q": "भारत की पहली महिला प्रधानमंत्री कौन थीं?", "options": ["सरोजिनी नायडू", "इंदिरा गांधी", "प्रतिभा पाटिल", "सुषमा स्वराज"], "correct": 1 },
+  { "q": "भारत रत्न प्राप्त करने वाली पहली महिला कौन थी?", "options": ["मदर टेरेसा", "इंदिरा गांधी", "लता मंगेशकर", "एमएस सुब्बालक्ष्मी"], "correct": 1 },
+  { "q": "ज्ञानपीठ पुरस्कार किस क्षेत्र में दिया जाता है?", "options": ["खेल", "सिनेमा", "साहित्य", "विज्ञान"], "correct": 2 },
+  { "q": "ऑस्कर पुरस्कार का संबंध किस क्षेत्र से है?", "options": ["संगीत", "फिल्म", "साहित्य", "पत्रकारिता"], "correct": 1 },
+  { "q": "नोबेल पुरस्कार विजेता प्रथम भारतीय वैज्ञानिक कौन थे?", "options": ["सीवी रमन", "एचजे भाभा", "जगदीश चंद्र बसु", "एपीजे अब्दुल कलाम"], "correct": 0 },
+  { "q": "थॉमस कप किस खेल से संबंधित है?", "options": ["टेनिस", "फुटबॉल", "बैडमिंटन", "हॉकी"], "correct": 2 },
+  { "q": "रंगास्वामी कप किस खेल से संबंधित है?", "options": ["क्रिकेट", "हॉकी", "फुटबॉल", "पोलो"], "correct": 1 },
+  { "q": "आगा खां कप किस खेल से संबंधित है?", "options": ["टेनिस", "हॉकी", "बैडमिंटन", "फुटबॉल"], "correct": 1 },
+  { "q": "चेकमेट शब्द का प्रयोग किस खेल में किया जाता है?", "options": ["मुक्केबाजी", "शतरंज", "बिलियर्ड्स", "पोलो"], "correct": 1 },
+  { "q": "सानिया मिर्जा का संबंध किस खेल से है?", "options": ["बैडमिंटन", "टेनिस", "टेबल टेनिस", "क्रिकेट"], "correct": 1 },
+  { "q": "विश्व का सबसे बड़ा रेगिस्तान कौन सा है?", "options": ["थार", "सहारा", "गोबी", "कालाहारी"], "correct": 1 },
+  { "q": "नील नदी का उपहार किस देश को कहा जाता है?", "options": ["सूडान", "मिस्र", "इथियोपिया", "केन्या"], "correct": 1 },
+  { "q": "जापान का सबसे बड़ा द्वीप कौन सा है?", "options": ["होन्शू", "होकैडो", "क्यूशू", "शिकोकु"], "correct": 0 },
+  { "q": "भारत का राष्ट्रीय पक्षी क्या है?", "options": ["तोता", "कोयल", "मोर", "हंस"], "correct": 2 },
+  { "q": "रक्त समूह (Blood Group) की खोज किसने की थी?", "options": ["कार्ल लैंडस्टीनर", "विलियम हार्वे", "लुई पाश्चर", "एडवर्ड जेनर"], "correct": 0 },
+  { "q": "मानव शरीर में कुल कितनी मांसपेशियां होती हैं?", "options": ["206", "300", "639", "700"], "correct": 2 },
+  { "q": "पीलिया रोग से शरीर का कौन सा अंग प्रभावित होता है?", "options": ["हृदय", "यकृत (Liver)", "किडनी", "फेफड़े"], "correct": 1 },
+  { "q": "टाइफाइड से शरीर का कौन सा अंग प्रभावित होता है?", "options": ["आंत", "मस्तिष्क", "फेफड़े", "गला"], "correct": 0 },
+  { "q": "सूर्य की किरणों से कौन सा विटामिन प्राप्त होता है?", "options": ["A", "B", "C", "D"], "correct": 3 },
+  { "q": "भारी जल (Heavy Water) का रासायनिक सूत्र क्या है?", "options": ["H2O", "D2O", "CO2", "N2O"], "correct": 1 },
+  { "q": "ध्वनि की गति सर्वाधिक किसमें होती है?", "options": ["वायु में", "निर्वात में", "ठोस में", "द्रव में"], "correct": 2 },
+  { "q": "फ्यूज तार किसका बना होता है?", "options": ["तांबा और टिन", "सीसा और टिन", "लोहा और पीतल", "एल्युमिनियम"], "correct": 1 },
+  { "q": "कंप्यूटर की स्थायी मेमोरी (Permanent Memory) क्या कहलाती है?", "options": ["RAM", "ROM", "CPU", "CD-ROM"], "correct": 1 },
+  { "q": "ईमेल के आविष्कारक कौन हैं?", "options": ["रे टॉमलिंसन", "बिल गेट्स", "मार्क जुकरबर्ग", "टिम बर्नर्स ली"], "correct": 0 },
+  { "q": "भारत में पहली बार जनगणना कब हुई थी?", "options": ["1872", "1881", "1891", "1901"], "correct": 0 },
+  { "q": "नियमित जनगणना की शुरुआत भारत में कब हुई?", "options": ["1872", "1881", "1891", "1911"], "correct": 1 },
+  { "q": "भारत का राष्ट्रीय वृक्ष कौन सा है?", "options": ["पीपल", "नीम", "बरगद", "अशोक"], "correct": 2 },
+  { "q": "भारत की पहली बोलती फिल्म कौन सी थी?", "options": ["राजा हरिश्चंद्र", "आलम आरा", "पुंडलिक", "किस्मत"], "correct": 1 },
+  { "q": "भारत का दक्षिणतम बिंदु 'इंदिरा पॉइंट' कहाँ स्थित है?", "options": ["तमिलनाडु", "लक्षद्वीप", "अंडमान निकोबार", "केरल"], "correct": 2 },
+  { "q": "सिमलीपाल टाइगर रिजर्व किस राज्य में है?", "options": ["ओडिशा", "कर्नाटक", "राजस्थान", "असम"], "correct": 0 },
+  { "q": "घाना पक्षी विहार कहाँ स्थित है?", "options": ["हरियाणा", "राजस्थान", "उत्तर प्रदेश", "बिहार"], "correct": 1 },
+  { "q": "कोलेरू झील किस राज्य में स्थित है?", "options": ["आंध्र प्रदेश", "तमिलनाडु", "कर्नाटक", "ओडिशा"], "correct": 0 },
+  { "q": "लोकसभा अध्यक्ष अपना त्यागपत्र किसे देता है?", "options": ["राष्ट्रपति", "प्रधानमंत्री", "लोकसभा उपाध्यक्ष", "संसदीय कार्य मंत्री"], "correct": 2 },
+  { "q": "वित्त आयोग के अध्यक्ष की नियुक्ति कौन करता है?", "options": ["संसद", "प्रधानमंत्री", "राष्ट्रपति", "सर्वोच्च न्यायालय"], "correct": 2 },
+  { "q": "राज्यसभा के कितने सदस्य हर 2 साल बाद सेवानिवृत्त होते हैं?", "options": ["एक तिहाई", "आधे", "एक चौथाई", "कोई नहीं"], "correct": 0 },
+  { "q": "भारत का प्रथम वायसराय कौन था?", "options": ["लॉर्ड कैनिंग", "लॉर्ड डलहौजी", "लॉर्ड कर्जन", "लॉर्ड वेलेजली"], "correct": 0 },
+  { "q": "बंगाल का विभाजन कब रद्द किया गया?", "options": ["1905", "1911", "1915", "1920"], "correct": 1 },
+  { "q": "भारत में थियोसोफिकल सोसाइटी का मुख्यालय कहाँ था?", "options": ["अड्यार", "मदुरै", "बेलूर", "पुणे"], "correct": 0 },
+  { "q": "स्वराज पार्टी की स्थापना किसने की थी?", "options": ["गांधी और नेहरू", "मोतीलाल नेहरू और चितरंजन दास", "तिलक और लाजपत राय", "भगत सिंह"], "correct": 1 },
+  { "q": "करो या मरो का नारा गांधीजी ने किस आंदोलन में दिया था?", "options": ["असहयोग", "सविनय अवज्ञा", "भारत छोड़ो", "चंपारण"], "correct": 2 },
+  { "q": "भारत का सबसे बड़ा राष्ट्रीय राजमार्ग कौन सा है?", "options": ["NH 1", "NH 7 (अब NH 44)", "NH 2", "NH 8"], "correct": 1 },
+  { "q": "कांडला बंदरगाह किस राज्य में स्थित है?", "options": ["महाराष्ट्र", "गुजरात", "कर्नाटक", "गोवा"], "correct": 1 },
+  { "q": "भारत में सोने की खान मुख्य रूप से कहाँ है?", "options": ["कोलार (कर्नाटक)", "पन्ना (एमपी)", "खेतड़ी (राजस्थान)", "सिंहभूम (झारखंड)"], "correct": 0 },
+  { "q": "कोयला उत्पादन में भारत का अग्रणी राज्य कौन सा है?", "options": ["झारखंड", "छत्तीसगढ़", "ओडिशा", "पश्चिम बंगाल"], "correct": 0 },
+  { "q": "उत्तर प्रदेश के प्रथम विधानसभा अध्यक्ष कौन थे?", "options": ["राजर्षि पुरुषोत्तम दास टंडन", "मदन मोहन वर्मा", "आत्माराम गोविंद खेर", "नफीसुल हसन"], "correct": 0 },
+  { "q": "उत्तर प्रदेश में परमाणु ऊर्जा केंद्र नरोरा किस जिले में है?", "options": ["बुलंदशहर", "अलीगढ़", "मेरठ", "आगरा"], "correct": 0 },
+  { "q": "उत्तर प्रदेश में रानी महल कहाँ स्थित है?", "options": ["झांसी", "ग्वालियर", "जालौन", "आगरा"], "correct": 0 },
+  { "q": "उत्तर प्रदेश में सुरहा ताल पक्षी विहार कहाँ है?", "options": ["बलिया", "वाराणसी", "गोंडा", "बस्ती"], "correct": 0 },
+  { "q": "उत्तर प्रदेश का राजकीय वृक्ष कौन सा है?", "options": ["नीम", "पीपल", "अशोक", "बरगद"], "correct": 2 },
+  { "q": "भारत के किस राज्य को 'चीनी का कटोरा' कहा जाता है?", "options": ["महाराष्ट्र", "उत्तर प्रदेश", "पंजाब", "बिहार"], "correct": 1 },
+  { "q": "दूध का सफेद रंग किसके कारण होता है?", "options": ["कैरोटीन", "केसीन", "लैक्टोज", "एल्बूमिन"], "correct": 1 },
+  { "q": "एड्स की जांच के लिए कौन सा टेस्ट किया जाता है?", "options": ["विडाल", "एलिसा (ELISA)", "ईसीजी", "ईईजी"], "correct": 1 },
+  { "q": "पेनिसिलिन की खोज किसने की थी?", "options": ["अलेक्जेंडर फ्लेमिंग", "एडवर्ड जेनर", "लुई पाश्चर", "रोनाल्ड रॉस"], "correct": 0 },
+  { "q": "विटामिन B12 में कौन सा तत्व पाया जाता है?", "options": ["लोहा", "कोबाल्ट", "मैग्नीशियम", "जस्ता"], "correct": 1 },
+  { "q": "भारत में सबसे अधिक वन किस राज्य में पाए जाते हैं?", "options": ["अरुणाचल प्रदेश", "मध्य प्रदेश", "मिजोरम", "छत्तीसगढ़"], "correct": 1 },
+  { "q": "विश्व की सबसे लम्बी पर्वत श्रृंखला कौन सी है?", "options": ["हिमालय", "एंडीज", "रॉकी", "आल्प्स"], "correct": 1 },
+  { "q": "प्रेस की स्वतंत्रता भारतीय संविधान के किस अनुच्छेद में है?", "options": ["अनुच्छेद 19", "अनुच्छेद 21", "अनुच्छेद 25", "अनुच्छेद 32"], "correct": 0 },
+  { "q": "भारत की पहली महिला राज्यपाल कौन थी?", "options": ["सुचेता कृपलानी", "सरोजिनी नायडू", "एनी बेसेंट", "प्रतिभा पाटिल"], "correct": 1 },
+  { "q": "दिल्ली भारत की राजधानी किस वर्ष बनी?", "options": ["1910", "1911", "1912", "1920"], "correct": 1 }
+
+
+
+        ];
+
+        let currentIndex = 0;
+        let selectedAnswers = new Array(myQuestions.length).fill(null);
+        let time = 0;
+        let timer;
+
+        // क्विज़ शुरू करने के लिए
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+            timer = setInterval(() => {
+                time++;
+                let m = Math.floor(time/60).toString().padStart(2,'0');
+                let s = (time%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // सवाल दिखाने के लिए
+        function showQuestion() {
+            const data = myQuestions[currentIndex];
+            document.getElementById('progress-text').innerText = `प्रश्न ${currentIndex + 1} / ${myQuestions.length}`;
+            document.getElementById('question-label').innerText = data.q;
+            
+            const list = document.getElementById('options-list');
+            list.innerHTML = '';
+
+            data.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all ${selectedAnswers[currentIndex] === i ? 'active-option font-bold border-blue-500' : 'border-gray-100 hover:bg-gray-50'}`;
+                btn.innerHTML = `<span class="mr-3 font-bold opacity-50">${i+1}.</span> ${opt}`;
+                btn.onclick = () => { selectedAnswers[currentIndex] = i; showQuestion(); };
+                list.appendChild(btn);
+            });
+
+            // सबमिट बटन केवल आखिरी सवाल पर दिखेगा
+            if(currentIndex === myQuestions.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
+            }
+        }
+
+        // सवाल बदलने के लिए (आगे या पीछे)
+        function changeQuestion(step) {
+            let nextIndex = currentIndex + step;
+            if(nextIndex >= 0 && nextIndex < myQuestions.length) {
+                currentIndex = nextIndex;
+                showQuestion();
+            }
+        }
+
+        // टेस्ट खत्म करने और रिजल्ट दिखाने के लिए
+        function finishQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let correct = 0, wrong = 0, skipped = 0;
+            const table = document.getElementById('analysis-table');
+            table.innerHTML = '';
+
+            myQuestions.forEach((q, i) => {
+                let userPick = selectedAnswers[i];
+                let row = document.createElement('tr');
+                row.className = "border-b text-sm";
+                
+                let userAnsText = (userPick === null) ? "<span class='text-gray-400'>-</span>" : q.options[userPick];
+                let statusColor = "";
+
+                if (userPick === null) {
+                    skipped++;
+                } else if (userPick === q.correct) {
+                    correct++;
+                    statusColor = "text-green-600 font-bold";
+                } else {
+                    wrong++;
+                    statusColor = "text-red-600 font-bold";
+                }
+
+                row.innerHTML = `
+                    <td class="p-3">${i+1}</td>
+                    <td class="p-3">${q.q}</td>
+                    <td class="p-3 ${statusColor}">${userAnsText}</td>
+                    <td class="p-3 font-bold text-green-700">${q.options[q.correct]}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            // स्कोर की गणना (नेगेटिव मार्किंग के साथ)
+            const score = (correct * 1) - (wrong * 0.33);
+            document.getElementById('final-score').innerText = score.toFixed(2);
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+            document.getElementById('skipped-count').innerText = skipped;
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
