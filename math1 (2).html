@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Exam Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #020617;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .bg-animate {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(30, 58, 138, 0.2) 0%, transparent 80%);
+            z-index: -1;
+            animation: pulse 8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .option-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .option-card:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateX(4px);
+        }
+
+        .option-card.selected {
+            background: #2563eb;
+            border-color: #60a5fa;
+            color: white;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #1e40af; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animate"></div>
+
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="w-full max-w-md glass-card rounded-3xl p-10 text-center">
+        <div class="mb-6 flex justify-center">
+            <div class="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center text-blue-500 text-3xl">
+                <i class="fas fa-user-shield"></i>
+            </div>
+        </div>
+        <h1 class="text-2xl font-black tracking-tight mb-2">EXAM TERMINAL</h1>
+        <p class="text-blue-500 text-[10px] font-bold uppercase tracking-[0.4em] mb-10">Secure Access Protocol</p>
+        
+        <div class="space-y-3 mb-10">
+            <div class="flex justify-between bg-white/5 p-4 rounded-2xl border border-white/5">
+                <span class="text-[10px] uppercase font-bold text-gray-400">Questions</span>
+                <span id="total-q-count" class="text-xs font-bold text-blue-400">0</span>
+            </div>
+            <div class="flex justify-between bg-white/5 p-4 rounded-2xl border border-white/5">
+                <span class="text-[10px] uppercase font-bold text-gray-400">Duration</span>
+                <span id="total-time-count" class="text-xs font-bold text-blue-400">0 MIN</span>
+            </div>
+        </div>
+
+        <input type="text" id="username" placeholder="Candidate Name" class="w-full bg-black/40 border border-blue-500/20 p-4 rounded-2xl text-center mb-6 focus:border-blue-500 outline-none transition-all text-sm">
+        
+        <button onclick="startExam()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+            Initialize Session
+        </button>
+    </div>
+
+    <!-- Main Quiz Interface -->
+    <div id="quiz-screen" class="hidden w-full max-w-4xl glass-card rounded-[2.5rem] p-6 md:p-12">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 pb-6 border-b border-white/5 gap-6">
+            <div class="text-center md:text-left">
+                <p id="user-display" class="text-blue-500 font-bold text-[10px] uppercase tracking-widest mb-1"></p>
+                <p class="text-xs font-medium text-gray-400">Progress: <span id="current-idx" class="text-white">1</span> / <span class="total-q-text">0</span></p>
+            </div>
+            <div class="bg-blue-600/10 border border-blue-500/30 px-8 py-3 rounded-2xl text-center">
+                <p class="text-[9px] uppercase font-bold text-blue-400/60 mb-1">Time Left</p>
+                <p id="timer" class="text-2xl font-mono font-black text-blue-500">00:00</p>
+            </div>
+        </div>
+
+        <div class="min-h-[280px]">
+            <div id="question-text" class="text-lg md:text-xl font-semibold mb-10 leading-relaxed"></div>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <div class="flex justify-between mt-12 items-center">
+            <button onclick="prev()" id="prev-btn" class="px-8 py-3 bg-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest disabled:opacity-20 transition-all border border-white/5">Back</button>
+            
+            <div class="flex gap-4">
+                <button onclick="next()" id="next-btn" class="px-10 py-3 bg-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-500 shadow-lg shadow-blue-600/20">Next</button>
+                <button onclick="showConfirm()" id="finish-btn" class="hidden px-10 py-3 bg-red-600 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 shadow-lg shadow-red-600/20">Finish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Result Screen -->
+    <div id="result-screen" class="hidden w-full max-w-4xl text-center">
+        <div class="glass-card rounded-[3rem] p-12 mb-6">
+            <h2 class="text-blue-500 font-black text-xl uppercase tracking-[0.3em] mb-12">Performance Report</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center mb-12">
+                <div class="p-6 bg-white/5 rounded-3xl border border-white/5">
+                    <p class="text-[10px] uppercase font-bold text-gray-500 mb-1">Candidate</p>
+                    <p id="res-user" class="text-lg font-bold"></p>
+                </div>
+                
+                <div class="p-10 bg-blue-600 rounded-[2.5rem] shadow-2xl shadow-blue-600/40">
+                    <p class="text-[10px] uppercase font-bold text-blue-100/60 mb-2">Final Score</p>
+                    <p id="res-score" class="text-6xl font-black">0</p>
+                    <p class="text-[10px] mt-4 opacity-50 font-bold uppercase">Points Earned</p>
+                </div>
+
+                <div class="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-3">
+                    <div class="flex justify-between text-xs font-bold"><span class="text-gray-500">Correct</span><span id="res-c" class="text-emerald-400">0</span></div>
+                    <div class="flex justify-between text-xs font-bold"><span class="text-gray-500">Wrong</span><span id="res-w" class="text-red-400">0</span></div>
+                    <div class="flex justify-between text-xs font-bold"><span class="text-gray-500">Skipped</span><span id="res-s" class="text-gray-400">0</span></div>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="px-12 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest border border-white/10 transition-all">Close Terminal</button>
+        </div>
+    </div>
+
+    <script>
+        // DATA IN YOUR REQUESTED FORMAT
+        const questions = [
+           
+  { "q": "यदि x + 1/x = 5 है, तो x² + 1/x² का मान क्या होगा?", "options": ["23", "25", "27", "21"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "यदि a + b = 10 और ab = 21 है, तो a³ + b³ का मान क्या होगा?", "options": ["370", "400", "1000", "330"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "एक राशि साधारण ब्याज पर 10 वर्षों में स्वयं की 3 गुनी हो जाती है। ब्याज की वार्षिक दर क्या है?", "options": ["20%", "30%", "10%", "25%"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "कोई धनराशि चक्रवृद्धि ब्याज पर 4 वर्षों में दोगुनी हो जाती है। वह कितने वर्षों में 8 गुनी हो जाएगी?", "options": ["12 वर्ष", "16 वर्ष", "8 वर्ष", "24 वर्ष"], "correct": 0, "exam": "UP Police" },
+  { "q": "एक दुकानदार को विक्रय मूल्य पर 20% का लाभ होता है। उसका वास्तविक (क्रय मूल्य पर) लाभ प्रतिशत क्या है?", "options": ["25%", "20%", "16.66%", "30%"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "15 वस्तुओं का क्रय मूल्य 10 वस्तुओं के विक्रय मूल्य के बराबर है। लाभ प्रतिशत ज्ञात करें।", "options": ["50%", "33.33%", "25%", "40%"], "correct": 0, "exam": "SSC GD" },
+  { "q": "A किसी काम को 10 दिन में और B उसी काम को 15 दिन में कर सकता है। दोनों मिलकर उस काम को कितने दिन में पूरा करेंगे?", "options": ["6 दिन", "8 दिन", "5 दिन", "12 दिन"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "A और B किसी काम को 12 दिन में, B और C 15 दिन में तथा C और A 20 दिन में कर सकते हैं। तीनों मिलकर कितने दिन में करेंगे?", "options": ["10 दिन", "12 दिन", "8 दिन", "15 दिन"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "एक व्यक्ति अपनी सामान्य गति की 3/4 गति से चलकर 20 मिनट देरी से पहुँचता है। उसका सामान्य समय क्या है?", "options": ["60 मिनट", "45 मिनट", "80 मिनट", "75 मिनट"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "100 मीटर लंबी एक ट्रेन 36 किमी/घंटा की गति से चल रही है। वह एक खंभे को कितने समय में पार करेगी?", "options": ["10 सेकंड", "12 सेकंड", "15 सेकंड", "8 सेकंड"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "शांत जल में एक नाव की गति 10 किमी/घंटा है और धारा की गति 2 किमी/घंटा है। धारा की दिशा में 60 किमी जाने में कितना समय लगेगा?", "options": ["5 घंटे", "6 घंटे", "7.5 घंटे", "4 घंटे"], "correct": 0, "exam": "UP SI" },
+  { "q": "10 संख्याओं का औसत 15 है। यदि प्रत्येक संख्या को 2 से गुणा किया जाए, तो नया औसत क्या होगा?", "options": ["30", "15", "17", "20"], "correct": 0, "exam": "SSC GD" },
+  { "q": "40 लीटर दूध और पानी के मिश्रण में अनुपात 3:1 है। इसमें कितना पानी मिलाया जाए कि अनुपात 2:1 हो जाए?", "options": ["5 लीटर", "10 लीटर", "15 लीटर", "2 लीटर"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "यदि A:B = 2:3 और B:C = 4:5 है, तो A:B:C का मान क्या होगा?", "options": ["8:12:15", "2:4:5", "8:10:15", "6:12:15"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "दो संख्याओं का अनुपात 3:4 है और उनका HCF 5 है। उनका LCM क्या होगा?", "options": ["60", "20", "15", "45"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "वह छोटी से छोटी संख्या कौन सी है जिसे 6, 7 और 8 से भाग देने पर प्रत्येक स्थिति में 3 शेष बचे?", "options": ["171", "168", "165", "175"], "correct": 0, "exam": "UP Police Constable" },
+  { "q": "प्रथम 100 प्राकृतिक संख्याओं का योग क्या है?", "options": ["5050", "5000", "5100", "5500"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "122 की घात 173 (122^173) के परिणाम का इकाई अंक क्या होगा?", "options": ["2", "4", "8", "6"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "17²⁰⁰ को 18 से भाग देने पर क्या शेष बचेगा?", "options": ["1", "17", "0", "16"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "एक समबहुभुज का प्रत्येक अंतःकोण 144° है। इसमें भुजाओं की संख्या कितनी है?", "options": ["10", "8", "12", "6"], "correct": 0, "exam": "Railway JE" },
+  { "q": "एक समबाहु त्रिभुज की ऊंचाई 6√3 सेमी है। इसका क्षेत्रफल क्या होगा?", "options": ["36√3 वर्ग सेमी", "72√3 वर्ग सेमी", "18√3 वर्ग सेमी", "108 वर्ग सेमी"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "एक वृत्त की परिधि 88 सेमी है। इसका क्षेत्रफल क्या होगा?", "options": ["616 वर्ग सेमी", "154 वर्ग सेमी", "308 वर्ग सेमी", "1232 वर्ग सेमी"], "correct": 0, "exam": "UP Lekhpal" },
+  { "q": "एक बेलन और शंकु का आधार और आयतन समान है। बेलन और शंकु की ऊंचाई का अनुपात क्या होगा?", "options": ["1:3", "3:1", "1:1", "1:2"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "एक घन का विकर्ण 6√3 सेमी है। घन का आयतन क्या होगा?", "options": ["216 घन सेमी", "144 घन सेमी", "36 घन सेमी", "512 घन सेमी"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "एक गोले का पृष्ठीय क्षेत्रफल 616 वर्ग सेमी है। इसका आयतन क्या होगा?", "options": ["4312/3 घन सेमी", "4312 घन सेमी", "2156 घन सेमी", "1437 घन सेमी"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "sin 30° + cos 60° का मान क्या होता है?", "options": ["1", "1/2", "0", "√3"], "correct": 0, "exam": "SSC GD" },
+  { "q": "यदि tan A = 3/4 है, तो sin A का मान क्या होगा?", "options": ["3/5", "4/5", "3/4", "5/3"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "sin² 15° + cos² 15° का मान क्या होगा?", "options": ["1", "0", "1/2", "2"], "correct": 0, "exam": "UP Police" },
+  { "q": "50√3 मीटर ऊंचे टॉवर की छाया 50 मीटर लंबी है। सूर्य का उन्नयन कोण क्या है?", "options": ["60°", "30°", "45°", "90°"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "समीकरण x² - 5x + 6 = 0 के मूल (roots) क्या हैं?", "options": ["2, 3", "-2, -3", "1, 6", "6, -1"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "यदि x - y = 2 और xy = 15 है, तो x² + y² का मान क्या होगा?", "options": ["34", "30", "38", "26"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "यदि a + b + c = 0 है, तो a³ + b³ + c³ का मान किसके बराबर होगा?", "options": ["3abc", "0", "abc", "a+b+c"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "एक व्यापारी 10% की छूट देने के बाद भी 20% का लाभ कमाता है। अंकित मूल्य, क्रय मूल्य से कितना अधिक है?", "options": ["33.33%", "20%", "30%", "25%"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "20% और 20% की दो क्रमिक छूटों के बराबर एकल समतुल्य छूट क्या होगी?", "options": ["36%", "40%", "38%", "32%"], "correct": 0, "exam": "SSC GD" },
+  { "q": "एक शहर की जनसंख्या 10,000 है। यह प्रतिवर्ष 10% बढ़ती है। 2 वर्ष बाद जनसंख्या क्या होगी?", "options": ["12100", "12000", "11000", "12200"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "एक चुनाव में एक उम्मीदवार 60% वोट प्राप्त करता है और 400 वोटों से जीत जाता है। कुल वोटों की संख्या क्या थी?", "options": ["2000", "4000", "1000", "2400"], "correct": 0, "exam": "UP Police" },
+  { "q": "चीनी की कीमत में 20% की वृद्धि होने पर खपत में कितने प्रतिशत की कमी की जाए कि खर्च न बढ़े?", "options": ["16.66%", "20%", "25%", "15%"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "यदि A की आय B से 20% अधिक है, तो B की आय A से कितने प्रतिशत कम है?", "options": ["16.66%", "20%", "25%", "15%"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "ताजे फल में 68% पानी है और सूखे फल में 20% पानी है। 100 किलो ताजे फलों से कितने किलो सूखे फल प्राप्त किये जा सकते हैं?", "options": ["40 किलो", "32 किलो", "50 किलो", "80 किलो"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "दो पाइप एक टंकी को 20 और 30 मिनट में भर सकते हैं। एक तीसरा पाइप उसे 60 मिनट में खाली कर सकता है। तीनों एक साथ खोल दिए जाएं तो टंकी कितने समय में भरेगी?", "options": ["15 मिनट", "12 मिनट", "20 मिनट", "18 मिनट"], "correct": 0, "exam": "Railway JE" },
+  { "q": "यदि 4 पुरुष या 6 महिलाएं किसी काम को 12 दिन में कर सकते हैं, तो 2 पुरुष और 3 महिलाएं उसी काम को कितने दिन में करेंगे?", "options": ["12 दिन", "6 दिन", "24 दिन", "8 दिन"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "600 किमी की यात्रा में, यदि गति 20 किमी/घंटा बढ़ा दी जाए तो 1 घंटा कम लगता है। वास्तविक गति क्या थी?", "options": ["100 किमी/घंटा", "120 किमी/घंटा", "80 किमी/घंटा", "90 किमी/घंटा"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "ट्रेन A सुबह 6 बजे 40 किमी/घंटा की गति से चलती है। ट्रेन B उसी दिशा में सुबह 8 बजे 60 किमी/घंटा की गति से चलती है। वे कितने बजे मिलेंगी?", "options": ["दोपहर 12 बजे", "दोपहर 1 बजे", "सुबह 11 बजे", "दोपहर 2 बजे"], "correct": 0, "exam": "UP SI" },
+  { "q": "5 वर्ष पहले पिता की आयु पुत्र की 3 गुनी थी। आज पिता की आयु पुत्र की 2 गुनी है। पुत्र की वर्तमान आयु क्या है?", "options": ["15 वर्ष", "10 वर्ष", "20 वर्ष", "25 वर्ष"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "दो लगातार सम संख्याओं के वर्गों का योग 100 है। वे संख्याएँ क्या हैं?", "options": ["6 और 8", "4 और 6", "8 और 10", "10 और 12"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "कोई धनराशि 5 वर्ष में स्वयं की 8/5 हो जाती है। साधारण ब्याज की दर क्या है?", "options": ["12%", "10%", "15%", "8%"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "किसी धनराशि पर 10% वार्षिक दर से 2 वर्ष के साधारण और चक्रवृद्धि ब्याज का अंतर ₹50 है। वह धनराशि क्या है?", "options": ["₹5000", "₹4000", "₹5500", "₹6000"], "correct": 0, "exam": "UP Lekhpal" },
+  { "q": "(0.98)³ + (0.02)³ + 3 × 0.98 × 0.02 - 1 का मान क्या होगा?", "options": ["0", "1", "-1", "0.98"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "√6 + √6 + √6... अनंत तक का मान क्या होगा?", "options": ["3", "2", "6", "0"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "1 से 100 तक की संख्याओं में अंक '0' कितनी बार आता है?", "options": ["11", "10", "20", "21"], "correct": 0, "exam": "UP Police" },
+  { "q": "यदि '-' का अर्थ गुणा, '+' का अर्थ भाग, '×' का अर्थ जोड़, और '÷' का अर्थ घटाव है, तो: 144 ÷ 315 + 35 × 16 - 17 = ?", "options": ["407", "415", "390", "400"], "correct": 0, "exam": "SSC Reasoning" },
+  { "q": "श्रृंखला को पूरा करें: 2, 5, 10, 17, 26, ?", "options": ["37", "35", "36", "39"], "correct": 0, "exam": "SSC GD" },
+  { "q": "श्रृंखला को पूरा करें: 1, 8, 27, 64, ?", "options": ["125", "100", "216", "144"], "correct": 0, "exam": "UP Police" },
+  { "q": "लुप्त संख्या ज्ञात करें: 3, 8, 15, 24, ?", "options": ["35", "36", "34", "33"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "यदि APPLE = 50 और BAT = 23 है, तो CAT = ?", "options": ["24", "25", "22", "26"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "यदि 'ROAST' को 'PQYUR' लिखा जाता है, तो 'SLOPPY' को कैसे लिखा जाएगा?", "options": ["QJMNRW", "QKMNRW", "QJNNRW", "RJMNRW"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "A, B का भाई है। C, A की माँ है। D, C का पिता है। B, D का/की क्या लगता/लगती है?", "options": ["पोती/पोता", "बेटा/बेटी", "भतीजा/भतीजी", "भाई/बहन"], "correct": 0, "exam": "UP SI" },
+  { "q": "एक तस्वीर की ओर इशारा करते हुए एक आदमी ने कहा, 'मेरा कोई भाई या बहन नहीं है, लेकिन उस आदमी का पिता मेरे पिता का बेटा है।' तस्वीर किसकी थी?", "options": ["उसके बेटे की", "स्वयं की", "उसके पिता की", "उसके भतीजे की"], "correct": 0, "exam": "Railway JE" },
+  { "q": "एक व्यक्ति उत्तर की ओर 10 किमी चलता है, फिर दाएँ मुड़कर 5 किमी चलता है, फिर दाएँ मुड़कर 10 किमी चलता है। वह प्रारंभिक बिंदु से कितनी दूर है?", "options": ["5 किमी", "10 किमी", "15 किमी", "0 किमी"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "एक लड़का पूर्व की ओर 5 किमी चलता है और फिर बाएँ मुड़कर 12 किमी चलता है। उसकी प्रारंभिक बिंदु से न्यूनतम दूरी क्या है?", "options": ["13 किमी", "17 किमी", "7 किमी", "10 किमी"], "correct": 0, "exam": "UP Police" },
+  { "q": "कथन: सभी बिल्लियां कुत्ते हैं। कुछ कुत्ते पक्षी हैं। निष्कर्ष: 1. कुछ बिल्लियां पक्षी हैं। 2. कोई बिल्ली पक्षी नहीं है।", "options": ["या तो 1 या 2 अनुसरण करता है", "केवल 1 अनुसरण करता है", "केवल 2 अनुसरण करता है", "दोनों अनुसरण करते हैं"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "कथन: कोई A, B नहीं है। सभी B, C हैं। निष्कर्ष: कुछ C, A नहीं हैं।", "options": ["सत्य", "असत्य", "तय नहीं किया जा सकता", "इनमें से कोई नहीं"], "correct": 0, "exam": "Banking/SSC" },
+  { "q": "पुरुषों, पिताओं और डॉक्टरों के बीच सही वेन आरेख (Venn Diagram) संबंध कौन सा है?", "options": ["पिता पूरी तरह पुरुषों के अंदर, डॉक्टर दोनों को काटता हुआ", "तीनों अलग-अलग", "तीनों एक-दूसरे के अंदर", "पुरुष पिताओं के अंदर, डॉक्टर अलग"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "एक मानक पासे (Standard Dice) में संख्या 4 के विपरीत फलक पर कौन सी संख्या होगी?", "options": ["3", "1", "2", "6"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "3x3x3 आकार के एक बड़े घन को बाहर से रंगा गया है और फिर 1x1x1 के छोटे घनों में काटा गया है। कितने छोटे घनों का केवल एक फलक रंगा होगा?", "options": ["6", "8", "12", "0"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "यदि 1 जनवरी 2004 को गुरुवार था, तो 31 दिसंबर 2004 को कौन सा दिन था?", "options": ["शुक्रवार", "गुरुवार", "शनिवार", "बुधवार"], "correct": 0, "exam": "UP Police" },
+  { "q": "घड़ी में 3:30 बजे दोनों सुइयों के बीच का कोण क्या होगा?", "options": ["75°", "90°", "60°", "85°"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "एक घड़ी में 8:20 बज रहे हैं। दर्पण में देखने पर क्या समय दिखाई देगा?", "options": ["3:40", "4:40", "3:20", "4:20"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "A, B से लंबा है लेकिन C जितना लंबा नहीं है। D, B से छोटा है। सबसे लंबा कौन है?", "options": ["C", "A", "B", "D"], "correct": 0, "exam": "SSC GD" },
+  { "q": "5 लोग एक वृत्त में केंद्र की ओर मुख करके बैठे हैं। A, B के ठीक बाएँ है। C, D और E के बीच में है। यदि D, B के दाएँ है, तो A के दाएँ कौन है?", "options": ["B", "D", "E", "C"], "correct": 0, "exam": "UP SI" },
+  { "q": "विषम चुनें: 27, 64, 125, 144", "options": ["144", "27", "64", "125"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "विषम शब्द चुनें: टमाटर, आलू, प्याज, गाजर", "options": ["टमाटर", "आलू", "प्याज", "गाजर"], "correct": 0, "exam": "Railway JE" },
+  { "q": "सादृश्य पूरा करें: आँख : मायोपिया :: दाँत : ?", "options": ["पायरिया", "मोतियाबिंद", "ट्रेकोमा", "एक्जिमा"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "सादृश्य पूरा करें: 5 : 124 :: 6 : ?", "options": ["215", "216", "217", "225"], "correct": 0, "exam": "UP Police" },
+  { "q": "एक वर्ग के दोनों विकर्ण खींचे गए हैं। आकृति में कुल कितने त्रिभुज हैं?", "options": ["8", "4", "6", "10"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "यदि एक पारदर्शी वर्गाकार कागज को बीच से मोड़ा जाए, तो बने पैटर्न को क्या कहते हैं?", "options": ["पेपर फोल्डिंग", "मिरर इमेज", "वाटर इमेज", "पेपर कटिंग"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "अंग्रेजी वर्णमाला के कितने बड़े अक्षरों (Capital Letters) की दर्पण छवि (Mirror Image) समान रहती है?", "options": ["11", "9", "10", "12"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "दिए गए शब्द 'MEASUREMENT' के अक्षरों का उपयोग करके कौन सा शब्द नहीं बनाया जा सकता?", "options": ["MANTLE", "MASTER", "SUMMIT", "ASSURE"], "correct": 0, "exam": "SSC GD" },
+  { "q": "शब्दकोश (Dictionary) के अनुसार व्यवस्था करने पर कौन सा शब्द तीसरे स्थान पर आएगा: 1. Read 2. Real 3. Ready 4. Reap", "options": ["Reap", "Ready", "Real", "Read"], "correct": 0, "exam": "UP Police" },
+  { "q": "यदि 8 * 2 = 20 और 7 * 4 = 38 है, तो 6 * 5 = ?", "options": ["41", "30", "36", "45"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारतीय संविधान का अनुच्छेद 17 किससे संबंधित है?", "options": ["अस्पृश्यता का अंत", "उपाधियों का अंत", "समानता का अधिकार", "स्वतंत्रता का अधिकार"], "correct": 0, "exam": "UP Police" },
+  { "q": "डॉ. बी.आर. अंबेडकर ने किस अनुच्छेद को संविधान की 'हृदय और आत्मा' कहा है?", "options": ["अनुच्छेद 32", "अनुच्छेद 21", "अनुच्छेद 14", "अनुच्छेद 19"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारतीय संविधान में मौलिक अधिकार किस देश के संविधान से लिए गए हैं?", "options": ["संयुक्त राज्य अमेरिका", "ब्रिटेन", "रूस", "आयरलैंड"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "भारतीय राष्ट्रीय कांग्रेस (INC) के पहले अध्यक्ष कौन थे?", "options": ["व्योमेश चंद्र बनर्जी", "ए. ओ. ह्यूम", "दादाभाई नौरोजी", "बदरुद्दीन तैयबजी"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "भारत छोड़ो आंदोलन (Quit India Movement) किस वर्ष शुरू हुआ था?", "options": ["1942", "1930", "1920", "1947"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "बक्सर का युद्ध (Battle of Buxar) किस वर्ष लड़ा गया था?", "options": ["1764", "1757", "1761", "1526"], "correct": 0, "exam": "UP SI" },
+  { "q": "दक्षिण भारत की सबसे ऊँची चोटी कौन सी है?", "options": ["अनामुडी", "दोदाबेट्टा", "महेंद्रगिरि", "कलसुबाई"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "प्रायद्वीपीय भारत की सबसे लंबी नदी कौन सी है?", "options": ["गोदावरी", "कृष्णा", "कावेरी", "नर्मदा"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "सौरमंडल में 'लाल ग्रह' (Red Planet) के नाम से किसे जाना जाता है?", "options": ["मंगल", "शुक्र", "बृहस्पति", "शनि"], "correct": 0, "exam": "UP Lekhpal" },
+  { "q": "ग्लोबल वार्मिंग के लिए मुख्य रूप से कौन सी गैस जिम्मेदार है?", "options": ["कार्बन डाइऑक्साइड (CO2)", "ऑक्सीजन", "नाइट्रोजन", "हाइड्रोजन"], "correct": 0, "exam": "SSC GD" },
+  { "q": "मानव रक्त (Human Blood) का pH मान लगभग कितना होता है?", "options": ["7.4", "6.5", "8.2", "7.0"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "कोशिका का 'पावरहाउस' किसे कहा जाता है?", "options": ["माइटोकॉन्ड्रिया", "राइबोसोम", "लाइसोसोम", "नाभिक"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "बल (Force) का SI मात्रक क्या है?", "options": ["न्यूटन", "जूल", "पास्कल", "वाट"], "correct": 0, "exam": "UP Police" },
+  { "q": "बेकिंग सोडा (Baking Soda) का रासायनिक सूत्र क्या है?", "options": ["NaHCO3", "Na2CO3", "NaCl", "NaOH"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारत से पहला नोबेल पुरस्कार किसने जीता था?", "options": ["रवींद्रनाथ टैगोर", "सी.वी. रमन", "मदर टेरेसा", "अमर्त्य सेन"], "correct": 0, "exam": "Static GK" },
+  { "q": "ऑस्ट्रेलिया की राजधानी क्या है?", "options": ["कैनबरा", "सिडनी", "मेलबर्न", "पर्थ"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "जापान की मुद्रा (Currency) क्या है?", "options": ["येन", "युआन", "रूबल", "रुपया"], "correct": 0, "exam": "Railway JE" },
+  { "q": "'डिस्कवरी ऑफ इंडिया' (भारत की खोज) पुस्तक के लेखक कौन हैं?", "options": ["जवाहरलाल नेहरू", "महात्मा गांधी", "सरदार पटेल", "भगत सिंह"], "correct": 0, "exam": "UP SI" },
+  { "q": "भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO) का मुख्यालय कहाँ स्थित है?", "options": ["बेंगलुरु", "हैदराबाद", "श्रीहरिकोटा", "नई दिल्ली"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "विश्व पर्यावरण दिवस (World Environment Day) कब मनाया जाता है?", "options": ["5 जून", "21 जून", "22 अप्रैल", "1 मई"], "correct": 0, "exam": "Static GK" }
+
+        ];
+
+        let currentIdx = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let timePerQ = 1.5; // 1.5 minutes per question
+        let timeLeft, timerInterval;
+
+        window.onload = () => {
+            document.getElementById('total-q-count').innerText = questions.length;
+            document.getElementById('total-time-count').innerText = Math.ceil(questions.length * timePerQ) + " MIN";
+            document.querySelectorAll('.total-q-text').forEach(el => el.innerText = questions.length);
+        };
+
+        function startExam() {
+            const name = document.getElementById('username').value.trim();
+            if (!name) return alert("Please enter candidate name.");
+            
+            timeLeft = Math.ceil(questions.length * timePerQ) * 60;
+            document.getElementById('user-display').innerText = "Session Active: " + name;
+            document.getElementById('res-user').innerText = name;
+            
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            renderQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60);
+                const s = timeLeft % 60;
+                document.getElementById('timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) finalize();
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const item = questions[currentIdx];
+            document.getElementById('question-text').innerHTML = item.q;
+            document.getElementById('current-idx').innerText = currentIdx + 1;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            item.options.forEach((opt, i) => {
+                const isSelected = userAnswers[currentIdx] === i;
+                const btn = document.createElement('div');
+                btn.className = `option-card p-5 rounded-2xl flex items-center gap-4 text-sm font-medium ${isSelected ? 'selected' : ''}`;
+                btn.innerHTML = `<span class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-500">${String.fromCharCode(65+i)}</span> ${opt}`;
+                btn.onclick = () => selectOption(i);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('prev-btn').disabled = currentIdx === 0;
+            document.getElementById('next-btn').classList.toggle('hidden', currentIdx === questions.length - 1);
+            document.getElementById('finish-btn').classList.toggle('hidden', currentIdx !== questions.length - 1);
+        }
+
+        function selectOption(i) {
+            userAnswers[currentIdx] = i;
+            renderQuestion();
+        }
+
+        function next() { if (currentIdx < questions.length - 1) { currentIdx++; renderQuestion(); } }
+        function prev() { if (currentIdx > 0) { currentIdx--; renderQuestion(); } }
+
+        function showConfirm() {
+            if(confirm("Do you want to finalize and submit your responses?")) finalize();
+        }
+
+        function finalize() {
+            clearInterval(timerInterval);
+            let correct = 0, wrong = 0, skipped = 0;
+            
+            userAnswers.forEach((ans, i) => {
+                if (ans === null) skipped++;
+                else if (ans === questions[i].correct) correct++;
+                else wrong++;
+            });
+
+            const totalScore = (correct * 4) - (wrong * 1);
+            
+            document.getElementById('res-score').innerText = totalScore;
+            document.getElementById('res-c').innerText = correct;
+            document.getElementById('res-w').innerText = wrong;
+            document.getElementById('res-s').innerText = skipped;
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
