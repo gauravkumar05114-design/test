@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siri Style Reasoning Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Noto Sans Devanagari', sans-serif;
+            background-color: #f2f2f7; /* iOS System Gray */
+            color: #1c1c1e;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Siri Aura Background Animation */
+        .siri-aura {
+            position: fixed;
+            bottom: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120vw;
+            height: 80vh;
+            background: radial-gradient(circle at 50% 100%, 
+                rgba(0, 122, 255, 0.4), 
+                rgba(175, 82, 222, 0.4), 
+                rgba(255, 45, 85, 0.4), 
+                rgba(255, 255, 255, 0) 60%);
+            filter: blur(60px);
+            opacity: 0.8;
+            z-index: -1;
+            animation: breathe 6s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes breathe {
+            0% { transform: translateX(-50%) scale(0.9); opacity: 0.6; }
+            100% { transform: translateX(-50%) scale(1.1); opacity: 0.9; }
+        }
+
+        /* iOS Glass Card */
+        .ios-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+            border-radius: 24px;
+        }
+
+        /* Digital Clock Font */
+        @font-face {
+            font-family: 'SF Mono';
+            src: local('SF Mono'), local('Courier New');
+        }
+        .mono-font { font-family: 'SF Mono', monospace; letter-spacing: -0.5px; }
+
+        /* Option Styling */
+        .option-card {
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        /* Active State (iOS Blue) */
+        .interactive .option-radio:checked + .option-card {
+            background: #007AFF;
+            color: white;
+            border-color: #007AFF;
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+        .interactive .option-radio:checked + .option-card .circle-indicator {
+            border-color: white;
+            background: white;
+        }
+
+        /* Review Mode Colors */
+        .correct-answer {
+            background: rgba(52, 199, 89, 0.15) !important; /* iOS Green */
+            border: 1px solid #34C759 !important;
+            color: #248a3d !important;
+        }
+        .wrong-answer {
+            background: rgba(255, 59, 48, 0.15) !important; /* iOS Red */
+            border: 1px solid #FF3B30 !important;
+            color: #d70015 !important;
+        }
+
+        /* Animations */
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Buttons */
+        .ios-btn {
+            background: #007AFF;
+            color: white;
+            border-radius: 14px;
+            font-weight: 600;
+            transition: transform 0.1s;
+        }
+        .ios-btn:active { transform: scale(0.96); }
+        
+        .ios-btn-secondary {
+            background: rgba(118, 118, 128, 0.12);
+            color: #007AFF;
+            border-radius: 14px;
+            font-weight: 600;
+        }
+
+        /* Detail Row */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(60, 60, 67, 0.1);
+        }
+        .detail-row:last-child { border-bottom: none; }
+
+        .siri-wave {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(90deg, #30d158, #0a84ff, #5e5ce6, #ff375f, #30d158);
+            background-size: 200% 100%;
+            animation: rainbow 3s linear infinite;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+        @keyframes rainbow { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+
+    <!-- Background Siri Aura -->
+    <div class="siri-aura"></div>
+
+    <!-- 1. Start Screen (HOME PAGE) -->
+    <div id="startScreen" class="ios-card p-8 md:p-10 max-w-lg w-full relative z-10 animate-slide-up text-center">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="w-16 h-16 bg-white rounded-2xl shadow-sm mx-auto flex items-center justify-center mb-5">
+                <i data-lucide="sparkles" class="w-8 h-8 text-blue-500"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 tracking-tight">जय श्री राम कोचिंग <span class="text-blue-500">सेंटर</span></h1>
+            <p class="text-gray-500 font-medium mt-1">Series 2.0 • SSC / UP Police</p>
+        </div>
+
+        <!-- Details Box -->
+        <div class="bg-white/60 rounded-2xl p-5 mb-8 text-left border border-gray-100 shadow-sm">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Details</h3>
+            
+            <div class="text-sm space-y-0">
+                <div class="detail-row">
+                    <span class="text-gray-600">Subject</span>
+                    <span class="font-semibold text-gray-900">FWO012</span>
+                </div>
+                <div class="detail-row">
+                    <span class="text-gray-600">Questions</span>
+                    <span class="font-semibold text-gray-900">150 Questions</span>
+                </div>
+                <div class="detail-row">
+                    <span class="text-gray-600">Marking</span>
+                    <span class="font-semibold text-gray-900"><span class="text-green-600">+2.0</span> / <span class="text-red-500">-0.33</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Siri Wave Decor -->
+        <div class="mb-8 opacity-70">
+            <div class="siri-wave"></div>
+        </div>
+
+        <!-- Start Button -->
+        <button onclick="startTest()" class="w-full ios-btn py-4 text-lg shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
+            Tap to Start <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+        
+        <p class="text-center text-xs text-gray-400 mt-4 font-medium">
+            Designed for GAURAV KUMAR
+        </p>
+    </div>
+
+    <!-- 2. Test Interface (Hidden) -->
+    <div id="testInterface" class="hidden w-full max-w-2xl flex-col h-[85vh] md:h-auto relative z-10 animate-slide-up">
+        
+        <!-- Top Bar -->
+        <div class="flex justify-between items-end mb-4 px-2">
+            <div>
+                <span class="text-xs font-semibold text-gray-400 uppercase">Question</span>
+                <div class="text-2xl font-bold text-gray-900 leading-none">
+                    <span id="currentQ">1</span><span class="text-gray-400 text-lg">/150</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span id="modeLabel" class="hidden px-2 py-0.5 bg-yellow-100 text-yellow-600 text-[10px] font-bold rounded uppercase tracking-wide">Review</span>
+                <button onclick="toggleSound()" class="bg-white/80 p-2 rounded-full shadow-sm text-gray-500 hover:text-gray-900 transition">
+                    <i id="muteIcon" data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+                <div class="bg-white/80 px-3 py-1 rounded-full shadow-sm border border-gray-100">
+                    <span id="timer" class="mono-font text-xl font-medium text-gray-800">00:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="ios-card p-6 md:p-8 flex-1 flex flex-col relative overflow-hidden min-h-[400px]">
+            
+            <!-- Question Text -->
+            <div id="questionArea" class="flex-1 overflow-y-auto">
+                <h2 id="qText" class="text-xl md:text-2xl font-semibold text-gray-900 mb-8 leading-snug">Loading...</h2>
+                
+                <div id="optionsGrid" class="space-y-3">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+                <button id="prevBtn" onclick="changeQ(-1)" class="text-blue-500 font-medium px-4 py-2 hover:bg-blue-50 rounded-lg transition disabled:opacity-30 disabled:cursor-default flex items-center gap-1">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i> Back
+                </button>
+                
+                <button id="nextBtn" onclick="changeQ(1)" class="ios-btn px-6 py-2.5 shadow-md flex items-center gap-1">
+                    Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+
+                <button id="submitBtn" onclick="submitTest()" class="hidden bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-md shadow-green-500/20 transition flex items-center gap-2">
+                    Submit <i data-lucide="check" class="w-4 h-4"></i>
+                </button>
+
+                <button id="homeBtn" onclick="location.reload()" class="hidden ios-btn-secondary px-6 py-2.5 flex items-center gap-1">
+                    <i data-lucide="home" class="w-4 h-4"></i> Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Result Modal (Hidden) -->
+    <div id="resultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/30 backdrop-blur-md animate-slide-up">
+        <div class="ios-card p-8 max-w-sm w-full text-center shadow-2xl">
+            <div class="w-16 h-16 bg-gradient-to-tr from-yellow-400 to-orange-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg shadow-orange-500/30">
+                <i data-lucide="trophy" class="w-8 h-8 text-white"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-gray-900 mb-1">Test Complete</h2>
+            <p class="text-gray-500 text-sm mb-6">Performance Summary</p>
+            
+            <div class="flex justify-center items-baseline gap-1 mb-8">
+                <span id="scoreDisplay" class="text-5xl font-bold text-gray-900">0.0</span>
+                <span class="text-lg text-gray-400 font-medium">/ 150</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mb-8">
+                <div class="bg-green-50 p-3 rounded-2xl border border-green-100">
+                    <div class="text-green-600 font-bold text-lg" id="rCorrect">0</div>
+                    <div class="text-green-700/60 text-[10px] uppercase font-bold mt-1">Right</div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-2xl border border-red-100">
+                    <div class="text-red-500 font-bold text-lg" id="rWrong">0</div>
+                    <div class="text-red-700/60 text-[10px] uppercase font-bold mt-1">Wrong</div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                    <div class="text-gray-500 font-bold text-lg" id="rSkip">0</div>
+                    <div class="text-gray-400 text-[10px] uppercase font-bold mt-1">Skip</div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="startReview()" class="w-full ios-btn-secondary py-3.5 flex justify-center items-center gap-2">
+                    <i data-lucide="eye" class="w-4 h-4"></i> Review Answers
+                </button>
+                <button onclick="location.reload()" class="w-full ios-btn py-3.5 shadow-lg shadow-blue-500/20 flex justify-center items-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const testData = [
+            { "q": "यदि x + 1/x = 5 है, तो x² + 1/x² का मान क्या होगा?", "options": ["22", "25", "27", "23"], "correct": 3, "exam": "SSC CGL" },
+  { "q": "यदि a + b = 10 और ab = 21 है, तो a³ + b³ का मान क्या होगा?", "options": ["370", "400", "1000", "330"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "एक राशि साधारण ब्याज पर 10 वर्षों में स्वयं की 3 गुनी हो जाती है। ब्याज की वार्षिक दर क्या है?", "options": ["20%", "30%", "20%", "25%"], "correct": 2, "exam": "Railway NTPC" },
+  { "q": "कोई धनराशि चक्रवृद्धि ब्याज पर 4 वर्षों में दोगुनी हो जाती है। वह कितने वर्षों में 8 गुनी हो जाएगी?", "options": ["12 वर्ष", "16 वर्ष", "8 वर्ष", "24 वर्ष"], "correct": 0, "exam": "UP Police" },
+  { "q": "एक दुकानदार को विक्रय मूल्य पर 20% का लाभ होता है। उसका वास्तविक (क्रय मूल्य पर) लाभ प्रतिशत क्या है?", "options": ["25%", "20%", "16.66%", "30%"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "15 वस्तुओं का क्रय मूल्य 10 वस्तुओं के विक्रय मूल्य के बराबर है। लाभ प्रतिशत ज्ञात करें।", "options": ["50%", "33.33%", "25%", "40%"], "correct": 0, "exam": "SSC GD" },
+  { "q": "A किसी काम को 10 दिन में और B उसी काम को 15 दिन में कर सकता है। दोनों मिलकर उस काम को कितने दिन में पूरा करेंगे?", "options": ["6 दिन", "8 दिन", "5 दिन", "12 दिन"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "A और B किसी काम को 12 दिन में, B और C 15 दिन में तथा C और A 20 दिन में कर सकते हैं। तीनों मिलकर कितने दिन में करेंगे?", "options": ["10 दिन", "12 दिन", "8 दिन", "15 दिन"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "एक व्यक्ति अपनी सामान्य गति की 3/4 गति से चलकर 20 मिनट देरी से पहुँचता है। उसका सामान्य समय क्या है?", "options": ["60 मिनट", "45 मिनट", "80 मिनट", "75 मिनट"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "100 मीटर लंबी एक ट्रेन 36 किमी/घंटा की गति से चल रही है। वह एक खंभे को कितने समय में पार करेगी?", "options": ["10 सेकंड", "12 सेकंड", "15 सेकंड", "8 सेकंड"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "शांत जल में एक नाव की गति 10 किमी/घंटा है और धारा की गति 2 किमी/घंटा है। धारा की दिशा में 60 किमी जाने में कितना समय लगेगा?", "options": ["5 घंटे", "6 घंटे", "7.5 घंटे", "4 घंटे"], "correct": 0, "exam": "UP SI" },
+  { "q": "10 संख्याओं का औसत 15 है। यदि प्रत्येक संख्या को 2 से गुणा किया जाए, तो नया औसत क्या होगा?", "options": ["30", "15", "17", "20"], "correct": 0, "exam": "SSC GD" },
+  { "q": "40 लीटर दूध और पानी के मिश्रण में अनुपात 3:1 है। इसमें कितना पानी मिलाया जाए कि अनुपात 2:1 हो जाए?", "options": ["5 लीटर", "10 लीटर", "15 लीटर", "2 लीटर"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "यदि A:B = 2:3 और B:C = 4:5 है, तो A:B:C का मान क्या होगा?", "options": ["8:12:15", "2:4:5", "8:10:15", "6:12:15"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "दो संख्याओं का अनुपात 3:4 है और उनका HCF 5 है। उनका LCM क्या होगा?", "options": ["60", "20", "15", "45"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "वह छोटी से छोटी संख्या कौन सी है जिसे 6, 7 और 8 से भाग देने पर प्रत्येक स्थिति में 3 शेष बचे?", "options": ["171", "168", "165", "175"], "correct": 0, "exam": "UP Police Constable" },
+  { "q": "प्रथम 100 प्राकृतिक संख्याओं का योग क्या है?", "options": ["5050", "5000", "5100", "5500"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "122 की घात 173 (122^173) के परिणाम का इकाई अंक क्या होगा?", "options": ["4", "2", "8", "6"], "correct": 1, "exam": "SSC CGL" },
+  { "q": "17²⁰⁰ को 18 से भाग देने पर क्या शेष बचेगा?", "options": ["1", "17", "0", "16"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "समीकरण x² - 5x + 6 = 0 के मूल (roots) क्या हैं?", "options": ["-4,7", "-2, -3", "1, 6", "2, 3"], "correct": 3, "exam": "Railway Group D" },
+  { "q": "यदि x - y = 2 और xy = 15 है, तो x² + y² का मान क्या होगा?", "options": ["34", "30", "38", "26"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "यदि a + b + c = 0 है, तो a³ + b³ + c³ का मान किसके बराबर होगा?", "options": ["3abc", "0", "abc", "a+b+c"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "एक व्यापारी 10% की छूट देने के बाद भी 20% का लाभ कमाता है। अंकित मूल्य, क्रय मूल्य से कितना अधिक है?", "options": ["33.33%", "20%", "30%", "25%"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "20% और 20% की दो क्रमिक छूटों के बराबर एकल समतुल्य छूट क्या होगी?", "options": ["36%", "40%", "38%", "32%"], "correct": 0, "exam": "SSC GD" },
+  { "q": "एक शहर की जनसंख्या 10,000 है। यह प्रतिवर्ष 10% बढ़ती है। 2 वर्ष बाद जनसंख्या क्या होगी?", "options": ["12100", "12000", "11000", "12200"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "एक चुनाव में एक उम्मीदवार 60% वोट प्राप्त करता है और 400 वोटों से जीत जाता है। कुल वोटों की संख्या क्या थी?", "options": ["2000", "4000", "1000", "2400"], "correct": 0, "exam": "UP Police" },
+  { "q": "चीनी की कीमत में 20% की वृद्धि होने पर खपत में कितने प्रतिशत की कमी की जाए कि खर्च न बढ़े?", "options": ["16.66%", "20%", "25%", "15%"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "यदि A की आय B से 20% अधिक है, तो B की आय A से कितने प्रतिशत कम है?", "options": ["16.66%", "20%", "25%", "15%"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "ताजे फल में 68% पानी है और सूखे फल में 20% पानी है। 100 किलो ताजे फलों से कितने किलो सूखे फल प्राप्त किये जा सकते हैं?", "options": ["40 किलो", "32 किलो", "50 किलो", "80 किलो"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "दो पाइप एक टंकी को 20 और 30 मिनट में भर सकते हैं। एक तीसरा पाइप उसे 60 मिनट में खाली कर सकता है। तीनों एक साथ खोल दिए जाएं तो टंकी कितने समय में भरेगी?", "options": ["15 मिनट", "12 मिनट", "20 मिनट", "18 मिनट"], "correct": 0, "exam": "Railway JE" },
+  { "q": "यदि 4 पुरुष या 6 महिलाएं किसी काम को 12 दिन में कर सकते हैं, तो 2 पुरुष और 3 महिलाएं उसी काम को कितने दिन में करेंगे?", "options": ["12 दिन", "6 दिन", "24 दिन", "8 दिन"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "600 किमी की यात्रा में, यदि गति 20 किमी/घंटा बढ़ा दी जाए तो 1 घंटा कम लगता है। वास्तविक गति क्या थी?", "options": ["100 किमी/घंटा", "120 किमी/घंटा", "80 किमी/घंटा", "90 किमी/घंटा"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "ट्रेन A सुबह 6 बजे 40 किमी/घंटा की गति से चलती है। ट्रेन B उसी दिशा में सुबह 8 बजे 60 किमी/घंटा की गति से चलती है। वे कितने बजे मिलेंगी?", "options": ["दोपहर 12 बजे", "दोपहर 1 बजे", "सुबह 11 बजे", "दोपहर 2 बजे"], "correct": 0, "exam": "UP SI" },
+  { "q": "5 वर्ष पहले पिता की आयु पुत्र की 3 गुनी थी। आज पिता की आयु पुत्र की 2 गुनी है। पुत्र की वर्तमान आयु क्या है?", "options": ["25 वर्ष", "10 वर्ष", "20 वर्ष", "15 वर्ष"], "correct": 3, "exam": "Railway NTPC" },
+  { "q": "दो लगातार सम संख्याओं के वर्गों का योग 100 है। वे संख्याएँ क्या हैं?", "options": ["6 और 8", "4 और 6", "8 और 10", "10 और 12"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "कोई धनराशि 5 वर्ष में स्वयं की 8/5 हो जाती है। साधारण ब्याज की दर क्या है?", "options": ["12%", "10%", "15%", "8%"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "किसी धनराशि पर 10% वार्षिक दर से 2 वर्ष के साधारण और चक्रवृद्धि ब्याज का अंतर ₹50 है। वह धनराशि क्या है?", "options": ["₹7000", "₹5000", "₹5500", "₹6000"], "correct": 1, "exam": "UP Lekhpal" },
+  { "q": "(0.98)³ + (0.02)³ + 3 × 0.98 × 0.02 - 1 का मान क्या होगा?", "options": ["0", "1", "-1", "0.98"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "√6 + √6 + √6... अनंत तक का मान क्या होगा?", "options": ["3", "2", "6", "0"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "1 से 100 तक की संख्याओं में अंक '0' कितनी बार आता है?", "options": ["11", "10", "20", "21"], "correct": 0, "exam": "UP Police" },
+  { "q": "यदि '-' का अर्थ गुणा, '+' का अर्थ भाग, '×' का अर्थ जोड़, और '÷' का अर्थ घटाव है, तो: 144 ÷ 315 + 35 × 16 - 17 = ?", "options": ["407", "415", "390", "400"], "correct": 0, "exam": "SSC Reasoning" },
+  { "q": "श्रृंखला को पूरा करें: 2, 5, 10, 17, 26, ?", "options": ["37", "35", "36", "39"], "correct": 0, "exam": "SSC GD" },
+  { "q": "श्रृंखला को पूरा करें: 1, 8, 27, 64, ?", "options": ["125", "100", "216", "144"], "correct": 0, "exam": "UP Police" },
+  { "q": "लुप्त संख्या ज्ञात करें: 3, 8, 15, 24, ?", "options": ["35", "36", "34", "33"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "यदि APPLE = 50 और BAT = 23 है, तो CAT = ?", "options": ["24", "25", "22", "26"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "यदि 'ROAST' को 'PQYUR' लिखा जाता है, तो 'SLOPPY' को कैसे लिखा जाएगा?", "options": ["QJMNRW", "QKMNRW", "QJNNRW", "RJMNRW"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "A, B का भाई है। C, A की माँ है। D, C का पिता है। B, D का/की क्या लगता/लगती है?", "options": ["पोती/पोता", "बेटा/बेटी", "भतीजा/भतीजी", "भाई/बहन"], "correct": 0, "exam": "UP SI" },
+  { "q": "एक तस्वीर की ओर इशारा करते हुए एक आदमी ने कहा, 'मेरा कोई भाई या बहन नहीं है, लेकिन उस आदमी का पिता मेरे पिता का बेटा है।' तस्वीर किसकी थी?", "options": ["उसके बेटे की", "स्वयं की", "उसके पिता की", "उसके भतीजे की"], "correct": 0, "exam": "Railway JE" },
+  { "q": "एक व्यक्ति उत्तर की ओर 10 किमी चलता है, फिर दाएँ मुड़कर 5 किमी चलता है, फिर दाएँ मुड़कर 10 किमी चलता है। वह प्रारंभिक बिंदु से कितनी दूर है?", "options": ["5 किमी", "10 किमी", "15 किमी", "0 किमी"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "एक लड़का पूर्व की ओर 5 किमी चलता है और फिर बाएँ मुड़कर 12 किमी चलता है। उसकी प्रारंभिक बिंदु से न्यूनतम दूरी क्या है?", "options": ["13 किमी", "17 किमी", "7 किमी", "10 किमी"], "correct": 0, "exam": "UP Police" },
+  { "q": "कथन: सभी बिल्लियां कुत्ते हैं। कुछ कुत्ते पक्षी हैं। निष्कर्ष: 1. कुछ बिल्लियां पक्षी हैं। 2. कोई बिल्ली पक्षी नहीं है।", "options": ["या तो 1 या 2 अनुसरण करता है", "केवल 1 अनुसरण करता है", "केवल 2 अनुसरण करता है", "दोनों अनुसरण करते हैं"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "कथन: कोई A, B नहीं है। सभी B, C हैं। निष्कर्ष: कुछ C, A नहीं हैं।", "options": ["सत्य", "असत्य", "तय नहीं किया जा सकता", "इनमें से कोई नहीं"], "correct": 0, "exam": "Banking/SSC" },
+  { "q": "पुरुषों, पिताओं और डॉक्टरों के बीच सही वेन आरेख (Venn Diagram) संबंध कौन सा है?", "options": ["पिता पूरी तरह पुरुषों के अंदर, डॉक्टर दोनों को काटता हुआ", "तीनों अलग-अलग", "तीनों एक-दूसरे के अंदर", "पुरुष पिताओं के अंदर, डॉक्टर अलग"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "एक मानक पासे (Standard Dice) में संख्या 4 के विपरीत फलक पर कौन सी संख्या होगी?", "options": ["3", "1", "2", "6"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "3x3x3 आकार के एक बड़े घन को बाहर से रंगा गया है और फिर 1x1x1 के छोटे घनों में काटा गया है। कितने छोटे घनों का केवल एक फलक रंगा होगा?", "options": ["6", "8", "12", "0"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "यदि 1 जनवरी 2004 को गुरुवार था, तो 31 दिसंबर 2004 को कौन सा दिन था?", "options": ["शुक्रवार", "गुरुवार", "शनिवार", "बुधवार"], "correct": 0, "exam": "UP Police" },
+  { "q": "घड़ी में 3:30 बजे दोनों सुइयों के बीच का कोण क्या होगा?", "options": ["75°", "90°", "60°", "85°"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "एक घड़ी में 8:20 बज रहे हैं। दर्पण में देखने पर क्या समय दिखाई देगा?", "options": ["3:40", "4:40", "3:20", "4:20"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "A, B से लंबा है लेकिन C जितना लंबा नहीं है। D, B से छोटा है। सबसे लंबा कौन है?", "options": ["C", "A", "B", "D"], "correct": 0, "exam": "SSC GD" },
+  { "q": "5 लोग एक वृत्त में केंद्र की ओर मुख करके बैठे हैं। A, B के ठीक बाएँ है। C, D और E के बीच में है। यदि D, B के दाएँ है, तो A के दाएँ कौन है?", "options": ["B", "D", "E", "C"], "correct": 0, "exam": "UP SI" },
+  { "q": "विषम चुनें: 27, 64, 125, 144", "options": ["144", "27", "64", "125"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "विषम शब्द चुनें: टमाटर, आलू, प्याज, गाजर", "options": ["टमाटर", "आलू", "प्याज", "गाजर"], "correct": 0, "exam": "Railway JE" },
+  { "q": "सादृश्य पूरा करें: आँख : मायोपिया :: दाँत : ?", "options": ["पायरिया", "मोतियाबिंद", "ट्रेकोमा", "एक्जिमा"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "सादृश्य पूरा करें: 5 : 124 :: 6 : ?", "options": ["215", "216", "217", "225"], "correct": 0, "exam": "UP Police" },
+  { "q": "एक वर्ग के दोनों विकर्ण खींचे गए हैं। आकृति में कुल कितने त्रिभुज हैं?", "options": ["8", "4", "6", "10"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "यदि एक पारदर्शी वर्गाकार कागज को बीच से मोड़ा जाए, तो बने पैटर्न को क्या कहते हैं?", "options": ["पेपर फोल्डिंग", "मिरर इमेज", "वाटर इमेज", "पेपर कटिंग"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "अंग्रेजी वर्णमाला के कितने बड़े अक्षरों (Capital Letters) की दर्पण छवि (Mirror Image) समान रहती है?", "options": ["11", "9", "10", "12"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "दिए गए शब्द 'MEASUREMENT' के अक्षरों का उपयोग करके कौन सा शब्द नहीं बनाया जा सकता?", "options": ["MANTLE", "MASTER", "SUMMIT", "ASSURE"], "correct": 0, "exam": "SSC GD" },
+  { "q": "शब्दकोश (Dictionary) के अनुसार व्यवस्था करने पर कौन सा शब्द तीसरे स्थान पर आएगा: 1. Read 2. Real 3. Ready 4. Reap", "options": ["Reap", "Ready", "Real", "Read"], "correct": 0, "exam": "UP Police" },
+  { "q": "यदि 8 * 2 = 20 और 7 * 4 = 38 है, तो 6 * 5 = ?", "options": ["41", "30", "36", "45"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारतीय संविधान का अनुच्छेद 17 किससे संबंधित है?", "options": ["अस्पृश्यता का अंत", "उपाधियों का अंत", "समानता का अधिकार", "स्वतंत्रता का अधिकार"], "correct": 0, "exam": "UP Police" },
+  { "q": "डॉ. बी.आर. अंबेडकर ने किस अनुच्छेद को संविधान की 'हृदय और आत्मा' कहा है?", "options": ["अनुच्छेद 32", "अनुच्छेद 21", "अनुच्छेद 14", "अनुच्छेद 19"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारतीय संविधान में मौलिक अधिकार किस देश के संविधान से लिए गए हैं?", "options": ["संयुक्त राज्य अमेरिका", "ब्रिटेन", "रूस", "आयरलैंड"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "भारतीय राष्ट्रीय कांग्रेस (INC) के पहले अध्यक्ष कौन थे?", "options": ["व्योमेश चंद्र बनर्जी", "ए. ओ. ह्यूम", "दादाभाई नौरोजी", "बदरुद्दीन तैयबजी"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "भारत छोड़ो आंदोलन (Quit India Movement) किस वर्ष शुरू हुआ था?", "options": ["1942", "1930", "1920", "1947"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "बक्सर का युद्ध (Battle of Buxar) किस वर्ष लड़ा गया था?", "options": ["1764", "1757", "1761", "1526"], "correct": 0, "exam": "UP SI" },
+  { "q": "दक्षिण भारत की सबसे ऊँची चोटी कौन सी है?", "options": ["अनामुडी", "दोदाबेट्टा", "महेंद्रगिरि", "कलसुबाई"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "प्रायद्वीपीय भारत की सबसे लंबी नदी कौन सी है?", "options": ["गोदावरी", "कृष्णा", "कावेरी", "नर्मदा"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "सौरमंडल में 'लाल ग्रह' (Red Planet) के नाम से किसे जाना जाता है?", "options": ["मंगल", "शुक्र", "बृहस्पति", "शनि"], "correct": 0, "exam": "UP Lekhpal" },
+  { "q": "ग्लोबल वार्मिंग के लिए मुख्य रूप से कौन सी गैस जिम्मेदार है?", "options": ["कार्बन डाइऑक्साइड (CO2)", "ऑक्सीजन", "नाइट्रोजन", "हाइड्रोजन"], "correct": 0, "exam": "SSC GD" },
+  { "q": "मानव रक्त (Human Blood) का pH मान लगभग कितना होता है?", "options": ["7.4", "6.5", "8.2", "7.0"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "कोशिका का 'पावरहाउस' किसे कहा जाता है?", "options": ["माइटोकॉन्ड्रिया", "राइबोसोम", "लाइसोसोम", "नाभिक"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "बल (Force) का SI मात्रक क्या है?", "options": ["न्यूटन", "जूल", "पास्कल", "वाट"], "correct": 0, "exam": "UP Police" },
+  { "q": "बेकिंग सोडा (Baking Soda) का रासायनिक सूत्र क्या है?", "options": ["NaHCO3", "Na2CO3", "NaCl", "NaOH"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारत से पहला नोबेल पुरस्कार किसने जीता था?", "options": ["रवींद्रनाथ टैगोर", "सी.वी. रमन", "मदर टेरेसा", "अमर्त्य सेन"], "correct": 0, "exam": "Static GK" },
+  { "q": "ऑस्ट्रेलिया की राजधानी क्या है?", "options": ["कैनबरा", "सिडनी", "मेलबर्न", "पर्थ"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "जापान की मुद्रा (Currency) क्या है?", "options": ["येन", "युआन", "रूबल", "रुपया"], "correct": 0, "exam": "Railway JE" },
+  { "q": "'डिस्कवरी ऑफ इंडिया' (भारत की खोज) पुस्तक के लेखक कौन हैं?", "options": ["जवाहरलाल नेहरू", "महात्मा गांधी", "सरदार पटेल", "भगत सिंह"], "correct": 0, "exam": "UP SI" },
+  { "q": "भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO) का मुख्यालय कहाँ स्थित है?", "options": ["बेंगलुरु", "हैदराबाद", "श्रीहरिकोटा", "नई दिल्ली"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "विश्व पर्यावरण दिवस (World Environment Day) कब मनाया जाता है?", "options": ["5 जून", "21 जून", "22 अप्रैल", "1 मई"], "correct": 0, "exam": "Static GK" },
+
+  { "q": "भारत के नियंत्रक एवं महालेखा परीक्षक (CAG) की नियुक्ति संविधान के किस अनुच्छेद के तहत की जाती है?", "options": ["अनुच्छेद 148", "अनुच्छेद 149", "अनुच्छेद 151", "अनुच्छेद 153"], "correct": 0, "exam": "SSC CGL Mains" },
+  { "q": "हड़प्पा सभ्यता का कौन सा स्थल अपनी उन्नत 'जल संरक्षण' प्रणाली (Water Reservoir) के लिए प्रसिद्ध है, जिसे यूनेस्को की विश्व धरोहर सूची में भी शामिल किया गया है?", "options": ["धौलावीरा", "लोथल", "कालीबंगा", "राखीगढ़ी"], "correct": 0, "exam": "UPSC / UP PCS" },
+  { "q": "निम्नलिखित में से कौन सी समुद्री जलधारा 'गर्म जलधारा' (Warm Current) का उदाहरण है?", "options": ["गल्फ स्ट्रीम", "लेब्राडोर", "कैलिफोर्निया", "पेरू (हम्बोल्ट)"], "correct": 0, "exam": "Geography Advanced" },
+  { "q": "प्रकाश संश्लेषण (Photosynthesis) की प्रक्रिया में ऑक्सीजन गैस कहाँ से उत्पन्न होती है?", "options": ["जल (H2O) के टूटने से", "कार्बन डाइऑक्साइड (CO2) से", "क्लोरोफिल से", "मिट्टी के खनिजों से"], "correct": 0, "exam": "Science / SSC" },
+  { "q": "रिज़र्व बैंक ऑफ़ इंडिया (RBI) द्वारा 'रेपो रेट' (Repo Rate) बढ़ाने का मुख्य उद्देश्य क्या होता है?", "options": ["मुद्रास्फीति (Inflation) को नियंत्रित करना", "रोजगार के अवसर बढ़ाना", "बैंकों का मुनाफा बढ़ाना", "निर्यात को बढ़ावा देना"], "correct": 0, "exam": "Economics" },
+  { "q": "'रामसर सम्मेलन' (Ramsar Convention) का मुख्य उद्देश्य किसके संरक्षण से संबंधित है?", "options": ["आर्द्रभूमि (Wetlands)", "ओजोन परत", "बाघ संरक्षण", "जलवायु परिवर्तन"], "correct": 0, "exam": "Environment" },
+  { "q": "अशोक के किस शिलालेख में 'कलिंग युद्ध' के नरसंहार का विस्तृत वर्णन और उसके हृदय परिवर्तन की बात कही गई है?", "options": ["13वें प्रमुख शिलालेख", "10वें प्रमुख शिलालेख", "11वें प्रमुख शिलालेख", "12वें प्रमुख शिलालेख"], "correct": 0, "exam": "History / UP SI" },
+  { "q": "संविधान की किस अनुसूची में 'दलबदल विरोधी कानून' (Anti-Defection Law) का प्रावधान शामिल है?", "options": ["10वीं अनुसूची", "9वीं अनुसूची", "11वीं अनुसूची", "12वीं अनुसूची"], "correct": 0, "exam": "Polity" },
+  { "q": "पीयूष ग्रंथि (Pituitary Gland), जिसे 'मास्टर ग्रंथि' भी कहा जाता है, मानव शरीर में कहाँ स्थित होती है?", "options": ["मस्तिष्क के आधार पर", "गले में", "गुर्दे के ऊपर", "हृदय के पास"], "correct": 0, "exam": "Biology" },
+  { "q": "नाथुला दर्रा (Nathu La Pass) भारत के किस राज्य में स्थित है, जो प्राचीन सिल्क रूट का एक महत्वपूर्ण हिस्सा था?", "options": ["सिक्किम", "अरुणाचल प्रदेश", "हिमाचल प्रदेश", "उत्तराखंड"], "correct": 0, "exam": "Geo / SSC CHSL" },
+  { "q": "'गदर पार्टी' की स्थापना 1913 में सैन फ्रांसिस्को (अमेरिका) में किसके द्वारा की गई थी?", "options": ["लाला हरदयाल", "रासबिहारी बोस", "सुभाष चंद्र बोस", "भगत सिंह"], "correct": 0, "exam": "Modern History" },
+  { "q": "यदि कोई तारा सूर्य से बहुत बड़ा है और उसका परमाणु ईंधन समाप्त हो जाता है, तो वह अंततः किसमें बदल जाता है?", "options": ["ब्लैक होल या न्यूट्रॉन तारा", "श्वेत वामन (White Dwarf)", "लाल दानव (Red Giant)", "क्षुद्रग्रह (Asteroid)"], "correct": 0, "exam": "Physics / Astronomy" },
+  { "q": "'लॉरेन्ज़ वक्र' (Lorenz Curve) अर्थशास्त्र में क्या मापने के लिए प्रयोग किया जाता है?", "options": ["आय की असमानता", "बेरोजगारी दर", "मुद्रास्फीति दर", "गरीबी रेखा"], "correct": 0, "exam": "Economics Advanced" },
+  { "q": "भारत में बाघों के संरक्षण के लिए 'प्रोजेक्ट टाइगर' (Project Tiger) किस वर्ष शुरू किया गया था?", "options": ["1973", "1972", "1980", "1986"], "correct": 0, "exam": "Static GK" },
+  { "q": "भारतीय संविधान का कौन सा भाग 'संविधान संशोधन' (अनुच्छेद 368) की प्रक्रिया से संबंधित है?", "options": ["भाग 20", "भाग 18", "भाग 15", "भाग 17"], "correct": 0, "exam": "Polity / UP Police" },
+  { "q": "विजयनगर साम्राज्य की प्रसिद्ध राजधानी हम्पी किस नदी के तट पर स्थित थी?", "options": ["तुंगभद्रा", "कृष्णा", "कावेरी", "गोदावरी"], "correct": 0, "exam": "Medieval History" },
+  { "q": "'रिंग ऑफ फायर' (Ring of Fire) किस महासागर में स्थित है, जहाँ दुनिया के सबसे अधिक भूकंप और ज्वालामुखी आते हैं?", "options": ["प्रशांत महासागर", "अटलांटिक महासागर", "हिंद महासागर", "आर्कटिक महासागर"], "correct": 0, "exam": "World Geography" },
+  { "q": "'क्रायोजेनिक्स' (Cryogenics) विज्ञान की वह शाखा है जिसका संबंध किससे है?", "options": ["अत्यंत निम्न तापमान का अध्ययन", "अत्यंत उच्च तापमान का अध्ययन", "अंतरिक्ष विकिरण का अध्ययन", "जीवाश्मों का वैज्ञानिक अध्ययन"], "correct": 0, "exam": "General Science" },
+  { "q": "भारत में राष्ट्रीय आय (National Income) का पहला वैज्ञानिक अनुमान किसने लगाया था?", "options": ["वी.के.आर.वी. राव", "दादाभाई नौरोजी", "पी.सी. महालनोबिस", "आर.सी. दत्त"], "correct": 0, "exam": "Economy" },
+  { "q": "प्रसिद्ध 'मॉन्ट्रियल प्रोटोकॉल' (Montreal Protocol) का संबंध किस वैश्विक पर्यावरणीय मुद्दे से है?", "options": ["ओजोन परत का संरक्षण", "ग्रीनहाउस गैस उत्सर्जन", "जैव विविधता संरक्षण", "समुद्री प्लास्टिक प्रदूषण"], "correct": 0, "exam": "Environment" },
+  { "q": "दिल्ली सल्तनत के किस सुल्तान ने सेना के रखरखाव के लिए 'बाजार मूल्य नियंत्रण नीति' सख्ती से लागू की थी?", "options": ["अलाउद्दीन खिलजी", "मोहम्मद बिन तुगलक", "गयासुद्दीन बलबन", "इल्तुतमिश"], "correct": 0, "exam": "History / SSC CGL" },
+  { "q": "भारतीय संविधान में 'बंदी प्रत्यक्षीकरण' (Habeas Corpus) रिट का शाब्दिक अर्थ क्या है?", "options": ["व्यक्ति को सशरीर प्रस्तुत किया जाए", "हम (अदालत) आदेश देते हैं", "किस अधिकार से (अधिकार पृच्छा)", "प्रमाणित किया जाए (उत्प्रेषण)"], "correct": 0, "exam": "Polity Advanced" },
+  { "q": "निम्नलिखित में से कौन सा पादप हार्मोन पौधों में वृद्धि (Growth) को रोकने (Inhibitor) का कार्य करता है?", "options": ["एब्सिसिक एसिड (ABA)", "ऑक्जिन", "जिबरेलिन", "साइटोकाइनिन"], "correct": 0, "exam": "Biology / Railway" },
+  { "q": "'ब्लैक पैगोडा' (Black Pagoda) के नाम से भारत का कौन सा ऐतिहासिक मंदिर प्रसिद्ध है?", "options": ["कोणार्क का सूर्य मंदिर", "पुरी का जगन्नाथ मंदिर", "मदुरै का मीनाक्षी मंदिर", "तंजौर का बृहदेश्वर मंदिर"], "correct": 0, "exam": "Art & Culture" },
+  { "q": "वायुमंडल की किस परत में मौजूद आयन रेडियो तरंगों को पृथ्वी पर परावर्तित करते हैं, जिससे बेतार संचार (Wireless Communication) संभव होता है?", "options": ["आयनमंडल (Ionosphere)", "समताप मंडल (Stratosphere)", "क्षोभ मंडल (Troposphere)", "बाह्य मंडल (Exosphere)"], "correct": 0, "exam": "Geography" },
+  { "q": "'मिश्रित अर्थव्यवस्था' (Mixed Economy) का मुख्य अर्थ क्या होता है?", "options": ["सार्वजनिक (Public) और निजी (Private) दोनों क्षेत्रों का सह-अस्तित्व", "कृषि और उद्योग दोनों का समान विकास", "घरेलू और विदेशी व्यापार का संतुलन", "पारंपरिक और आधुनिक तकनीक का मिश्रण"], "correct": 0, "exam": "Economics" },
+  { "q": "ऐतिहासिक 'गांधी-इरविन समझौता' (Gandhi-Irwin Pact) किस वर्ष हस्ताक्षरित हुआ था?", "options": ["1931", "1930", "1932", "1929"], "correct": 0, "exam": "Modern History" },
+  { "q": "'साइलेंट वैली नेशनल पार्क' (शांत घाटी) अपनी अत्यधिक जैव विविधता के लिए प्रसिद्ध है, यह किस राज्य में स्थित है?", "options": ["केरल", "उत्तराखंड", "असम", "कर्नाटक"], "correct": 0, "exam": "Environment" },
+  { "q": "संविधान की प्रस्तावना (Preamble) में 'समाजवादी, पंथनिरपेक्ष और अखंडता' शब्द किस संविधान संशोधन द्वारा जोड़े गए थे?", "options": ["42वें संशोधन (1976)", "44वें संशोधन (1978)", "73वें संशोधन (1992)", "86वें संशोधन (2002)"], "correct": 0, "exam": "Polity" },
+  { "q": "ध्वनि की तीव्रता (Intensity of Sound) या शोर को मापने की इकाई क्या है?", "options": ["डेसिबल (Decibel)", "हर्ट्ज़ (Hertz)", "वेबर (Weber)", "टेस्ला (Tesla)"], "correct": 0, "exam": "Physics / NTPC" },
+  { "q": "'रोलेट एक्ट' (Rowlatt Act) को किस वर्ष पारित किया गया था, जिसे बिना अपील, बिना वकील, बिना दलील का 'काला कानून' कहा गया?", "options": ["1919", "1917", "1920", "1922"], "correct": 0, "exam": "History" },
+  { "q": "भारत की सबसे बड़ी मीठे पानी की झील 'वूलर झील' का निर्माण टेक्टोनिक गतिविधियों से हुआ है, यह कहाँ स्थित है?", "options": ["जम्मू और कश्मीर", "लद्दाख", "हिमाचल प्रदेश", "उत्तराखंड"], "correct": 0, "exam": "Geo" },
+  { "q": "GST (वस्तु एवं सेवा कर) को भारतीय संविधान के किस संशोधन अधिनियम के तहत पूरे देश में लागू किया गया?", "options": ["101वां संशोधन अधिनियम", "100वां संशोधन अधिनियम", "102वां संशोधन अधिनियम", "103वां संशोधन अधिनियम"], "correct": 0, "exam": "Eco / Current Polity" },
+  { "q": "मानव शरीर में चोट लगने पर रक्त का थक्का (Blood Clotting) जमाने में कौन सा विटामिन मुख्य भूमिका निभाता है?", "options": ["विटामिन K", "विटामिन C", "विटामिन E", "विटामिन B12"], "correct": 0, "exam": "Biology" },
+  { "q": "एलोरा के प्रसिद्ध रॉक-कट 'कैलाश मंदिर' का निर्माण किस राजवंश के शासक (कृष्ण प्रथम) द्वारा करवाया गया था?", "options": ["राष्ट्रकूट", "पल्लव", "चोल", "चालुक्य"], "correct": 0, "exam": "Ancient History" },
+  { "q": "'सवाना' (Savanna) उष्णकटिबंधीय घास के मैदान मुख्य रूप से किस महाद्वीप में विस्तृत रूप से पाए जाते हैं?", "options": ["अफ्रीका", "दक्षिण अमेरिका", "ऑस्ट्रेलिया", "उत्तरी अमेरिका"], "correct": 0, "exam": "World Geo" },
+  { "q": "भारतीय रिज़र्व बैंक (RBI) की स्थापना 1935 में हुई थी, लेकिन इसका राष्ट्रीयकरण (Nationalisation) किस वर्ष किया गया?", "options": ["1949", "1955", "1969", "1980"], "correct": 0, "exam": "Economy" },
+  { "q": "'लाइकेन' (Lichens) जो कि वायु प्रदूषण के बहुत अच्छे संकेतक होते हैं, किन दो जीवों का सहजीवी संघ (Symbiosis) है?", "options": ["शैवाल और कवक (Algae & Fungi)", "शैवाल और जीवाणु (Algae & Bacteria)", "कवक और विषाणु (Fungi & Virus)", "जीवाणु और विषाणु (Bacteria & Virus)"], "correct": 0, "exam": "Science / Env" },
+  { "q": "भारत में 'पंचायती राज व्यवस्था' को संवैधानिक दर्जा किस समिति की सिफारिश और किस संशोधन के आधार पर मिला?", "options": ["एल.एम. सिंघवी समिति (73वां संशोधन)", "बलवंत राय मेहता समिति (72वां संशोधन)", "अशोक मेहता समिति (73वां संशोधन)", "पी.के. थुंगन समिति (74वां संशोधन)"], "correct": 0, "exam": "Polity Advanced" },
+  { "q": "1857 के सिपाही विद्रोह के दौरान भारत का गवर्नर जनरल कौन था, जिसे बाद में भारत का पहला वायसराय बनाया गया?", "options": ["लॉर्ड कैनिंग", "लॉर्ड डलहौजी", "लॉर्ड विलियम बेंटिक", "लॉर्ड रिपन"], "correct": 0, "exam": "History" },
+  { "q": "भारत में 'मैंग्रोव वन' (खारे पानी में उगने वाले पेड़) का सबसे बड़ा और सघन क्षेत्र कौन सा है?", "options": ["सुंदरबन डेल्टा", "भितरकनिका (ओडिशा)", "गोदावरी-कृष्णा डेल्टा", "अंडमान और निकोबार द्वीप समूह"], "correct": 0, "exam": "Geography" },
+  { "q": "पृथ्वी के गुरुत्वाकर्षण क्षेत्र से बाहर निकलने के लिए आवश्यक 'पलायन वेग' (Escape Velocity) का मान लगभग कितना है?", "options": ["11.2 किमी/सेकंड", "9.8 किमी/सेकंड", "8.0 किमी/सेकंड", "15.0 किमी/सेकंड"], "correct": 0, "exam": "Physics" },
+  { "q": "'सेबी' (SEBI) की स्थापना मुख्य रूप से किस क्षेत्र को विनियमित (Regulate) और सुरक्षित करने के लिए की गई थी?", "options": ["शेयर बाजार (Stock Market)", "बैंकिंग और ऋण प्रणाली", "विदेशी प्रत्यक्ष निवेश (FDI)", "जीवन और साधारण बीमा क्षेत्र"], "correct": 0, "exam": "Economy" },
+  { "q": "संविधान सभा के निर्माण का आधार बना 'कैबिनेट मिशन' (Cabinet Mission) किस वर्ष भारत आया था?", "options": ["1946", "1942", "1945", "1947"], "correct": 0, "exam": "Modern History" },
+  { "q": "भारतीय मानक समय (IST) की देशांतर रेखा 82.5°E है। यह ग्रीनविच मीन टाइम (GMT) से कितना आगे है?", "options": ["5 घंटे 30 मिनट आगे", "5 घंटे 30 मिनट पीछे", "5 घंटे आगे", "6 घंटे आगे"], "correct": 0, "exam": "Geo / SSC" },
+  { "q": "संविधान का 'अनुच्छेद 324' का संबंध स्वतंत्र और निष्पक्ष रूप से काम करने वाली किस संवैधानिक संस्था से है?", "options": ["भारत का निर्वाचन आयोग (Election Commission)", "संघ लोक सेवा आयोग (UPSC)", "वित्त आयोग (Finance Commission)", "नियंत्रक एवं महालेखा परीक्षक (CAG)"], "correct": 0, "exam": "Polity" },
+  { "q": "दुनिया की पहली एंटीबायोटिक 'पेंसिलीन' (Penicillin) की खोज किस वैज्ञानिक ने की थी?", "options": ["अलेक्जेंडर फ्लेमिंग", "लुई पाश्चर", "एडवर्ड जेनर", "रॉबर्ट कोच"], "correct": 0, "exam": "General Science" },
+  { "q": "मुगल सम्राट अकबर का मकबरा कहाँ स्थित है, जिसे उसने अपने जीवनकाल में ही बनवाना शुरू कर दिया था?", "options": ["सिकंदरा (आगरा)", "लाहौर", "दिल्ली", "फतेहपुर सीकरी"], "correct": 0, "exam": "History / UP Police" },
+  { "q": "अंतर्राष्ट्रीय 'क्योटो प्रोटोकॉल' (Kyoto Protocol) का मुख्य लक्ष्य क्या है?", "options": ["ग्रीनहाउस गैसों के उत्सर्जन को कम करना", "रासायनिक हथियारों पर रोक लगाना", "वन्यजीवों के अवैध व्यापार को रोकना", "परमाणु हथियारों के प्रसार को रोकना"], "correct": 0, "exam": "Environment" },
+  { "q": "प्रसिद्ध अफ्रीकी (मोरक्को) यात्री 'इब्न बतूता' किस दिल्ली सुल्तान के शासनकाल में भारत आया था और उसे दिल्ली का काज़ी भी नियुक्त किया गया था?", "options": ["मुहम्मद बिन तुगलक", "अलाउद्दीन खिलजी", "फिरोज शाह तुगलक", "गयासुद्दीन बलबन"], "correct": 0, "exam": "Medieval History" },
+
+  { "q": "यदि किसी संख्या को 899 से भाग देने पर शेषफल 63 प्राप्त होता है, तो उसी संख्या को 29 से भाग देने पर शेषफल क्या होगा?", "options": ["5", "3", "4", "1"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "दो अंकों की एक संख्या के अंकों का योग 9 है। यदि संख्या में 27 जोड़ दिया जाए, तो अंकों के स्थान आपस में बदल जाते हैं। वह संख्या क्या है?", "options": ["36", "45", "27", "63"], "correct": 0, "exam": "UP Police Constable" },
+  { "q": "प्रथम 20 विषम प्राकृतिक संख्याओं का योगफल क्या होगा?", "options": ["420", "210", "190", "400"], "correct": 3, "exam": "Railway NTPC" },
+  { "q": "वह सबसे बड़ी संख्या कौन सी है जो 147, 168 और 210 को पूर्णतः विभाजित कर सकती है?", "options": ["21", "7", "14", "42"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "दो रेलगाड़ियाँ जिनकी लंबाई क्रमशः 150 मीटर और 180 मीटर है, समांतर पटरियों पर एक-दूसरे की विपरीत दिशा में 50 किमी/घंटा और 58 किमी/घंटा की चाल से चल रही हैं। वे एक-दूसरे को कितने समय में पार करेंगी?", "options": ["11 सेकंड", "12 सेकंड", "15 सेकंड", "10 सेकंड"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "एक रेलगाड़ी एक खंभे को 15 सेकंड में और 100 मीटर लंबे प्लेटफॉर्म को 25 सेकंड में पार करती है। रेलगाड़ी की लंबाई कितनी है?", "options": ["150 मीटर", "100 मीटर", "200 मीटर", "120 मीटर"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "एक रेलगाड़ी बिना रुके 80 किमी/घंटा की औसत चाल से चलती है और रुकने के साथ इसकी औसत चाल 60 किमी/घंटा हो जाती है। रेलगाड़ी औसतन प्रति घंटा कितने मिनट रुकती है?", "options": ["15 मिनट", "12 मिनट", "20 मिनट", "10 मिनट"], "correct": 0, "exam": "SSC CPO" },
+  { "q": "दो स्टेशन A और B के बीच की दूरी 450 किमी है। एक ट्रेन A से सुबह 8 बजे 60 किमी/घंटा की चाल से B की ओर चलती है। दूसरी ट्रेन B से सुबह 9 बजे 70 किमी/घंटा की चाल से A की ओर चलती है। वे किस समय मिलेंगी?", "options": ["दोपहर 12 बजे", "दोपहर 1 बजे", "सुबह 11 बजे", "दोपहर 2 बजे"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "0.121212... (अनंत तक) को साधारण भिन्न (Fraction) में बदलने पर क्या प्राप्त होगा?", "options": ["4/33", "12/100", "2/15", "4/31"], "correct": 0, "exam": "SSC GD" },
+  { "q": "दो संख्याओं का गुणनफल 2028 है और उनका महत्तम समापवर्तक (HCF) 13 है। ऐसी संख्याओं के कितने जोड़े (Pairs) संभव हैं?", "options": ["2", "1", "3", "4"], "correct": 0, "exam": "SSC CGL Mains" }
+
+            
+        ];
+
+        // --- STATE ---
+        let currentIdx = 0;
+        let userAnswers = new Array(testData.length).fill(null);
+        let isReviewMode = false;
+        let timer = 0;
+        let timerInt;
+        let isMuted = false;
+        let audioCtx;
+
+        // Init Icons
+        lucide.createIcons();
+
+        // --- AUDIO ---
+        function playTick() {
+            if(isMuted) return;
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            // Soft "Pop" sound like iPhone keyboard
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, t);
+            osc.frequency.exponentialRampToValueAtTime(300, t + 0.03);
+            
+            gain.gain.setValueAtTime(0.1, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(t + 0.05);
+        }
+
+        function toggleSound() {
+            isMuted = !isMuted;
+            const icon = document.getElementById('muteIcon');
+            icon.setAttribute('data-lucide', isMuted ? 'volume-x' : 'volume-2');
+            if(!isMuted) playTick();
+            lucide.createIcons();
+        }
+
+        // --- LOGIC ---
+        function startTest() {
+            document.getElementById('startScreen').classList.add('hidden');
+            const ui = document.getElementById('testInterface');
+            ui.classList.remove('hidden');
+            ui.classList.add('flex');
+            
+            timerInt = setInterval(() => {
+                timer++;
+                // if(!isReviewMode) playTick(); // Optional: Tick every second (disabled for quieter UX)
+                const m = Math.floor(timer/60).toString().padStart(2,'0');
+                const s = (timer%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = testData[currentIdx];
+            document.getElementById('currentQ').innerText = currentIdx + 1;
+            document.getElementById('qText').innerHTML = q.q.replace(/\n/g, '<br>');
+            
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = ''; 
+
+            if(!isReviewMode) grid.classList.add('interactive');
+            else grid.classList.remove('interactive');
+
+            q.options.forEach((opt, i) => {
+                const isSelected = userAnswers[currentIdx] === i;
+                let extraClass = "text-gray-700";
+                let icon = "";
+                let disabledAttr = isReviewMode ? "disabled" : "";
+
+                if (isReviewMode) {
+                    if (i === q.correct) {
+                        extraClass = "correct-answer font-bold";
+                        icon = `<i data-lucide="check-circle" class="w-5 h-5 text-green-600 ml-auto"></i>`;
+                    } else if (isSelected && i !== q.correct) {
+                        extraClass = "wrong-answer font-bold";
+                        icon = `<i data-lucide="x-circle" class="w-5 h-5 text-red-500 ml-auto"></i>`;
+                    } else {
+                        extraClass = "opacity-40";
+                    }
+                }
+
+                grid.innerHTML += `
+                    <label class="cursor-pointer relative block group">
+                        <input type="radio" name="opt" class="option-radio sr-only" value="${i}" 
+                            ${isSelected ? 'checked' : ''} ${disabledAttr} onchange="selectOption(${i})">
+                        
+                        <div class="option-card p-4 rounded-2xl flex items-center gap-4 ${extraClass}">
+                            ${!isReviewMode ? `
+                            <div class="circle-indicator w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center flex-shrink-0 transition-colors">
+                            </div>` : ''}
+                            
+                            <span class="text-base font-medium flex-1">${opt}</span>
+                            ${icon}
+                        </div>
+                    </label>
+                `;
+            });
+            lucide.createIcons();
+            updateButtons();
+        }
+
+        function selectOption(idx) {
+            if(isReviewMode) return;
+            userAnswers[currentIdx] = idx;
+            playTick(); // Play sound on selection
+            renderQuestion();
+        }
+
+        function changeQ(dir) {
+            const newIdx = currentIdx + dir;
+            if(newIdx >= 0 && newIdx < testData.length) {
+                currentIdx = newIdx;
+                // Subtle fade transition
+                const area = document.getElementById('questionArea');
+                area.style.opacity = '0';
+                area.style.transform = 'translateY(5px)';
+                setTimeout(() => {
+                    renderQuestion();
+                    area.style.opacity = '1';
+                    area.style.transform = 'translateY(0)';
+                }, 150);
+            }
+        }
+
+        function updateButtons() {
+            const prev = document.getElementById('prevBtn');
+            const next = document.getElementById('nextBtn');
+            const sub = document.getElementById('submitBtn');
+            const home = document.getElementById('homeBtn');
+
+            prev.disabled = currentIdx === 0;
+
+            if (isReviewMode) {
+                next.classList.toggle('hidden', currentIdx === testData.length - 1);
+                sub.classList.add('hidden');
+                home.classList.remove('hidden');
+            } else {
+                if (currentIdx === testData.length - 1) {
+                    next.classList.add('hidden');
+                    sub.classList.remove('hidden');
+                } else {
+                    next.classList.remove('hidden');
+                    sub.classList.add('hidden');
+                }
+                home.classList.add('hidden');
+            }
+        }
+
+        function submitTest() {
+            clearInterval(timerInt);
+            let score = 0, c = 0, w = 0, s = 0;
+            userAnswers.forEach((ans, i) => {
+                if(ans === null) s++;
+                else if(ans === testData[i].correct) { c++; score += 2; }
+                else { w++; score -= 0.33; }
+            });
+            if(score < 0) score = 0;
+
+            document.getElementById('scoreDisplay').innerText = score.toFixed(2);
+            document.getElementById('rCorrect').innerText = c;
+            document.getElementById('rWrong').innerText = w;
+            document.getElementById('rSkip').innerText = s;
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+
+        function startReview() {
+            isReviewMode = true;
+            currentIdx = 0;
+            document.getElementById('resultModal').classList.add('hidden');
+            document.getElementById('modeLabel').classList.remove('hidden');
+            renderQuestion();
+        }
+    </script>
+</body>
+</html>
