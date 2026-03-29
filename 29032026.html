@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST SERIES 0.01 BY GAURAV KUMAR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .active-option { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- 1. स्टार्ट स्क्रीन -->
+    <div id="start-screen" class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 text-center">
+        <h1 class="text-3xl font-bold mb-6 text-blue-600"> competition Exam <br>BY<br>GAURAV KUMAR</h1>
+        <div class="text-left bg-blue-50 p-4 rounded-xl mb-6">
+             <p>• TEST CODE: <span class="text-red-600 font-bold">       0004</span></p>
+            <p>• प्रत्येक सही उत्तर: <span class="text-green-600 font-bold">    +1 अंक</span></p>
+            <p>• गलत उत्तर (नेगेटिव): <span class="text-red-600 font-bold">-0.33 अंक</span></p>
+            <p>• परिणाम अंत में डैशबोर्ड पर दिखेगा।</p>
+            <p>• Question :150</p>
+        </div>
+        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-3 rounded-xl text-xl font-bold">शुरू करें</button>
+    </div>
+
+    <!-- 2. क्विज़ स्क्रीन -->
+    <div id="quiz-screen" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden hidden mt-6">
+        <div class="bg-blue-600 p-4 text-white flex justify-between">
+            <span id="progress-text" class="font-bold">प्रश्न 1</span>
+            <span id="timer" class="font-mono">00:00</span>
+        </div>
+        <div class="p-6">
+            <h2 id="question-label" class="text-xl font-bold mb-6 min-h-[60px]">सवाल यहाँ आएगा</h2>
+            <div id="options-list" class="space-y-3">
+                <!-- बटन यहाँ अपने आप बनेंगे -->
+            </div>
+            <div class="flex gap-4 mt-8 border-t pt-6">
+                <button onclick="changeQuestion(-1)" class="bg-gray-200 px-6 py-2 rounded-lg font-bold">पीछे</button>
+                <button id="next-btn" onclick="changeQuestion(1)" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">अगला</button>
+                <button id="submit-btn" onclick="finishQuiz()" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold hidden">सबमिट करें</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. रिजल्ट डैशबोर्ड स्क्रीन -->
+    <div id="result-screen" class="max-w-4xl mx-auto hidden mt-6">
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 border-t-8 border-blue-600 text-center">
+            <h2 class="text-3xl font-bold mb-6">आपका स्कोर कार्ड</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-sm text-gray-500">कुल स्कोर</p>
+                    <p id="final-score" class="text-3xl font-bold text-blue-600">0.00</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <p class="text-sm text-gray-500">सही</p>
+                    <p id="correct-count" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl">
+                    <p class="text-sm text-gray-500">गलत</p>
+                    <p id="wrong-count" class="text-3xl font-bold text-red-600">0</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-xl">
+                    <p class="text-sm text-gray-500">छोड़े</p>
+                    <p id="skipped-count" class="text-3xl font-bold">0</p>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-2 rounded-lg">फिर से टेस्ट दें</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-6">
+            <h3 class="text-xl font-bold mb-4">उत्तरों की समीक्षा:</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 uppercase text-xs">
+                            <th class="p-3">#</th>
+                            <th class="p-3">प्रश्न</th>
+                            <th class="p-3">आपका उत्तर</th>
+                            <th class="p-3">सही उत्तर</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysis-table"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // यहाँ अपने नए सवाल जोड़ें
+        // correct: 0 का मतलब है पहला ऑप्शन सही है, 1 का मतलब दूसरा...
+        // ==========================================
+        const myQuestions = [
+        
+    
+  { "q": "यदि 'A' का अर्थ '+', 'B' का अर्थ '-', 'C' का अर्थ '×' है, तो 10 C 4 A 4 B 6 का मान क्या होगा?", "options": ["46", "38", "40", "42"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "विषम चुनें: कान, आँख, नाक, हाथ", "options": ["हाथ", "कान", "नाक", "आँख"], "correct": 0, "exam": "UP Police" },
+  { "q": "श्रृंखला पूरी करें: 3, 7, 15, 31, 63, ?", "options": ["126", "124", "127", "130"], "correct": 2, "exam": "Railway NTPC" },
+  { "q": "एक कक्षा में सोहन का स्थान ऊपर से 9वाँ और नीचे से 38वाँ है। कक्षा में कुल कितने छात्र हैं?", "options": ["47", "45", "48", "46"], "correct": 3, "exam": "SSC MTS" },
+  { "q": "यदि 'ORANGE' को '512349' लिखा जाता है, तो 'EAT' के लिए संभावित कोड क्या होगा?", "options": ["927", "912", "512", "349"], "correct": 0, "exam": "SSC GD" },
+  { "q": "विषम चुनें: 27, 64, 125, 144", "options": ["27", "64", "144", "125"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "रक्त संबंध: 'A', 'B' का भाई है। 'C', 'A' की माता है। 'D', 'C' का पिता है। 'B', 'D' की क्या है?", "options": ["पोती/नातिन", "बेटी", "बहन", "माता"], "correct": 0, "exam": "UP SI" },
+  { "q": "4:00 बजे घड़ी की सुइयों के बीच कितने डिग्री का कोण होगा?", "options": ["100°", "120°", "90°", "150°"], "correct": 1, "exam": "SSC CGL" },
+  { "q": "शब्दकोश (Dictionary) के अनुसार व्यवस्थित करें: 1. Apple, 2. Apply, 3. Apart, 4. April", "options": ["3,1,2,4", "1,2,3,4", "3,2,1,4", "4,3,2,1"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "श्रृंखला पूरी करें: 100, 90, 81, 73, ?", "options": ["65", "66", "64", "67"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "यदि 'FISH' को 'EHRG' लिखा जाता है, तो 'JUNGLE' को क्या लिखा जाएगा?", "options": ["ITMFKD", "KVOHMF", "ITNFKD", "KTMGKD"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "पासा (Dice): एक पासे की दो स्थितियां दी गई हैं। 3 के विपरीत क्या होगा (यदि 1,2,3 और 1,4,5 हैं)?", "options": ["4", "5", "2", "6"], "correct": 1, "exam": "UP Police" },
+  { "q": "लुप्त संख्या खोजें: 5, 10, 20, ?, 80", "options": ["30", "40", "50", "60"], "correct": 1, "exam": "SSC GD" },
+  { "q": "विषम चुनें: क्रिकेट, हॉकी, फुटबॉल, शतरंज", "options": ["हॉकी", "फुटबॉल", "शतरंज", "क्रिकेट"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "एक महिला की ओर इशारा करते हुए विजय ने कहा, 'वह मेरी माँ की इकलौती बहू है।' विजय का उस महिला से क्या संबंध है?", "options": ["भाई", "पति", "बेटा", "ससुर"], "correct": 1, "exam": "UP Police" },
+  { "q": "दर्पण प्रतिबिंब (Mirror Image): 'MATH' का दर्पण प्रतिबिंब कैसा दिखेगा?", "options": ["HTAM", "MATH", "HTAM (inverted)", "MTAM"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "श्रृंखला पूरी करें: A, C, F, J, ?", "options": ["L", "M", "N", "O"], "correct": 3, "exam": "Railway NTPC" },
+  { "q": "यदि 1 जनवरी 2023 को रविवार था, तो 31 दिसंबर 2023 को क्या दिन होगा?", "options": ["सोमवार", "रविवार", "शनिवार", "मंगलवार"], "correct": 1, "exam": "SSC GD" },
+  { "q": "विषम चुनें: 13, 17, 19, 21", "options": ["21", "13", "17", "19"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "लुप्त संख्या ज्ञात करें: 4, 9, 16, 25, ?", "options": ["30", "35", "36", "49"], "correct": 2, "exam": "SSC CHSL" },
+  { "q": "उत्तर : दक्षिण :: पूर्व : ?", "options": ["पश्चिम", "उत्तर-पूर्व", "दक्षिण-पश्चिम", "उत्तर"], "correct": 0, "exam": "UP Police" },
+  { "q": "वेन आरेख (Venn Diagram): फल, आम, सेब के लिए सही आरेख कौन सा है?", "options": ["दो छोटे गोले एक बड़े गोले के अंदर", "तीन अलग गोले", "तीन जुड़े हुए गोले", "एक के अंदर एक"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "यदि 'RED' को '27' लिखा जाता है, तो 'BLUE' को क्या लिखा जाएगा?", "options": ["40", "36", "42", "38"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "विषम चुनें: कुत्ता : भौंकना, बकरी : मिमियाना, शेर : दहाड़ना, गाय : रेंगना", "options": ["शेर : दहाड़ना", "गाय : रेंगना", "कुत्ता : भौंकना", "बकरी : मिमियाना"], "correct": 1, "exam": "UP SI" },
+  { "q": "15, 20, 30, 45, ?", "options": ["60", "65", "70", "55"], "correct": 1, "exam": "SSC MTS" },
+  { "q": "यदि कल के बाद का दिन गुरुवार है, तो कल से पहले का दिन क्या था?", "options": ["रविवार", "सोमवार", "शनिवार", "मंगलवार"], "correct": 0, "exam": "UP Police" },
+  { "q": "'Pen' : 'Write' :: 'Knife' : ?", "options": ["Cut", "Cook", "Eat", "Sharp"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "लुप्त अक्षर: abc_bc_ab_cc", "options": ["cba", "aac", "acc", "bba"], "correct": 0, "exam": "SSC CHSL" },
+  { "q": "एक घन को सभी तरफ से लाल रंग से रंगा गया और फिर 27 छोटे घनों में काटा गया। कितने घनों का कोई भी फलक रंगा हुआ नहीं होगा?", "options": ["1", "8", "0", "6"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "यदि उत्तर-पूर्व को पश्चिम कहा जाए, तो दक्षिण को क्या कहा जाएगा?", "options": ["उत्तर-पूर्व", "उत्तर-पश्चिम", "दक्षिण-पूर्व", "पूर्व"], "correct": 0, "exam": "UP Police" },
+  { "q": "विषम चुनें: ताश, लूडो, कैरम, फुटबॉल", "options": ["कैंरम", "लूडो", "फुटबॉल", "ताश"], "correct": 2, "exam": "Railway NTPC" },
+  { "q": "6, 12, 21, 33, ?", "options": ["45", "48", "50", "52"], "correct": 1, "exam": "SSC GD" },
+  { "q": "डॉक्टर : अस्पताल :: शिक्षक : ?", "options": ["बाजार", "स्कूल", "खेत", "कोर्ट"], "correct": 1, "exam": "UP Police" },
+  { "q": "सार्थक क्रम में रखें: 1. देश, 2. जिला, 3. राज्य, 4. ग्राम", "options": ["4,2,3,1", "1,3,2,4", "4,3,2,1", "2,4,3,1"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "विषम चुनें: पारा, सोना, चांदी, तांबा", "options": ["सोना", "चांदी", "पारा", "तांबा"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "'करो या मरो' का नारा किसने दिया था?", "options": ["भगत सिंह", "महात्मा गांधी", "सुभाष चंद्र बोस", "जवाहरलाल नेहरू"], "correct": 1, "exam": "SSC CGL" },
+  { "q": "भारत में रेलवे की शुरुआत किस वर्ष हुई थी?", "options": ["1853", "1850", "1901", "1848"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "प्रसिद्ध 'ताजमहल' उत्तर प्रदेश के किस शहर में है?", "options": ["आगरा", "लखनऊ", "कानपुर", "मेरठ"], "correct": 0, "exam": "UP Police" },
+  { "q": "विश्व पर्यावरण दिवस कब मनाया जाता है?", "options": ["5 जून", "11 जुलाई", "22 मार्च", "1 दिसंबर"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "'गौतम बुद्ध' के बचपन का नाम क्या था?", "options": ["सिद्धार्थ", "वर्धमान", "राहुल", "शुद्धोधन"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "मनुष्य के रक्त का pH मान कितना होता है?", "options": ["7.0", "7.4", "6.5", "8.0"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "'भारत का मैनचेस्टर' किसे कहा जाता है?", "options": ["अहमदाबाद", "मुंबई", "कानपुर", "सूरत"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "सौरमंडल का सबसे बड़ा ग्रह कौन सा है?", "options": ["शनि", "बृहस्पति", "पृथ्वी", "वरुण"], "correct": 1, "exam": "SSC GD" },
+  { "q": "कथकली किस राज्य का प्रसिद्ध नृत्य है?", "options": ["केरल", "तमिलनाडु", "ओडिशा", "कर्नाटक"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारत का सर्वोच्च नागरिक सम्मान कौन सा है?", "options": ["पद्म विभूषण", "भारत रत्न", "वीर चक्र", "परमवीर चक्र"], "correct": 1, "exam": "UP SI" },
+  { "q": "'स्वराज मेरा जन्मसिद्ध अधिकार है' यह किसने कहा था?", "options": ["बाल गंगाधर तिलक", "लाला लाजपत राय", "बिपिन चंद्र पाल", "भगत सिंह"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "टेलीफोन का आविष्कार किसने किया था?", "options": ["एलेक्जेंडर ग्राहम बेल", "थॉमस एडिसन", "न्यूटन", "मार्कोनी"], "correct": 0, "exam": "ITI Exam" },
+  { "q": "भारत की सबसे लंबी दूरी तय करने वाली ट्रेन कौन सी है?", "options": ["विवेक एक्सप्रेस", "हिमसागर एक्सप्रेस", "राजधानी एक्सप्रेस", "शताब्दी एक्सप्रेस"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "काजीरंगा अभ्यारण्य किसके लिए प्रसिद्ध है?", "options": ["एक सींग वाला गेंडा", "हाथी", "शेर", "बाघ"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "उत्तर प्रदेश की प्रथम महिला मुख्यमंत्री कौन थी?", "options": ["सुचेता कृपलानी", "सरोजिनी नायडू", "मायावती", "आनंदीबेन पटेल"], "correct": 0, "exam": "UP Police" },
+  { "q": "भारत का लौह पुरुष (Iron Man) किसे कहा जाता है?", "options": ["जवाहरलाल नेहरू", "सरदार वल्लभभाई पटेल", "महात्मा गांधी", "बाल गंगाधर तिलक"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "मसालों का बगीचा किस राज्य को कहा जाता है?", "options": ["केरल", "कर्नाटक", "तमिलनाडु", "असम"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "'डिस्कवरी ऑफ इंडिया' पुस्तक के लेखक कौन हैं?", "options": ["महात्मा गांधी", "जवाहरलाल नेहरू", "एपीजे अब्दुल कलाम", "डॉ. राजेंद्र प्रसाद"], "correct": 1, "exam": "SSC GD" },
+  { "q": "सूर्य के प्रकाश से कौन सा विटामिन प्राप्त होता है?", "options": ["विटामिन A", "विटामिन C", "विटामिन D", "विटामिन K"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "सांची का स्तूप किसने बनवाया था?", "options": ["अशोक", "चंद्रगुप्त", "अकबर", "हुमायूं"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारत में जनगणना कितने वर्षों के अंतराल पर होती है?", "options": ["5 वर्ष", "10 वर्ष", "15 वर्ष", "20 वर्ष"], "correct": 1, "exam": "UP Police" },
+  { "q": "'सफेद हाथियों का देश' किसे कहा जाता है?", "options": ["थाईलैंड", "जापान", "भारत", "कनाडा"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "इलेक्ट्रॉन की खोज किसने की थी?", "options": ["जे.जे. थॉमसन", "रदरफोर्ड", "चैडविक", "गोल्डस्टीन"], "correct": 0, "exam": "ITI Exam" },
+  { "q": "राज्यसभा के सदस्यों का कार्यकाल कितना होता है?", "options": ["5 वर्ष", "6 वर्ष", "4 वर्ष", "2 वर्ष"], "correct": 1, "exam": "SSC MTS" },
+  { "q": "पोंगल किस राज्य का त्यौहार है?", "options": ["केरल", "तमिलनाडु", "आंध्र प्रदेश", "कर्नाटक"], "correct": 1, "exam": "Railway Group D" },
+  { "q": "'मिसाइल मैन ऑफ India' किसे कहा जाता है?", "options": ["सी.वी. रमन", "डॉ. एपीजे अब्दुल कलाम", "होमी जहांगीर भाभा", "विक्रम साराभाई"], "correct": 1, "exam": "SSC GD" },
+  { "q": "भारत की सबसे बड़ी मीठे पानी की झील कौन सी है?", "options": ["वुलर झील", "चिल्का झील", "डल झील", "सांभर झील"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "'इंकलाब जिंदाबाद' का नारा किसने दिया था?", "options": ["भगत सिंह", "सुभाष चंद्र बोस", "चंद्रशेखर आजाद", "सुखदेव"], "correct": 0, "exam": "UP Police" },
+  { "q": "कथक किस राज्य का शास्त्रीय नृत्य है?", "options": ["उत्तर प्रदेश", "बिहार", "मध्य प्रदेश", "राजस्थान"], "correct": 0, "exam": "UP SI" },
+  { "q": "भारत का राष्ट्रीय खेल कौन सा है?", "options": ["क्रिकेट", "हॉकी", "फुटबॉल", "कबड्डी"], "correct": 1, "exam": "Railway Group D" },
+  { "q": "भाभा परमाणु अनुसंधान केंद्र कहाँ स्थित है?", "options": ["ट्रॉम्बे (मुंबई)", "नई दिल्ली", "बेंगलुरु", "हैदराबाद"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "विश्व का सबसे बड़ा महाद्वीप कौन सा है?", "options": ["अफ्रीका", "एशिया", "यूरोप", "ऑस्ट्रेलिया"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "'देवधर ट्रॉफी' का संबंध किस खेल से है?", "options": ["फुटबॉल", "क्रिकेट", "हॉकी", "टेनिस"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "वायुमंडल में नाइट्रोजन का प्रतिशत कितना है?", "options": ["21%", "78%", "0.03%", "1%"], "correct": 1, "exam": "SSC GD" },
+  { "q": "सौरमंडल का सबसे चमकीला ग्रह कौन सा है?", "options": ["मंगल", "शुक्र", "बुध", "शनि"], "correct": 1, "exam": "UP Police" },
+  { "q": "भारत की प्रथम महिला राज्यपाल कौन थी?", "options": ["सरोजिनी नायडू", "सुचेता कृपलानी", "इंदिरा गांधी", "प्रतिभा पाटिल"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "'गायत्री मंत्र' का उल्लेख किस वेद में है?", "options": ["ऋग्वेद", "सामवेद", "यजुर्वेद", "अथर्ववेद"], "correct": 0, "exam": "Railway Group D" },
+  { "q": "आगरा का किला किसने बनवाया था?", "options": ["अकबर", "शाहजहां", "जहांगीर", "हुमायूं"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "भारत का सबसे छोटा राज्य (क्षेत्रफल में) कौन सा है?", "options": ["सिक्किम", "गोवा", "त्रिपुरा", "मिजोरम"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "विश्व मानवाधिकार दिवस कब मनाया जाता है?", "options": ["10 दिसंबर", "1 दिसंबर", "5 सितंबर", "2 अक्टूबर"], "correct": 0, "exam": "UP SI" },
+
+  { "q": "दो संख्याओं का योग 40 है और उनका अंतर 6 है। बड़ी संख्या क्या होगी?", "options": ["20", "17", "23", "26"], "correct": 2, "exam": "UP Police" },
+  { "q": "0.4, 0.04 और 0.004 का औसत (Average) क्या है?", "options": ["0.444", "0.148", "0.144", "0.044"], "correct": 1, "exam": "Railway Group D" },
+  { "q": "एक आयत की लंबाई 20% बढ़ाई जाती है और चौड़ाई 10% घटाई जाती है। क्षेत्रफल पर क्या प्रभाव पड़ेगा?", "options": ["10% वृद्धि", "5% कमी", "2% कमी", "8% वृद्धि"], "correct": 3, "exam": "SSC CHSL" },
+  { "q": "किसी वस्तु को 720 रुपये में बेचने पर 25% की हानि होती है। 25% लाभ के लिए विक्रय मूल्य क्या होना चाहिए?", "options": ["960", "1200", "1000", "1150"], "correct": 1, "exam": "SSC CGL" },
+  { "q": "₹5000 पर 10% वार्षिक दर से 3 वर्ष का साधारण ब्याज क्या होगा?", "options": ["1200", "1500", "1000", "1800"], "correct": 1, "exam": "UP Police" },
+  { "q": "एक संख्या का 40%, 120 के बराबर है। उस संख्या का 60% क्या होगा?", "options": ["180", "200", "150", "240"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "एक वृत्त का व्यास (Diameter) 14 सेमी है। उसका परिधि (Circumference) क्या होगा?", "options": ["22 सेमी", "88 सेमी", "44 सेमी", "154 सेमी"], "correct": 2, "exam": "SSC MTS" },
+  { "q": "यदि 12 आदमी एक काम को 20 दिन में करते हैं, तो 15 आदमी उसे कितने दिन में करेंगे?", "options": ["18 दिन", "10 दिन", "16 दिन", "12 दिन"], "correct": 2, "exam": "SSC GD" },
+  { "q": "8, 12, और 15 का लघुत्तम समापवर्त्य (LCM) क्या होगा?", "options": ["60", "120", "90", "180"], "correct": 1, "exam": "Railway Group D" },
+  { "q": "एक कार 72 किमी/घंटा की चाल से चल रही है। उसकी चाल मीटर/सेकंड में क्या होगी?", "options": ["25 m/s", "15 m/s", "20 m/s", "10 m/s"], "correct": 2, "exam": "UP Police" },
+  { "q": "प्रथम 5 अभाज्य संख्याओं (Prime Numbers) का औसत क्या है?", "options": ["5.0", "6.2", "4.8", "5.6"], "correct": 3, "exam": "SSC CGL" },
+  { "q": "किसी संख्या को 52 से भाग देने पर 45 शेष बचता है। उसे 13 से भाग देने पर क्या शेष बचेगा?", "options": ["3", "5", "6", "4"], "correct": 2, "exam": "SSC CHSL" },
+  { "q": "एक परीक्षा में उत्तीर्ण होने के लिए 33% अंक चाहिए। एक छात्र 220 अंक प्राप्त करता है और 11 अंकों से अनुत्तीर्ण हो जाता है। कुल अंक क्या हैं?", "options": ["700", "600", "800", "500"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "A और B की आयु का अनुपात 4:5 है। उनकी आयु का योग 36 वर्ष है। B की आयु क्या है?", "options": ["16 वर्ष", "18 वर्ष", "20 वर्ष", "24 वर्ष"], "correct": 2, "exam": "SSC MTS" },
+  { "q": "√0.0009 का मान क्या होगा?", "options": ["0.3", "0.03", "0.003", "0.9"], "correct": 1, "exam": "UP Police" },
+  { "q": "300 मीटर लंबी ट्रेन 54 किमी/घंटा की चाल से एक खंभे को कितने समय में पार करेगी?", "options": ["15 सेकंड", "25 सेकंड", "20 सेकंड", "18 सेकंड"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "मिश्रण में दूध और पानी का अनुपात 5:3 है। यदि 4 लीटर पानी मिलाया जाए तो अनुपात 1:1 हो जाता है। दूध की मात्रा क्या है?", "options": ["10 लीटर", "15 लीटर", "12 लीटर", "8 लीटर"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "एक घन (Cube) का आयतन 216 घन सेमी है। उसकी भुजा की लंबाई क्या होगी?", "options": ["4 सेमी", "6 सेमी", "8 सेमी", "12 सेमी"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "यदि x:y = 3:4 है, तो (2x + 3y) : (3x + 4y) का मान क्या होगा?", "options": ["15:22", "9:14", "18:25", "6:11"], "correct": 2, "exam": "SSC GD" },
+  { "q": "दो साल के लिए ₹1000 पर 10% की दर से चक्रवृद्धि ब्याज क्या होगा?", "options": ["200", "210", "220", "205"], "correct": 1, "exam": "UP SI" },
+  { "q": "एक चुनाव में दो उम्मीदवार थे। जीतने वाले को 54% वोट मिले और वह 640 वोटों से जीत गया। कुल वोट कितने थे?", "options": ["7500", "6000", "8000", "10000"], "correct": 2, "exam": "SSC CHSL" },
+  { "q": "80 का कितना प्रतिशत 16 है?", "options": ["25%", "20%", "15%", "30%"], "correct": 1, "exam": "Railway Group D" },
+  { "q": "एक पाइप एक टंकी को 12 घंटे में भर सकता है, दूसरा 18 घंटे में खाली कर सकता है। दोनों साथ खोलें तो टंकी कितने समय में भरेगी?", "options": ["30 घंटे", "24 घंटे", "36 घंटे", "40 घंटे"], "correct": 2, "exam": "SSC MTS" },
+  { "q": "प्रथम 10 सम संख्याओं (Even Numbers) का योग क्या होगा?", "options": ["100", "110", "120", "90"], "correct": 1, "exam": "UP Police" },
+  { "q": "किसी संख्या के वर्ग का 40%, 160 है। वह संख्या क्या है?", "options": ["15", "25", "10", "20"], "correct": 3, "exam": "SSC CGL" },
+  { "q": "एक आयताकार मैदान की लंबाई 50 मी और चौड़ाई 40 मी है। इसके चारों ओर 2 मी चौड़ा रास्ता है। रास्ते का क्षेत्रफल क्या होगा?", "options": ["360 वर्ग मी", "376 वर्ग मी", "400 वर्ग मी", "350 वर्ग मी"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "एक मेज को ₹1034 में बेचने पर 10% का लाभ होता है। उसका क्रय मूल्य क्या है?", "options": ["₹900", "₹950", "₹940", "₹920"], "correct": 2, "exam": "SSC GD" },
+  { "q": "0.125 का मान भिन्न (Fraction) में क्या होगा?", "options": ["1/4", "1/5", "1/8", "1/10"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "तीन संख्याओं का औसत 20 है। यदि दो संख्याएं 16 और 22 हैं, तो तीसरी संख्या क्या होगी?", "options": ["18", "24", "20", "22"], "correct": 3, "exam": "UP Police" },
+  { "q": "एक बेलन (Cylinder) की त्रिज्या 7 सेमी और ऊंचाई 10 सेमी है। उसका आयतन क्या होगा?", "options": ["1540 घन सेमी", "1440 घन सेमी", "770 घन सेमी", "1100 घन सेमी"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "15, 25, 40 का HCF क्या होगा?", "options": ["10", "15", "1", "5"], "correct": 3, "exam": "Railway NTPC" },
+  { "q": "₹800 की वस्तु पर 10% और 5% की क्रमिक छूट के बाद मूल्य क्या होगा?", "options": ["700", "684", "720", "650"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "एक रेलगाड़ी 90 किमी/घंटा की औसत चाल से 4 घंटे में कितनी दूरी तय करेगी?", "options": ["400 किमी", "320 किमी", "360 किमी", "350 किमी"], "correct": 2, "exam": "UP Police" },
+  { "q": "यदि 5A = 3B = 2C है, तो A:B:C क्या होगा?", "options": ["6:10:15", "2:3:5", "5:3:2", "15:10:6"], "correct": 0, "exam": "SSC MTS" },
+  { "q": "दो वर्षों के लिए ₹2000 पर 5% की दर से साधारण और चक्रवृद्धि ब्याज का अंतर क्या होगा?", "options": ["₹10", "₹15", "₹5", "₹20"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "श्रृंखला पूरी करें: 5, 11, 23, 47, ?", "options": ["90", "100", "85", "95"], "correct": 3, "exam": "SSC GD" },
+  { "q": "विषम चुनें: जनवरी, मार्च, जुलाई, सितंबर", "options": ["जनवरी", "सितंबर", "मार्च", "जुलाई"], "correct": 1, "exam": "UP Police" },
+  { "q": "यदि 'PEN' = 35 है, तो 'PAG' = ?", "options": ["25", "23", "24", "26"], "correct": 2, "exam": "Railway NTPC" },
+  { "q": "एक आदमी दक्षिण की ओर 5 किमी चला, फिर दाएं मुड़कर 3 किमी चला, फिर बाएं मुड़कर 5 किमी चला। अब वह किस दिशा में है?", "options": ["उत्तर", "पूर्व", "दक्षिण", "पश्चिम"], "correct": 2, "exam": "SSC CGL" },
+  { "q": "श्रृंखला पूरी करें: B, E, H, K, ?", "options": ["M", "N", "L", "O"], "correct": 1, "exam": "Railway Group D" },
+  { "q": "पिता : पुत्र :: माता : ?", "options": ["बहन", "चाची", "भाभी", "पुत्री"], "correct": 3, "exam": "UP Police" },
+  { "q": "यदि '123' का अर्थ 'I am good' है, तो '345' का अर्थ 'Good is life' है। 'Good' के लिए कौन सा अंक है?", "options": ["1", "2", "4", "3"], "correct": 3, "exam": "SSC MTS" },
+  { "q": "लुप्त संख्या ज्ञात करें: 2, 6, 12, 20, ?", "options": ["28", "32", "30", "34"], "correct": 2, "exam": "Railway NTPC" },
+  { "q": "विषम चुनें: लोहा, तांबा, सोना, लकड़ी", "options": ["लोहा", "लकड़ी", "तांबा", "सोना"], "correct": 1, "exam": "SSC GD" },
+  { "q": "यदि आज रविवार है, तो 65 दिन बाद कौन सा दिन होगा?", "options": ["मंगलवार", "सोमवार", "बुधवार", "शनिवार"], "correct": 0, "exam": "UP Police" },
+  { "q": "10:30 बजे घड़ी की सुइयों के बीच कोण क्या होगा?", "options": ["120°", "135°", "150°", "145°"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "श्रृंखला पूरी करें: 1, 4, 27, 16, 125, 36, ?", "options": ["216", "49", "343", "64"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "एक फोटो की ओर इशारा करते हुए अमित ने कहा, 'वह मेरे पिता की इकलौती संतान का बेटा है।' अमित का फोटो वाले से क्या संबंध है?", "options": ["भाई", "पिता", "चाचा", "दादा"], "correct": 1, "exam": "UP SI" },
+  { "q": "यदि 'RAIN' को '8195' लिखा जाता है, तो 'MOON' को कैसे लिखा जाएगा?", "options": ["4556", "3665", "4664", "4665"], "correct": 3, "exam": "SSC CGL" },
+  { "q": "विषम चुनें: कानपुर, लखनऊ, वाराणसी, भोपाल", "options": ["कानपुर", "लखनऊ", "भोपाल", "वाराणसी"], "correct": 2, "exam": "UP Police" },
+  { "q": "उत्तर प्रदेश के वर्तमान मुख्यमंत्री कौन हैं?", "options": ["अखिलेश यादव", "योगी आदित्यनाथ", "मायावती", "राजनाथ सिंह"], "correct": 1, "exam": "UP Police" },
+  { "q": "भारत का नेपोलियन किसे कहा जाता है?", "options": ["चंद्रगुप्त मौर्य", "अकबर", "समुद्रगुप्त", "अशोक"], "correct": 2, "exam": "SSC CGL" },
+  { "q": "विश्व की सबसे लंबी नदी कौन सी है?", "options": ["नील", "अमेज़न", "गंगा", "यांग्त्ज़ी"], "correct": 0, "exam": "Railway NTPC" },
+  { "q": "'काजीरंगा राष्ट्रीय उद्यान' किस राज्य में स्थित है?", "options": ["गुजरात", "असम", "मध्य प्रदेश", "राजस्थान"], "correct": 1, "exam": "SSC MTS" },
+  { "q": "कंप्यूटर का जनक किसे माना जाता है?", "options": ["चार्ल्स बैबेज", "बिल गेट्स", "स्टीव जॉब्स", "एलन ट्यूरिंग"], "correct": 0, "exam": "ITI IT Exam" },
+  { "q": "विटामिन सी का सबसे अच्छा स्रोत क्या है?", "options": ["दूध", "गाजर", "आंवला", "सेब"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "सौरमंडल का सबसे छोटा ग्रह कौन सा है?", "options": ["बुध", "मंगल", "शुक्र", "शनि"], "correct": 0, "exam": "SSC GD" },
+  { "q": "आर्य समाज की स्थापना किसने की थी?", "options": ["राजा राममोहन राय", "स्वामी विवेकानंद", "स्वामी दयानंद सरस्वती", "ज्योतिबा फुले"], "correct": 2, "exam": "UP Police" },
+  { "q": "हीराकुंड बांध किस नदी पर बना है?", "options": ["गंगा", "महानदी", "यमुना", "कावेरी"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "गौतम बुद्ध ने अपना प्रथम उपदेश कहाँ दिया था?", "options": ["सारनाथ", "लुम्बिनी", "बोधगया", "कुशीनगर"], "correct": 0, "exam": "SSC CGL" },
+  { "q": "'पेनिसिलिन' की खोज किसने की थी?", "options": ["लुई पाश्चर", "एडवर्ड जेनर", "अलेक्जेंडर फ्लेमिंग", "मैडम क्यूरी"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "भारत का प्रथम नागरिक कौन होता है?", "options": ["प्रधानमंत्री", "राष्ट्रपति", "मुख्य न्यायाधीश", "राज्यपाल"], "correct": 1, "exam": "UP Police" },
+  { "q": "चिल्का झील किस राज्य में स्थित है?", "options": ["केरल", "ओडिशा", "आंध्र प्रदेश", "तमिलनाडु"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "पानीपत का प्रथम युद्ध कब हुआ था?", "options": ["1556", "1761", "1526", "1527"], "correct": 2, "exam": "Railway NTPC" },
+  { "q": "'बुल फाइटिंग' किस देश का राष्ट्रीय खेल है?", "options": ["जापान", "स्पेन", "कनाडा", "चीन"], "correct": 1, "exam": "SSC GD" },
+  { "q": "ओजोन परत वायुमंडल की किस परत में पाई जाती है?", "options": ["क्षोभ मंडल", "मध्य मंडल", "आयतन मंडल", "समताप मंडल"], "correct": 3, "exam": "SSC CGL" },
+  { "q": "मनुष्य के शरीर में कुल कितनी हड्डियाँ होती हैं?", "options": ["206", "208", "210", "300"], "correct": 0, "exam": "UP SI" },
+  { "q": "बिहू किस राज्य का प्रसिद्ध लोक नृत्य है?", "options": ["ओडिशा", "बिहार", "असम", "पंजाब"], "correct": 2, "exam": "Railway Group D" },
+  { "q": "भारत की पहली महिला प्रधानमंत्री कौन थी?", "options": ["प्रतिभा पाटिल", "इंदिरा गांधी", "सरोजिनी नायडू", "सुषमा स्वराज"], "correct": 1, "exam": "SSC MTS" },
+  { "q": "'गीत गोविंद' के रचयिता कौन हैं?", "options": ["कालिदास", "तुलसीदास", "जयदेव", "कबीर"], "correct": 2, "exam": "UP Police" },
+  { "q": "वायुमंडलीय दाब मापने का यंत्र क्या है?", "options": ["थर्मामीटर", "बैरोमीटर", "हाइड्रोमीटर", "लैक्टोमीटर"], "correct": 1, "exam": "Railway NTPC" },
+  { "q": "कुचिपुड़ी किस राज्य का शास्त्रीय नृत्य है?", "options": ["केरल", "तमिलनाडु", "आंध्र प्रदेश", "कर्नाटक"], "correct": 2, "exam": "SSC CPO" },
+  { "q": "संयुक्त राष्ट्र संघ (UNO) का मुख्यालय कहाँ स्थित है?", "options": ["जेनेवा", "न्यूयॉर्क", "पेरिस", "लंदन"], "correct": 1, "exam": "SSC CHSL" },
+  { "q": "राज्यसभा का पदेन सभापति कौन होता है?", "options": ["उपराष्ट्रपति", "राष्ट्रपति", "प्रधानमंत्री", "लोकसभा अध्यक्ष"], "correct": 0, "exam": "UP Police" },
+  { "q": "'वन्दे मातरम' गीत के लेखक कौन हैं?", "options": ["रवींद्रनाथ टैगोर", "बंकिम चंद्र चटर्जी", "शरद चंद्र", "मुंशी प्रेमचंद"], "correct": 1, "exam": "SSC GD" }
+
+
+        ];
+
+        let currentIndex = 0;
+        let selectedAnswers = new Array(myQuestions.length).fill(null);
+        let time = 0;
+        let timer;
+
+        // क्विज़ शुरू करने के लिए
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            showQuestion();
+            timer = setInterval(() => {
+                time++;
+                let m = Math.floor(time/60).toString().padStart(2,'0');
+                let s = (time%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        // सवाल दिखाने के लिए
+        function showQuestion() {
+            const data = myQuestions[currentIndex];
+            document.getElementById('progress-text').innerText = `प्रश्न ${currentIndex + 1} / ${myQuestions.length}`;
+            document.getElementById('question-label').innerText = data.q;
+            
+            const list = document.getElementById('options-list');
+            list.innerHTML = '';
+
+            data.options.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl border-2 transition-all ${selectedAnswers[currentIndex] === i ? 'active-option font-bold border-blue-500' : 'border-gray-100 hover:bg-gray-50'}`;
+                btn.innerHTML = `<span class="mr-3 font-bold opacity-50">${i+1}.</span> ${opt}`;
+                btn.onclick = () => { selectedAnswers[currentIndex] = i; showQuestion(); };
+                list.appendChild(btn);
+            });
+
+            // सबमिट बटन केवल आखिरी सवाल पर दिखेगा
+            if(currentIndex === myQuestions.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('submit-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('submit-btn').classList.add('hidden');
+            }
+        }
+
+        // सवाल बदलने के लिए (आगे या पीछे)
+        function changeQuestion(step) {
+            let nextIndex = currentIndex + step;
+            if(nextIndex >= 0 && nextIndex < myQuestions.length) {
+                currentIndex = nextIndex;
+                showQuestion();
+            }
+        }
+
+        // टेस्ट खत्म करने और रिजल्ट दिखाने के लिए
+        function finishQuiz() {
+            clearInterval(timer);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            let correct = 0, wrong = 0, skipped = 0;
+            const table = document.getElementById('analysis-table');
+            table.innerHTML = '';
+
+            myQuestions.forEach((q, i) => {
+                let userPick = selectedAnswers[i];
+                let row = document.createElement('tr');
+                row.className = "border-b text-sm";
+                
+                let userAnsText = (userPick === null) ? "<span class='text-gray-400'>-</span>" : q.options[userPick];
+                let statusColor = "";
+
+                if (userPick === null) {
+                    skipped++;
+                } else if (userPick === q.correct) {
+                    correct++;
+                    statusColor = "text-green-600 font-bold";
+                } else {
+                    wrong++;
+                    statusColor = "text-red-600 font-bold";
+                }
+
+                row.innerHTML = `
+                    <td class="p-3">${i+1}</td>
+                    <td class="p-3">${q.q}</td>
+                    <td class="p-3 ${statusColor}">${userAnsText}</td>
+                    <td class="p-3 font-bold text-green-700">${q.options[q.correct]}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            // स्कोर की गणना (नेगेटिव मार्किंग के साथ)
+            const score = (correct * 1) - (wrong * 0.33);
+            document.getElementById('final-score').innerText = score.toFixed(2);
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+            document.getElementById('skipped-count').innerText = skipped;
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>
