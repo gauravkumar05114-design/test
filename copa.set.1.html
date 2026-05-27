@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="hi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COPA (Java) CBT Exam Simulator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Confetti Library for Exam Completion Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        answered: '#10B981',
+                        unanswered: '#EF4444',
+                        review: '#8B5CF6',
+                        notvisited: '#6B7280'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Outfit', 'Noto Sans Devanagari', sans-serif;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .dark .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a78bfa;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6;
+        }
+        
+        /* Shimmer loading effect */
+        .shimmer {
+            background: linear-gradient(90deg, #f3f3f3 25%, #ececec 50%, #f3f3f3 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col antialiased selection:bg-primary-500 selection:text-white">
+
+    <!-- Header Block -->
+    <header class="sticky top-0 z-40 w-full glass-card border-b shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-primary-600 to-indigo-500 p-2 rounded-xl text-white shadow-md shadow-primary-500/20">
+                    <i class="fas fa-laptop-code text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm sm:text-base leading-tight bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                        AITT COPA (Java)
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">CBT Exam Simulator - Set 1</p>
+                </div>
+            </div>
+
+            <!-- Exam Quick Actions & Info -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- Theme toggle -->
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform" title="Toggle Theme">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+
+                <!-- Timer -->
+                <div id="exam-timer-wrapper" class="flex items-center space-x-2 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/30 px-3 py-1.5 rounded-xl text-red-600 dark:text-red-400 font-semibold text-sm transition-all duration-300">
+                    <i class="far fa-clock animate-pulse"></i>
+                    <span id="exam-timer">120:00</span>
+                </div>
+
+                <!-- Submit Button -->
+                <button onclick="confirmSubmitExam()" class="hidden md:flex items-center space-x-2 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-red-500/10 transition-all duration-300 transform hover:-translate-y-0.5">
+                    <i class="fas fa-check-double"></i>
+                    <span>Submit Exam</span>
+                </button>
+
+                <!-- Mobile Menu Button for Palette Toggle -->
+                <button onclick="toggleMobilePalette()" class="md:hidden p-2 rounded-lg bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-300">
+                    <i class="fas fa-th"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Welcome / Instructions Screen -->
+    <main id="setup-screen" class="flex-grow flex items-center justify-center p-4">
+        <div class="max-w-xl w-full glass-card p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 text-center">
+            <div class="w-20 h-20 bg-primary-100 dark:bg-primary-950 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-graduation-cap text-3xl text-primary-600 dark:text-primary-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">All India Trade Test (AITT)</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Trade: Computer Operator & Programming Assistant (Java) - 1st Year</p>
+            
+            <div class="bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl p-4 text-left space-y-3 mb-6 text-xs sm:text-sm">
+                <div class="flex items-center space-x-2 font-semibold">
+                    <i class="fas fa-info-circle text-primary-500"></i>
+                    <span>परीक्षा के नियम (Instructions):</span>
+                </div>
+                <ul class="list-disc list-inside space-y-1.5 text-slate-600 dark:text-slate-300">
+                    <li>कुल प्रश्नों की संख्या: <strong>75</strong> (75 MCQ)</li>
+                    <li>ट्रेड थ्योरी (Trade Theory): 50 प्रश्न</li>
+                    <li>एम्प्लॉयबिलिटी स्किल्स (Employability Skills): 25 प्रश्न</li>
+                    <li>कुल अंक: <strong>150</strong> (प्रत्येक प्रश्न 2 अंक का)</li>
+                    <li>नकारात्मक अंकन (Negative Marking): <strong>कोई नहीं (0.00)</strong></li>
+                    <li>निर्धारित समय: <strong>120 मिनट (2 घंटे)</strong></li>
+                </ul>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-left text-xs font-semibold mb-2 text-slate-500 dark:text-slate-400">Enter Candidate Name / छात्र का नाम</label>
+                <input type="text" id="candidate-name" placeholder="E.g., Gaurav kumar" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium">
+            </div>
+
+            <button onclick="startExam()" class="w-full py-3.5 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-primary-500/20 transform hover:-translate-y-0.5 transition-all duration-300">
+                Start CBT Exam / परीक्षा शुरू करें
+            </button>
+        </div>
+    </main>
+
+    <!-- Main Active Exam Workspace -->
+    <main id="exam-screen" class="hidden flex-grow flex flex-col md:flex-row h-[calc(100vh-4rem)] overflow-hidden">
+        <!-- Question Area (Left) -->
+        <div class="flex-grow flex flex-col h-full overflow-y-auto pb-20 md:pb-0">
+            <!-- Breadcrumbs and Categories -->
+            <div class="px-4 py-3 sm:px-6 bg-slate-100/30 dark:bg-slate-900/30 border-b flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span id="category-tag" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400">
+                        Trade Theory
+                    </span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Q.<span id="current-q-index">1</span> of 75
+                    </span>
+                </div>
+                <div class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Marks: <span class="text-emerald-500">+2.0</span> / <span class="text-rose-500">-0.00</span>
+                </div>
+            </div>
+
+            <!-- Question & Choices Card -->
+            <div id="question-card" class="p-4 sm:p-6 flex-grow flex flex-col justify-between max-w-4xl mx-auto w-full transition-all duration-300">
+                <div>
+                    <!-- Question Box -->
+                    <div class="mb-6">
+                        <div class="text-xs font-semibold text-primary-500 dark:text-primary-400 uppercase tracking-wider mb-2">Question / प्रश्न:</div>
+                        <h3 id="question-text" class="text-lg sm:text-xl font-semibold leading-relaxed mb-4 text-slate-800 dark:text-slate-100 whitespace-pre-line">
+                            Loading Question...
+                        </h3>
+                    </div>
+
+                    <!-- Choices Box -->
+                    <div class="space-y-3.5" id="choices-container">
+                        <!-- Standard Option Buttons (Generates dynamically) -->
+                    </div>
+                </div>
+
+                <!-- Web Desktop Navigation Controls -->
+                <div class="mt-8 border-t pt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex space-x-2">
+                        <button onclick="clearResponse()" class="px-4 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
+                            Clear Response / उत्तर हटाएं
+                        </button>
+                        <button onclick="markForReview()" class="px-4 py-2 text-sm font-semibold border border-purple-200 dark:border-purple-900 text-purple-600 dark:text-purple-400 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors">
+                            Mark for Review & Next
+                        </button>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-btn" onclick="prevQuestion()" class="px-4 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
+                            <i class="fas fa-chevron-left mr-1"></i> Prev
+                        </button>
+                        <button id="next-btn" onclick="nextQuestion(true)" class="px-5 py-2 text-sm font-bold bg-primary-600 hover:bg-primary-500 text-white rounded-xl shadow-md shadow-primary-500/10 transition-colors">
+                            Save & Next <i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Palette / Sidebar (Right) -->
+        <div id="palette-sidebar" class="hidden md:flex flex-col w-full md:w-80 h-full border-t md:border-t-0 md:border-l bg-slate-100/40 dark:bg-slate-900/40 backdrop-blur-md absolute md:relative inset-x-0 bottom-0 top-16 md:top-0 z-30 transition-all duration-300">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b flex items-center justify-between">
+                <div>
+                    <h4 class="font-bold text-sm">Question Grid / प्रश्न ग्रिड</h4>
+                    <span class="text-xs text-slate-400 font-medium">Click on any number to jump</span>
+                </div>
+                <!-- Close Button (Mobile only) -->
+                <button onclick="toggleMobilePalette()" class="md:hidden p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Legends / Color Codes -->
+            <div class="p-3 bg-slate-100/50 dark:bg-slate-950/20 border-b grid grid-cols-2 gap-2 text-xs">
+                <div class="flex items-center space-x-2">
+                    <span class="w-3.5 h-3.5 rounded-md bg-emerald-500"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Answered (<span id="count-answered">0</span>)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3.5 h-3.5 rounded-md bg-rose-500"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Not Answered (<span id="count-unanswered">0</span>)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3.5 h-3.5 rounded-md bg-purple-500"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Marked for Review (<span id="count-review">0</span>)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3.5 h-3.5 rounded-md bg-slate-400 dark:bg-slate-700"></span>
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">Not Visited (<span id="count-notvisited">75</span>)</span>
+                </div>
+            </div>
+
+            <!-- Grid Numbers (75 Buttons) -->
+            <div class="flex-grow overflow-y-auto p-4">
+                <div class="grid grid-cols-5 gap-2" id="grid-buttons-container">
+                    <!-- Standard grid items generated dynamically -->
+                </div>
+            </div>
+
+            <!-- Sidebar Bottom Info Panel -->
+            <div class="p-4 border-t bg-slate-100/60 dark:bg-slate-950/40 space-y-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-sm" id="user-initials">
+                        C
+                    </div>
+                    <div>
+                        <p class="font-bold text-xs" id="display-user-name">Candidate Name</p>
+                        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Exam Status: ACTIVE</p>
+                    </div>
+                </div>
+                <button onclick="confirmSubmitExam()" class="w-full py-2.5 bg-gradient-to-r from-red-600 to-pink-600 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 shadow-md">
+                    <i class="fas fa-check-double"></i>
+                    <span>Submit Entire Exam</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Navigation Sticky bar -->
+    <div class="md:hidden fixed bottom-0 inset-x-0 bg-white dark:bg-slate-900 border-t flex items-center justify-around py-2.5 px-3 z-40 shadow-xl">
+        <button onclick="prevQuestion()" class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-1">
+            <i class="fas fa-chevron-left text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Prev</span>
+        </button>
+        <button onclick="markForReview()" class="flex flex-col items-center justify-center text-purple-500 p-1">
+            <i class="fas fa-bookmark text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Review</span>
+        </button>
+        <button onclick="clearResponse()" class="flex flex-col items-center justify-center text-rose-500 p-1">
+            <i class="fas fa-eraser text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Clear</span>
+        </button>
+        <button onclick="nextQuestion(true)" class="flex flex-col items-center justify-center text-emerald-500 p-1">
+            <i class="fas fa-chevron-right text-lg"></i>
+            <span class="text-[10px] font-bold mt-0.5">Save & Next</span>
+        </button>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border dark:border-slate-800 text-center transform scale-95 opacity-0 transition-all duration-300" id="confirm-modal-content">
+            <div class="w-14 h-14 bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Are you sure? / क्या आप आश्वस्त हैं?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">क्या आप वास्तव में इस परीक्षा को अंतिम रूप से सबमिट करना चाहते हैं? इसके बाद कोई बदलाव नहीं किया जा सकेगा।</p>
+            
+            <!-- Quick stats of the review -->
+            <div class="grid grid-cols-3 gap-2 p-3 bg-slate-100 dark:bg-slate-950 rounded-2xl mb-6 text-xs">
+                <div class="p-2">
+                    <p class="font-bold text-lg text-emerald-500" id="modal-answered-count">0</p>
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase">Answered</p>
+                </div>
+                <div class="p-2">
+                    <p class="font-bold text-lg text-rose-500" id="modal-unanswered-count">0</p>
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase">Unanswered</p>
+                </div>
+                <div class="p-2">
+                    <p class="font-bold text-lg text-purple-500" id="modal-review-count">0</p>
+                    <p class="text-[10px] text-slate-400 font-semibold uppercase">Reviewed</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeConfirmModal()" class="flex-1 py-3 text-sm font-semibold border dark:border-slate-800 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    No, Resume Test
+                </button>
+                <button onclick="submitExam()" class="flex-1 py-3 text-sm font-bold bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl shadow-lg shadow-red-500/20">
+                    Yes, Submit Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Result & Analytics Screen -->
+    <main id="result-screen" class="hidden flex-grow overflow-y-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto space-y-8">
+            <!-- Header Result Card -->
+            <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                <div class="space-y-2 text-center md:text-left">
+                    <span class="text-xs font-bold bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400 px-3 py-1 rounded-full uppercase tracking-wider">AITT COPA Result</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold" id="result-user-name">Candidate Name</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">All India Trade Test Examination Completed Successfully.</p>
+                </div>
+
+                <!-- Score Circle Indicator -->
+                <div class="flex items-center space-x-4 bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-3xl border dark:border-slate-800">
+                    <div class="text-center">
+                        <span class="text-4xl sm:text-5xl font-extrabold text-primary-600 dark:text-primary-400" id="display-final-score">0</span>
+                        <span class="text-slate-400 font-bold text-sm">/ 150</span>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Total Score Obtained</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Numerical Key Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass-card p-4 rounded-2xl border shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <i class="fas fa-check text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg" id="stat-correct">0</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Correct Ans</p>
+                    </div>
+                </div>
+                <div class="glass-card p-4 rounded-2xl border shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                        <i class="fas fa-times text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg" id="stat-incorrect">0</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Incorrect Ans</p>
+                    </div>
+                </div>
+                <div class="glass-card p-4 rounded-2xl border shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center">
+                        <i class="fas fa-eye-slash text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg" id="stat-unattempted">0</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Unattempted</p>
+                    </div>
+                </div>
+                <div class="glass-card p-4 rounded-2xl border shadow-sm flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                        <i class="fas fa-percent text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg" id="stat-accuracy">0%</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Accuracy Rate</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Segment Performance Chart (Trade Theory vs Employability Skills) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Trade Theory Category Statistics -->
+                <div class="glass-card p-6 rounded-2xl border shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">Trade Theory</span>
+                        <span class="text-xs font-semibold text-slate-400">Total Marks: 100</span>
+                    </div>
+                    <div class="text-3xl font-extrabold mb-1" id="score-trade-theory">0/100</div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mb-3 overflow-hidden">
+                        <div id="progress-trade-theory" class="bg-gradient-to-r from-primary-500 to-indigo-500 h-full rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium">ट्रेड थ्योरी (Trade Theory) में 50 में से प्राप्त किए गए सही उत्तरों का अनुपात।</p>
+                </div>
+
+                <!-- Employability Skills Category Statistics -->
+                <div class="glass-card p-6 rounded-2xl border shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Employability Skills</span>
+                        <span class="text-xs font-semibold text-slate-400">Total Marks: 50</span>
+                    </div>
+                    <div class="text-3xl font-extrabold mb-1" id="score-employability">0/50</div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mb-3 overflow-hidden">
+                        <div id="progress-employability" class="bg-gradient-to-r from-indigo-500 to-teal-500 h-full rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-slate-400 font-medium">एम्प्लॉयबिलिटी स्किल्स (Employability Skills) में 25 में से प्राप्त सही उत्तरों का अनुपात।</p>
+                </div>
+            </div>
+
+            <!-- Detailed Question-by-Question Review Header -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold">Review Answers / उत्तर विश्लेषण</h3>
+                    <button onclick="location.reload()" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl hover:scale-105 transition-transform">
+                        <i class="fas fa-redo mr-1.5"></i> Take Re-test / फिर से परीक्षा दें
+                    </button>
+                </div>
+
+                <!-- Filter Controls for Review -->
+                <div class="flex flex-wrap gap-2 mb-4" id="review-filters">
+                    <button onclick="filterReview('all')" class="review-filter-btn active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all bg-primary-600 text-white">
+                        All Questions (75)
+                    </button>
+                    <button onclick="filterReview('correct')" class="review-filter-btn px-3.5 py-1.5 rounded-full text-xs font-bold transition-all bg-slate-100 dark:bg-slate-900 text-emerald-500 border border-transparent hover:border-emerald-500/20">
+                        Correct (<span id="count-correct-review">0</span>)
+                    </button>
+                    <button onclick="filterReview('incorrect')" class="review-filter-btn px-3.5 py-1.5 rounded-full text-xs font-bold transition-all bg-slate-100 dark:bg-slate-900 text-rose-500 border border-transparent hover:border-rose-500/20">
+                        Incorrect (<span id="count-incorrect-review">0</span>)
+                    </button>
+                    <button onclick="filterReview('unattempted')" class="review-filter-btn px-3.5 py-1.5 rounded-full text-xs font-bold transition-all bg-slate-100 dark:bg-slate-900 text-slate-500 border border-transparent hover:border-slate-500/20">
+                        Unattempted (<span id="count-unattempted-review">0</span>)
+                    </button>
+                </div>
+
+                <!-- Review Accordion/Cards Container -->
+                <div class="space-y-4" id="review-cards-container">
+                    <!-- Standard review container builds programmatically -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Quiz Question Database -->
+    <script>
+        const QUESTIONS_DB = [
+            {
+                num: 1,
+                cat: "Trade Theory",
+                text: "In which sequence computer operates?\nकम्प्यूटर किस क्रम में संचालित होता है?",
+                choices: [
+                    "Input, output, process / इनपुट, आउटपुट, प्रक्रिया",
+                    "Input, process, output / इनपुट, प्रक्रिया, आउटपुट",
+                    "Process, input, output / प्रक्रिया, इनपुट, आउटपुट",
+                    "Output, process, input / आउटपुट, प्रक्रिया, इनपुट"
+                ],
+                correct: "A2",
+                hint: "Think of the basic cycle where instructions are given, processed by CPU, and shown to user.",
+                rationale: "A computer accepts data (Input), processes it according to pre-defined rules (Process), and produces the meaningful result (Output)."
+            },
+            {
+                num: 2,
+                cat: "Trade Theory",
+                text: "How does parallel port transfer a byte?\nसमानांतर पोर्ट एक बाइट को कैसे स्थानांतरित करता है?",
+                choices: [
+                    "Bit by bit / बिट दर बिट",
+                    "2 bits at a time / एक बार में 2 बिट्स",
+                    "4 bits at a time / एक बार में 4 बिट्स",
+                    "8 bits at a time / एक बार में 8 बिट्स"
+                ],
+                correct: "A4",
+                hint: "A single byte comprises 8 bits of binary code.",
+                rationale: "Parallel ports transfer 8 bits of data (a full byte) simultaneously over 8 different physical copper lines."
+            },
+            {
+                num: 3,
+                cat: "Trade Theory",
+                text: "Which is an internal power supply unit of CPU?\nCPU की आंतरिक विद्युत आपूर्ति इकाई कौन सी है?",
+                choices: [
+                    "CVT",
+                    "UPS",
+                    "SMPS",
+                    "Stabilizer / स्टेबलाइजर"
+                ],
+                correct: "A3",
+                hint: "It converts high-voltage AC from source into multiple low DC streams for internal motherboard components.",
+                rationale: "SMPS (Switched-Mode Power Supply) resides inside the CPU cabinet to provide regulated low-voltage power."
+            },
+            {
+                num: 4,
+                cat: "Trade Theory",
+                text: "What is the purpose of expansion slot in motherboard?\nमदरबोर्ड में एक्सपेंशन स्लॉट का उद्देश्य क्या है?",
+                choices: [
+                    "To insert the RAM / RAM इन्सर्ट के लिए",
+                    "To insert the mouse / माउस इन्सर्ट के लिए",
+                    "To insert the keyboard / कीबोर्ड इन्सर्ट के लिए",
+                    "To insert the additional peripherals / अतिरिक्त बाह्य उपकरणों को इन्सर्ट करने के लिए"
+                ],
+                correct: "A4",
+                hint: "This allows adding graphics, network, or high-end sound cards to extend capabilities.",
+                rationale: "Expansion slots are dedicated structures on motherboards used to attach high-speed external peripheral hardware controller cards."
+            },
+            {
+                num: 5,
+                cat: "Trade Theory",
+                text: "What is the full form of ABC in first aid?\nप्राथमिक चिकित्सा में ABC का फुल फॉर्म क्या है?",
+                choices: [
+                    "Anyway, Breathing, Circulation",
+                    "Airway, Breathing, Circulation",
+                    "Anyway, Blood, Circulation",
+                    "Airway, Blood, Chest"
+                ],
+                correct: "A2",
+                hint: "It relates to saving a person's life by ensuring oxygen flow pathway is unblocked and blood is flowing.",
+                rationale: "In first aid, ABC stands for Airway (clear pathway), Breathing (chest rises/falls), and Circulation (heart pumps blood)."
+            },
+            {
+                num: 6,
+                cat: "Trade Theory",
+                text: "Which factor influences the severity of electrical shock?\nविद्युत झटके की गंभीरता को कौन सा कारक प्रभावित करता है?",
+                choices: [
+                    "Very low DC voltage / बहुत कम DC वोल्टेज",
+                    "Duration of current passing / करेंट पासिंग की अवधि",
+                    "Level of current in micro ampere / माइक्रो एम्पीयर में करंट का लेवल",
+                    "Person receiving the shock / झटका पाने वाला व्यक्ति"
+                ],
+                correct: "A2",
+                hint: "The longer the electrical energy has contact with body tissues, the worse the damage.",
+                rationale: "The severity of electrical burns and cardiac arrest is directly proportional to the total time duration the electrical current passes through the body."
+            },
+            {
+                num: 7,
+                cat: "Trade Theory",
+                text: "What is the full form of ALU?\nALU का फुल फॉर्म क्या है?",
+                choices: [
+                    "Allowed Logic Unit",
+                    "Ascii Logic Unit",
+                    "Arithmetic-Logic Unit",
+                    "Arithmetic Least Unit"
+                ],
+                correct: "A3",
+                hint: "It takes care of mathematical calculations and comparison tests inside the CPU.",
+                rationale: "ALU stands for Arithmetic Logic Unit. It executes all math (add, subtract) and logical comparisons (AND, OR, logic checks)."
+            },
+            {
+                num: 8,
+                cat: "Trade Theory",
+                text: "What is current?\nकरंट क्या है?",
+                choices: [
+                    "Flow of Neutrons / न्यूट्रॉन का प्रवाह",
+                    "Flow of Electrons / इलेक्ट्रॉनों का प्रवाह",
+                    "Flow of Protons / प्रोटॉन का प्रवाह",
+                    "Flow of Resistance / प्रतिरोध का प्रवाह"
+                ],
+                correct: "A2",
+                hint: "Electricity is created by the movement of these negatively-charged subatomic particles.",
+                rationale: "Electrical current is defined as the physical rate of flow of negatively charged particles (electrons) through a wire."
+            },
+            {
+                num: 9,
+                cat: "Trade Theory",
+                text: "Which is an arm lift back pressure method?\nआर्म लिफ्ट बैक प्रेशर विधि कौन सी है?",
+                choices: [
+                    "Mouth to mouth method / मुंह से मुंह की विधि",
+                    "Mouth to nose method / मुंह से नाक की विधि",
+                    "Nielsen's method / नेल्सन की विधि",
+                    "Schafer's method / शेफर की विधि"
+                ],
+                correct: "A3",
+                hint: "Developed in 1932 by a Danish army officer named Holger.",
+                rationale: "Holger Nielsen's technique is a manual artificial respiration method involving arm lifts and back pressure."
+            },
+            {
+                num: 10,
+                cat: "Trade Theory",
+                text: "What is a desktop and personal computer also called?\nडेस्कटॉप और पर्सनल कंप्यूटर को और क्या कहा जाता है?",
+                choices: [
+                    "Super Computer / सुपर कंप्यूटर",
+                    "Quantum Computer / क्वांटम कंप्यूटर",
+                    "Mainframe Computer / मेनफ्रेम कंप्यूटर",
+                    "Micro Computer / माइक्रो कंप्यूटर"
+                ],
+                correct: "A4",
+                hint: "They are called this because they run on microprocessors, built for personal use.",
+                rationale: "Desktops, laptops, and typical personal devices are classified as Microcomputers since they are powered by microprocessors."
+            },
+            {
+                num: 11,
+                cat: "Trade Theory",
+                text: "What is the full form of SSD?\nSSD का फुल फॉर्म क्या होता है?",
+                choices: [
+                    "Signal State Drive",
+                    "Solid State Drive",
+                    "Single Signal Drive",
+                    "Solid Signal Drive"
+                ],
+                correct: "A2",
+                hint: "This ultra-fast storage hardware uses integrated microchips without any moving arms.",
+                rationale: "SSD stands for Solid State Drive. It stores data on solid semiconductor chips, making it vastly faster than spinning HDDs."
+            },
+            {
+                num: 12,
+                cat: "Trade Theory",
+                text: "What is the first action to be taken in case of an electric shock?\nबिजली का झटका लगने पर सबसे पहले क्या कार्रवाई की जानी चाहिए?",
+                choices: [
+                    "Call to doctor / डॉक्टर को बुलाओ",
+                    "Take support to others / दूसरों का सहारा लो",
+                    "Switch OFF the electric power / बिजली बंद करो",
+                    "Call to ambulance / एम्बुलेंस को कॉल करें"
+                ],
+                correct: "A3",
+                hint: "Break the circuit instantly to prevent the victim from receiving more current safely.",
+                rationale: "Before attempting physical contact with an electrocution victim, you must turn OFF the main power source to isolate them."
+            },
+            {
+                num: 13,
+                cat: "Trade Theory",
+                text: "Which is an example for OS?\nOS के लिए कौन सा उदाहरण है?",
+                choices: [
+                    "Antivirus",
+                    "Windows",
+                    "MS Office",
+                    "Macromedia"
+                ],
+                correct: "A2",
+                hint: "Developed by Microsoft, it is the most popular desktop operating system in the world.",
+                rationale: "Microsoft Windows is an Operating System, whereas Antivirus and MS Office are software applications."
+            },
+            {
+                num: 14,
+                cat: "Trade Theory",
+                text: "Which Control Panel applet gives information about the computer?\nकौन सा कंट्रोल पैनल एप्लेट कंप्यूटर की जानकारी देता है?",
+                choices: [
+                    "System and security / व्यवस्था और सुरक्षा",
+                    "Hardware and sound / हार्डवेयर और ध्वनि",
+                    "Programs / प्रोग्राम",
+                    "Shortcut keys / शॉर्टकट कुंजियां"
+                ],
+                correct: "A1",
+                hint: "This top-level option contains basic specifications, firewall, and administrative services.",
+                rationale: "The 'System and Security' applet contains the sub-item 'System' which displays CPU, RAM, and OS specifications."
+            },
+            {
+                num: 15,
+                cat: "Trade Theory",
+                text: "Which shortcut key is used to copy paste a file folder?\nकिसी फाइल फोल्डर को कॉपी पेस्ट करने के लिए कौन सी शॉर्टकट कुंजी है?",
+                choices: [
+                    "Ctrl+X and Ctrl+V",
+                    "Ctrl+A and Ctrl+V",
+                    "Ctrl+Z and Ctrl+V",
+                    "Ctrl+C and Ctrl+V"
+                ],
+                correct: "A4",
+                hint: "C stands for Copy, and V stands for Paste.",
+                rationale: "In Windows, Ctrl+C duplicates (copies) the selected item to clipboard, and Ctrl+V inserts (pastes) it into the target directory."
+            },
+            {
+                num: 16,
+                cat: "Trade Theory",
+                text: "What is the other name for PDoS?\nPDoS का दूसरा नाम क्या है?",
+                choices: [
+                    "Brute force attack / ब्रूट फोर्स अटैक",
+                    "Non-technical attack / नॉन टेक्निकल अटैक",
+                    "Phlashing / फ्लैशिंग",
+                    "Smurf attack / स्मर्फ अटैक"
+                ],
+                correct: "A3",
+                hint: "This refers to bricking firmware, similar to the word 'flashing' on basic chips.",
+                rationale: "Permanent Denial of Service (PDoS), or Phlashing, targets hardware firmware directly, rendering the system permanently unbootable."
+            },
+            {
+                num: 17,
+                cat: "Trade Theory",
+                text: "Where do pinned application stay in Windows OS?\nविंडोज़ ऑपरेटिंग सिस्टम में पिन किए गए एप्लिकेशन कहां रहते हैं?",
+                choices: [
+                    "Desktop / डेस्कटॉप",
+                    "Notification Area / नोटिफिकेशन एरिया",
+                    "Title bar / टाइटल बार",
+                    "Task Bar / टास्क बार"
+                ],
+                correct: "A4",
+                hint: "This is the long horizontal stripe located at the bottom of the computer screen.",
+                rationale: "Windows Taskbar hosts pinned applications on its left side for quick, one-click access."
+            },
+            {
+                num: 18,
+                cat: "Trade Theory",
+                text: "What is the extension of Notepad file?\nनोटपैड फाइल का एक्सटेंशन क्या होता है?",
+                choices: [
+                    ".fil",
+                    ".dil",
+                    ".doc",
+                    ".txt"
+                ],
+                correct: "A4",
+                hint: "Notepad is a plain text editor.",
+                rationale: "Plain text files created with basic text editors like Notepad are saved with the '.txt' file extension."
+            },
+            {
+                num: 19,
+                cat: "Trade Theory",
+                text: "What is the name of the tool in control panel is used to adjust your computer setting with voice command?\nकंट्रोल पैनल में उस टूल का नाम बताएं जिसका उपयोग आपके कंप्यूटर की सेटिंग को वॉइस कमांड से समायोजित करने के लिए किया जाता है।",
+                choices: [
+                    "Ease of access",
+                    "System and security",
+                    "Appearance and personalization",
+                    "Hardware and sound"
+                ],
+                correct: "A1",
+                hint: "This utility dashboard assists individuals with special needs or accessibility preferences.",
+                rationale: "Windows 'Ease of Access' includes standard speech-recognition accessibility features to control Windows settings with voice commands."
+            },
+            {
+                num: 20,
+                cat: "Trade Theory",
+                text: "Which shortcut key is used to open start menu?\nस्टार्ट मेन्यू खोलने के लिए उपयोग की जाने वाली शॉर्टकट कुंजी का नाम बताइए।",
+                choices: [
+                    "Windows Logo",
+                    "Ctrl",
+                    "Shift",
+                    "Alt"
+                ],
+                correct: "A1",
+                hint: "Pressing this key with the four-panel flag logo instantly pops open the main menu panel.",
+                rationale: "Pressing the Windows Logo key on standard keyboards opens the main Start menu interface."
+            },
+            {
+                num: 21,
+                cat: "Trade Theory",
+                text: "What type of device is a printer?\nप्रिंटर किस प्रकार की डिवाइस है?",
+                choices: [
+                    "Input Device / इनपुट डिवाइस",
+                    "Output Device / आउटपुट डिवाइस",
+                    "Processing Device / प्रोसेसिंग डिवाइस",
+                    "Calculating Device / कैलकुलेटिंग डिवाइस"
+                ],
+                correct: "A2",
+                hint: "It produces hard copies on paper, converting digital signals to physical formats.",
+                rationale: "Printers produce physical representations of digital documents (hard copies), which categorizes them as output devices."
+            },
+            {
+                num: 22,
+                cat: "Trade Theory",
+                text: "What is the function of operating system?\nऑपरेटिंग सिस्टम का कार्य क्या है?",
+                choices: [
+                    "Word processing / वर्ड प्रोसेसिंग",
+                    "Calculation / कैलकुलेशन्स",
+                    "Process and memory management / प्रोसेस और मेमोरी मैनेजमेंट",
+                    "Drawing pictures / ड्राईंग पिक्चर्स"
+                ],
+                correct: "A3",
+                hint: "It acts as a core coordinator for CPU cycles and allocates primary hardware resources.",
+                rationale: "The primary operational role of an Operating System is managing system processes, active tasks, memory, and security."
+            },
+            {
+                num: 23,
+                cat: "Trade Theory",
+                text: "In which icon deleted files and folders are found?\nडिलीट की गई फ़ाइलें और फ़ोल्डर्स किस आइकन में पाए जाते हैं?",
+                choices: [
+                    "My Computer",
+                    "Recycle Bin / रीसायकल बिन",
+                    "Microsoft Edge",
+                    "Google Chrome"
+                ],
+                correct: "A2",
+                hint: "The icon resembles a small wastebasket or desk trash can.",
+                rationale: "The 'Recycle Bin' acts as a temporary holding container for files marked as deleted by the user."
+            },
+            {
+                num: 24,
+                cat: "Trade Theory",
+                text: "Which control panel is used to change the system date?\nकंट्रोल पैनल में उस टूल का नाम बताएं जिससे हम सिस्टम की तारीख बदल सकते हैं?",
+                choices: [
+                    "User Account / यूजर अकाउंट",
+                    "System / सिस्टम",
+                    "Date and Time / तिथि और समय",
+                    "Fonts / फोंट्स"
+                ],
+                correct: "A3",
+                hint: "Its name explicitly details calendar dates and clock timings.",
+                rationale: "The 'Date and Time' control panel setting regulates the system's real-time clock, timezone, and calendar date parameters."
+            },
+            {
+                num: 25,
+                cat: "Trade Theory",
+                text: "Which shortcut key refreshes Windows desktop?\nविंडोज़ डेस्कटॉप को रिफ्रेश करने के लिए उपयोग की जाने वाली शॉर्टकट की का नाम बताइए।",
+                choices: [
+                    "F1",
+                    "F3",
+                    "F5",
+                    "F7"
+                ],
+                correct: "A3",
+                hint: "The standard reload function key, also used in web browsers to reload pages.",
+                rationale: "In Microsoft Windows systems, pressing F5 automatically triggers a refresh of the current active directory or desktop environment."
+            },
+            {
+                num: 26,
+                cat: "Trade Theory",
+                text: "What type of device is a scanner?\nस्कैनर किस प्रकार की डिवाइस है?",
+                choices: [
+                    "Processing Device / प्रोसेसिंग डिवाइस",
+                    "Internal Device / इन्टरनल डिवाइस",
+                    "Output Device / आउटपुट डिवाइस",
+                    "Input Device / इनपुट डिवाइस"
+                ],
+                correct: "A4",
+                hint: "It reads a physical document to convert it into a digital image file inside the PC.",
+                rationale: "Scanners digitize physical images or documents, transferring data into the computer system (input function)."
+            },
+            {
+                num: 27,
+                cat: "Trade Theory",
+                text: "What type of copy is produced by printer?\nप्रिंटर द्वारा किस प्रकार की कॉपी तैयार की जाती है?",
+                choices: [
+                    "Hard Copy / हार्ड कॉपी",
+                    "Soft Copy / सॉफ्ट कॉपी",
+                    "Scan Copy / स्कैन कॉपी",
+                    "Xerox Copy / जैरोक्स कॉपी"
+                ],
+                correct: "A1",
+                hint: "It produces printed pages, which are physically tangible documents.",
+                rationale: "Printed sheets of paper are called hard copies, while digital files displayed on screens are soft copies."
+            },
+            {
+                num: 28,
+                cat: "Trade Theory",
+                text: "What is the standard file extension of scan image?\nस्कैन इमेज का मानक फाइल एक्सटेंशन क्या है?",
+                choices: [
+                    ".exe",
+                    ".doc",
+                    ".bak",
+                    ".jpg"
+                ],
+                correct: "A4",
+                hint: "It is a standard compressed photographic format widely compatible with all image viewers.",
+                rationale: "Among the options, '.jpg' (Joint Photographic Experts Group) is the standard file extension used for digital image outputs."
+            },
+            {
+                num: 29,
+                cat: "Trade Theory",
+                text: "What is the capacity of a typical DVD?\nTypical DVD की कैपेसिटी क्या है?",
+                choices: [
+                    "40 MB",
+                    "50 MB",
+                    "60 MB",
+                    "4.7 GB"
+                ],
+                correct: "A4",
+                hint: "It is larger than a standard CD (700 MB) and holds multiple gigabytes of multimedia content.",
+                rationale: "A standard single-layer, single-sided DVD-ROM stores exactly 4.7 Gigabytes of data."
+            },
+            {
+                num: 30,
+                cat: "Trade Theory",
+                text: "What is BIOS?\nBIOS क्या है?",
+                choices: [
+                    "Firmware / फर्मवेयर",
+                    "Hardware / हार्डवेयर",
+                    "Middleware / मिडलवेयर",
+                    "Software / सॉफ्टवेयर"
+                ],
+                correct: "A1",
+                hint: "It is permanent code burned inside a Read-Only Memory chip on the motherboard.",
+                rationale: "BIOS (Basic Input/Output System) is classified as firmware because it consists of low-level software instructions embedded permanently in a hardware ROM chip."
+            },
+            {
+                num: 31,
+                cat: "Trade Theory",
+                text: "What is the purpose of Nero Start Smart?\nनीरो स्टार्ट स्मार्ट का उद्देश्य क्या है?",
+                choices: [
+                    "Format HDD",
+                    "Burn CD/DVD",
+                    "Format pen drive",
+                    "Format CD/DVD"
+                ],
+                correct: "A2",
+                hint: "This application suite writes data, audios, and video directories onto optical CD or DVD media.",
+                rationale: "Nero Start Smart is a widely used software application for burning data, videos, or audio compilation onto optical discs (CDs/DVDs)."
+            },
+            {
+                num: 32,
+                cat: "Trade Theory",
+                text: "Which system is used by Bluetooth for Broadcasting?\nब्राडकास्टिंग के लिए ब्लूटूथ द्वारा किस सिस्टम का उपयोग किया जाता है?",
+                choices: [
+                    "Satellite / सैटेलाइट",
+                    "Microwaves / माइक्रोवेव",
+                    "Telephone lines / टेलीफोन लाइनें",
+                    "Radio waves / रेडियो तरंगें"
+                ],
+                correct: "A4",
+                hint: "It broadcasts wirelessly over short ranges, just like Wi-Fi network systems.",
+                rationale: "Bluetooth transmits signals wirelessly using short-wavelength Ultra-High Frequency (UHF) radio waves (2.4 GHz spectrum)."
+            },
+            {
+                num: 33,
+                cat: "Trade Theory",
+                text: "What is the process of deleting all the data on the hard drive?\nहार्ड ड्राइव पर सभी डेटा को डिलीट करने की प्रक्रिया क्या है?",
+                choices: [
+                    "Delete",
+                    "Erase",
+                    "Formatting",
+                    "Uninstall"
+                ],
+                correct: "A3",
+                hint: "This prepares a drive by setting up a fresh file system, removing all old content.",
+                rationale: "Formatting completely deletes all files, cleans a storage volume, and configures a new file system to prepare the drive for use."
+            },
+            {
+                num: 34,
+                cat: "Trade Theory",
+                text: "Which port is use to connect monitor to CPU?\nमॉनिटर को CPU से कनेक्ट करने के लिए किस पोर्ट का उपयोग किया जाता है?",
+                choices: [
+                    "PS2",
+                    "Parallel port",
+                    "LAN",
+                    "VGA"
+                ],
+                correct: "A4",
+                hint: "This classic analog video display adapter has 15 pin connectors, colored blue.",
+                rationale: "VGA (Video Graphics Array) is a standard port used to connect display devices (like monitors) to a computer's CPU."
+            },
+            {
+                num: 35,
+                cat: "Trade Theory",
+                text: "What do statistical analysis packages have much in common with?\nस्टैटिस्टिकल एनालिसिस पैकेजों में किसके साथ ज्यादा समानता है?",
+                choices: [
+                    "Presentation packages / प्रेजेंटेशन पैकेज",
+                    "Spreadsheet packages / स्प्रेडशीट पैकेज",
+                    "Design packages / डिजाइन पैकेज",
+                    "Paint packages / पेंट पैकेज"
+                ],
+                correct: "A2",
+                hint: "They use grids of rows and columns (like MS Excel) to compute math and chart statistics.",
+                rationale: "Statistical software packages are designed around grid layouts, formulas, and cells, sharing these structures with Spreadsheet applications."
+            },
+            {
+                num: 36,
+                cat: "Trade Theory",
+                text: "Which software interfaces the major hardware components of the computer with the OS?\nकौन सा सॉफ्टवेयर कंप्यूटर के प्रमुख हार्डवेयर घटकों को ऑपरेटिंग सिस्टम के साथ इंटरफेस करता है?",
+                choices: [
+                    "BIOS",
+                    "DOS",
+                    "POST",
+                    "CMOS"
+                ],
+                correct: "A1",
+                hint: "This program initializes system hardware and runs a self-test immediately on power startup.",
+                rationale: "The BIOS (Basic Input/Output System) provides low-level instruction interfacing that lets the Operating System communicate with motherboard hardware components."
+            },
+            {
+                num: 37,
+                cat: "Trade Theory",
+                text: "Which software acts as a bridge between system software and hardware?\nकौन सा सॉफ्टवेयर सिस्टम सॉफ्टवेयर और हार्डवेयर के बीच ब्रिज का काम करता है?",
+                choices: [
+                    "Management / मैनेजमेंट",
+                    "Application / एप्लिकेशन",
+                    "Utility / यूटिलिटी",
+                    "Processing / प्रोसेसिंग"
+                ],
+                correct: "A2",
+                hint: "According to standard NIMI syllabus responses, this software category runs on top of the OS to interact with hardware resources.",
+                rationale: "Application software executes specialized user tasks, coordinating through system services to bridge specific requests to hardware modules."
+            },
+            {
+                num: 38,
+                cat: "Trade Theory",
+                text: "Which virus infects important files of the application software?\nकौन सा वायरस एप्लीकेशन सॉफ्टवेयर की महत्वपूर्ण फाइलों को संक्रमित करता है?",
+                choices: [
+                    "Macro Virus",
+                    "Trojan Virus",
+                    "Worm Virus",
+                    "Anti Virus"
+                ],
+                correct: "A1",
+                hint: "It targets templates and automated scripts inside tools like Microsoft Word or Excel.",
+                rationale: "Macro viruses are written in macro programming languages and embed themselves within application templates (such as MS Word or Excel documents)."
+            },
+            {
+                num: 39,
+                cat: "Trade Theory",
+                text: "Which character represents parent directory in Linux?\nLinux में कौन सा कैरेक्टर पैरेंट डायरेक्टरी का प्रतिनिधित्व करता है?",
+                choices: [
+                    ".. (Double dot)",
+                    ". (Single dot)",
+                    "/ (Forward slash)",
+                    "~ (Tilde)"
+                ],
+                correct: "A1",
+                hint: "Think of the command 'cd ..' used in terminals to move one level up in the file structure.",
+                rationale: "In Linux/Unix, double dot '..' is a special relative path designation that points to the immediate parent directory of the current folder."
+            },
+            {
+                num: 40,
+                cat: "Trade Theory",
+                text: "Which character redirects output into an existing file in Linux?\nLinux में कौन सा कैरेक्टर आउटपुट को मौजूदा फ़ाइल में रीडायरेक्ट (अपेंड) करता है?",
+                choices: [
+                    ">",
+                    ">>",
+                    "<",
+                    "*"
+                ],
+                correct: "A2",
+                hint: "This double operator redirects outputs to the end of a file without deleting what is currently inside.",
+                rationale: "The double right-angle bracket '>>' redirects command output to a file, appending the new data to the end of the existing content."
+            },
+            {
+                num: 41,
+                cat: "Trade Theory",
+                text: "Which character redirects output into a new/existing file in Linux?\nलिनक्स में कौन सा कैरेक्टर आउटपुट को फ़ाइल में रीडायरेक्ट (ओवरराइट/क्रिएट) करता है?",
+                choices: [
+                    ">",
+                    ">=",
+                    "<",
+                    "<<"
+                ],
+                correct: "A1",
+                hint: "A single right-facing arrow operator that replaces the target file's content entirely.",
+                rationale: "A single '>' redirects command output to a file, overwriting its existing contents or creating a new file if it doesn't exist."
+            },
+            {
+                num: 42,
+                cat: "Trade Theory",
+                text: "What are the directories under the root directory are called?\nरूट डायरेक्टरी के अंतर्गत आने वाली डायरेक्टरी को क्या कहते हैं?",
+                choices: [
+                    "dir",
+                    "path",
+                    "sub directories / सब डायरेक्टरीज",
+                    "tree"
+                ],
+                correct: "A3",
+                hint: "These are folders located inside a parent folder.",
+                rationale: "Any folder nested within another directory in a hierarchical file structure is called a subdirectory."
+            },
+            {
+                num: 43,
+                cat: "Trade Theory",
+                text: "Which file name matches the command DIR????T.TxT in DOS?\nकौन सा फ़ाइल नाम DOS में कमांड DIR????T.TxT से मेल खाता है?",
+                choices: [
+                    "TIME . TXT",
+                    "TEXT . TXT",
+                    "TEMP . TXT",
+                    "TEMPT . TxT"
+                ],
+                correct: "A4",
+                hint: "Each '?' represents exactly one character, followed by 'T' before the file extension.",
+                rationale: "The wildcard pattern ????T requires a five-character filename ending with 'T'. 'TEMPT' (four characters + T) perfectly matches this pattern."
+            },
+            {
+                num: 44,
+                cat: "Trade Theory",
+                text: "Which is a wildcard character?\nनिम्नलिखित में से कौन वाइल्डकार्ड कैरेक्टर है?",
+                choices: [
+                    "* and /",
+                    "? and /",
+                    "* and ?",
+                    "? and @"
+                ],
+                correct: "A3",
+                hint: "One represents multiple unknown characters, and the other represents a single unknown character.",
+                rationale: "In command-line environments, the asterisk '*' (matches any character string) and question mark '?' (matches any single character) are standard wildcards."
+            },
+            {
+                num: 45,
+                cat: "Trade Theory",
+                text: "Which character represents a range of values in Linux?\nLinux में कौन सा वर्ण मानों की श्रेणी का प्रतिनिधित्व करता है?",
+                choices: [
+                    "( )",
+                    "[ ]",
+                    "{ }",
+                    "< >"
+                ],
+                correct: "A2",
+                hint: "These flat brackets are also used to define arrays or ranges of characters like [a-z].",
+                rationale: "Square brackets '[ ]' are used in regular expressions and terminal matching to define a specific character set or range of values (e.g., [0-9])."
+            },
+            {
+                num: 46,
+                cat: "Trade Theory",
+                text: "Which is used to interpret and execute Java Applet Classes hosted by HTML?\nHTML द्वारा होस्ट की गई Java Applet Classes की व्याख्या और निष्पादन के लिए किसका उपयोग किया जाता है?",
+                choices: [
+                    "Appletviewer",
+                    "Appletwatcher",
+                    "Appletshow",
+                    "Appletscreen"
+                ],
+                correct: "A1",
+                hint: "A standard tool in the JDK (Java Development Kit) used specifically to run and test applets without a web browser.",
+                rationale: "The 'appletviewer' is a command-line tool included in the JDK that lets developers run and test Java applets directly."
+            },
+            {
+                num: 47,
+                cat: "Trade Theory",
+                text: "Which is a primitive data type?\nकौन सा एक प्रिमिटिव डेटा प्रकार है?",
+                choices: [
+                    "Array",
+                    "Enum",
+                    "String",
+                    "Int"
+                ],
+                correct: "A4",
+                hint: "This keyword stands for integer and is declared in lowercase.",
+                rationale: "In Java, 'int' is a basic primitive data type used to store 32-bit signed integers, while Arrays and Strings are reference types."
+            },
+            {
+                num: 48,
+                cat: "Trade Theory",
+                text: "Which primitive data type include integer?\nकिस प्रिमिटिव डेटा प्रकार में पूर्णांक शामिल है?",
+                choices: [
+                    "char",
+                    "byte",
+                    "array",
+                    "double"
+                ],
+                correct: "A2",
+                hint: "This small integer data type fits in an 8-bit space with values ranging from -128 to 127.",
+                rationale: "The 'byte' data type is an 8-bit signed two's complement integer primitive, representing the integer group alongside short, int, and long."
+            },
+            {
+                num: 49,
+                cat: "Trade Theory",
+                text: "What is the sequence of characters?\nकैरेक्टर का क्रम क्या है?",
+                choices: [
+                    "Character",
+                    "Strings",
+                    "Integer",
+                    "Classes"
+                ],
+                correct: "A2",
+                hint: "In programming, this is text enclosed inside double quotes like \"Hello\".",
+                rationale: "A sequence of character elements joined together as a single object is called a String."
+            },
+            {
+                num: 50,
+                cat: "Trade Theory",
+                text: "Which method is used to obtain information about an object?\nकिसी वस्तु के बारे में जानकारी प्राप्त करने के लिए किस विधि का प्रयोग किया जाता है?",
+                choices: [
+                    "String methods",
+                    "Class methods",
+                    "Accessor methods",
+                    "Object method"
+                ],
+                correct: "A3",
+                hint: "These are commonly called 'getter' methods because they retrieve the values of an object's properties.",
+                rationale: "Accessor methods (getters) are used to read and retrieve the private instance variables and states of an object."
+            },
+            {
+                num: 51,
+                cat: "Employability Skills",
+                text: "To be in a job or work is ______\nनौकरी या काम में होना है ……",
+                choices: [
+                    "Employ / रोजगार",
+                    "Skill / कौशल",
+                    "Knowledge / ज्ञान",
+                    "Aptitude / योग्यता"
+                ],
+                correct: "A1",
+                hint: "Being employed by a company to perform services in exchange for payment.",
+                rationale: "To be in a job or engaged in productive labor is defined as being employed (Employ)."
+            },
+            {
+                num: 52,
+                cat: "Employability Skills",
+                text: "Information like date of birth, permanent address form a part of one’s ______ in the resume.\nजन्म तिथि, स्थायी पता जैसी जानकारी रिज्यूमे में किसी के ______ का हिस्सा होती है।",
+                choices: [
+                    "Career objectives / कैरियर के उद्देश्यों",
+                    "Personal details / व्यक्तिगत विवरण",
+                    "Achievements / उपलब्धियों",
+                    "Qualifications / योग्यता"
+                ],
+                correct: "A2",
+                hint: "This section contains details unique to your identity, such as name, age, address, and gender.",
+                rationale: "Personal details on a resume include your date of birth, permanent address, contact details, and other identifying information."
+            },
+            {
+                num: 53,
+                cat: "Employability Skills",
+                text: "A person with a growth mindset is always willing to ______\nएक विकास मानसिकता वाला व्यक्ति हमेशा ...... तैयार रहता है।",
+                choices: [
+                    "relax / आराम करने में",
+                    "grow, change, learn / बढ़ो, बदलो, सीखो",
+                    "keep quiet / चुप रहने में",
+                    "become rich / अमीर बनने"
+                ],
+                correct: "A2",
+                hint: "They believe skills can be improved over time through effort and continuous learning.",
+                rationale: "A growth mindset is characterized by the belief that intelligence and abilities can be developed through dedication, adaptation, and continuous learning."
+            },
+            {
+                num: 54,
+                cat: "Employability Skills",
+                text: "Jobs that have become outdated in the past 5 years _____\n......... नौकरियां जो पिछले 5 वर्षों में पुरानी हो गई हैं।",
+                choices: [
+                    "STD booth / STD बूथ",
+                    "ola / ओला",
+                    "uber / उबेर",
+                    "swiggy / स्विगी"
+                ],
+                correct: "A1",
+                hint: "Public phone booths used for long-distance calls before mobile phones became common.",
+                rationale: "Due to mobile phones and affordable data plans, public STD booths have become completely outdated."
+            },
+            {
+                num: 55,
+                cat: "Employability Skills",
+                text: "Ethics means ______\nनैतिकता का अर्थ है....।",
+                choices: [
+                    "decide what is right and wrong for a human conduct / तय करें कि मानव आचरण के लिए क्या सही है और क्या गलत",
+                    "name of a city / एक शहर का नाम",
+                    "employability skills / रोज़गार कौशल",
+                    "not relevant to society / समाज से संबंधित नहीं है"
+                ],
+                correct: "A1",
+                hint: "It relates to the rules of behavior based on ideas about what is morally good and bad.",
+                rationale: "Ethics is a system of moral principles that helps people decide what actions are right or wrong in human conduct."
+            },
+            {
+                num: 56,
+                cat: "Employability Skills",
+                text: "Values are ______\nमान हैं ………।",
+                choices: [
+                    "not punctual / समयनिष्ठ नहीं",
+                    "Motivates our attitude and action / हमारे दृष्टिकोण और कार्रवाई को प्रेरित करता है",
+                    "very costly / बहुत क़ीमती",
+                    "all have same value / सभी का मूल्य समान है"
+                ],
+                correct: "A2",
+                hint: "These core principles act as an internal guide, shaping your behavior and decisions.",
+                rationale: "Personal values are core beliefs that influence our attitudes, choices, and daily actions."
+            },
+            {
+                num: 57,
+                cat: "Employability Skills",
+                text: "________ is a brief statement about purpose and principles of the Constitution.\n.....संविधान के उद्देश्य और सिद्धांतों के बारे में संक्षिप्त विवरण है।",
+                choices: [
+                    "Syllabus / पाठ्यक्रम",
+                    "Module / मापांक",
+                    "The Preamble / प्रस्तावना",
+                    "Unit / इकाई"
+                ],
+                correct: "A3",
+                hint: "It acts as the introductory statement, beginning with 'We, the People of India...'.",
+                rationale: "The Preamble is the introductory statement to the Constitution of India, outlining its core purposes and principles."
+            },
+            {
+                num: 58,
+                cat: "Employability Skills",
+                text: "Identify the improper term ______\nअनुचित पद को पहचानिए …….।",
+                choices: [
+                    "green pollution / हरित प्रदूषण",
+                    "water pollution / जल प्रदूषण",
+                    "air pollution / वायु प्रदूषण",
+                    "sound pollution / ध्वनि प्रदूषण"
+                ],
+                correct: "A1",
+                hint: "One of these is not a real type of pollution; 'green' usually refers to eco-friendly practices.",
+                rationale: "Air, water, and sound pollution are scientific terms, while 'green pollution' is an incorrect and contradictory term."
+            },
+            {
+                num: 59,
+                cat: "Employability Skills",
+                text: "NAPS Stands for _______\nNAPS का मतलब ________",
+                choices: [
+                    "National Apprenticeship Promotion Scheme",
+                    "National Appointment Promoting Scheme",
+                    "Non Apprenticeship Promotion Scheme",
+                    "National Advertising Promotion Scheme"
+                ],
+                correct: "A1",
+                hint: "A government initiative in India launched in 2016 to promote apprentice training in industries.",
+                rationale: "NAPS stands for National Apprenticeship Promotion Scheme, which provides financial support to organizations offering apprenticeships."
+            },
+            {
+                num: 60,
+                cat: "Employability Skills",
+                text: "_______ is major changes takes place in manufacturing.\n……….. मैन्युफैक्चरिंग में प्रमुख परिवर्तन होते हैं।",
+                choices: [
+                    "Green revolution / हरित क्रांति",
+                    "Industry revolution / उद्योग क्रांति",
+                    "Water revolution / जल क्रांति",
+                    "Food revolution / खाद्य क्रांति"
+                ],
+                correct: "A2",
+                hint: "This historic transition introduced machinery and steam power to replace hand-made production.",
+                rationale: "The Industrial Revolution refers to the major transition to mechanical and powered manufacturing processes."
+            },
+            {
+                num: 61,
+                cat: "Employability Skills",
+                text: "1st industrial revolution started in ______\nपहली औद्योगिक क्रांति की शुरुआत …….।",
+                choices: [
+                    "18th century / 18 वीं सदी",
+                    "19th century / 19 वीं सदी",
+                    "20th century / 20 वीं सदी",
+                    "21st century / 21 वीं सदी"
+                ],
+                correct: "A1",
+                hint: "It began in Britain during the mid-to-late 1700s.",
+                rationale: "The First Industrial Revolution began in Great Britain in the second half of the 18th century (around 1760)."
+            },
+            {
+                num: 62,
+                cat: "Employability Skills",
+                text: "Hard Skill ______\nकठिन कौशल (हार्ड स्किल) है…..।",
+                choices: [
+                    "quick learner / त्वरित शिक्षार्थी",
+                    "time management / समय प्रबंधन",
+                    "60 WPM typing speed / 60 WPM टाइपिंग स्पीड",
+                    "spoken English / मौखिक अंग्रेजी"
+                ],
+                correct: "A3",
+                hint: "A specific, measurable technical ability that can be tested and quantified.",
+                rationale: "Hard skills are technical abilities that can be measured, such as typing 60 words per minute."
+            },
+            {
+                num: 63,
+                cat: "Employability Skills",
+                text: "To grow yourself you must ______\nअपने आप को विकसित करने के लिए आपको चाहिए ……।",
+                choices: [
+                    "know your office / अपने कार्यालय को जानें",
+                    "know yourself / खुद को जानें",
+                    "know your institute / अपने संस्थान को जानें",
+                    "know your country / अपने देश को जानो"
+                ],
+                correct: "A2",
+                hint: "Self-awareness is key—understanding your own strengths, weaknesses, and values.",
+                rationale: "Personal growth begins with self-awareness, which means knowing your own characteristics, strengths, and areas for improvement."
+            },
+            {
+                num: 64,
+                cat: "Employability Skills",
+                text: "Time management ______\nसमय प्रबंधन………।",
+                choices: [
+                    "complete your task on time / अपना कार्य समय पर पूरा करें",
+                    "managing time / प्रबंधन समय",
+                    "hard skill / कठिन कौशल",
+                    "problem solving / समस्या को सुलझाना"
+                ],
+                correct: "A1",
+                hint: "The main goal of organizing your time is ensuring your tasks are completed before deadlines.",
+                rationale: "Time management is the process of planning and controlling your hours to complete tasks on time."
+            },
+            {
+                num: 65,
+                cat: "Employability Skills",
+                text: "A resume should be ___________.\nएक रिज्यूम ___________ होना चाहिए",
+                choices: [
+                    "short and precise / छोटा और सटीक",
+                    "fancy and colourful / फैंसी और रंगीन",
+                    "having long and detailed information / लंबी और विस्तृत जानकारी होना",
+                    "having acronyms and abbreviation / संक्षेप और संक्षिप्त नाम होना"
+                ],
+                correct: "A1",
+                hint: "It should be easy for a recruiter to scan quickly, ideally keeping it to 1 or 2 pages.",
+                rationale: "A professional resume should be concise, clear, and direct (short and precise) to help employers scan it easily."
+            },
+            {
+                num: 66,
+                cat: "Employability Skills",
+                text: "A written description of duties and responsibilities to be carried out in a job is called ___________.\nकिसी कार्य में किए जाने वाले कर्तव्यों और जिम्मेदारियों का लिखित विवरण ___________ कहा जाता है",
+                choices: [
+                    "CV",
+                    "job description",
+                    "resume",
+                    "job application"
+                ],
+                correct: "A2",
+                hint: "Often abbreviated as 'JD', this document outlines what an employer expects from a role.",
+                rationale: "A job description (JD) is a formal document created by an employer outlining the roles, responsibilities, and expectations of a job."
+            },
+            {
+                num: 67,
+                cat: "Employability Skills",
+                text: "After receiving interview call, what is the next step?\nसाक्षात्कार कॉल प्राप्त करने के बाद, अगला कदम क्या है?",
+                choices: [
+                    "Send application letter / आवेदन पत्र भेजें",
+                    "Prepare the resume / रिज्यूम तैयार करें",
+                    "Appear at interview / साक्षात्कार में जाये",
+                    "Send resume / रिज्यूम भेजे"
+                ],
+                correct: "A3",
+                hint: "Once they invite you, your next step is to attend the scheduled meeting.",
+                rationale: "After receiving an interview call, the candidate's next action is to attend and participate (appear) in the interview."
+            },
+            {
+                num: 68,
+                cat: "Employability Skills",
+                text: "Choose suitable “wh” word for the given sentence: “___________ animal do you like?”\nदिए गए वाक्य के लिए उपयुक्त “wh” शब्द चुनें।",
+                choices: [
+                    "Which",
+                    "Why",
+                    "Where",
+                    "When"
+                ],
+                correct: "A1",
+                hint: "Use the word that asks for a choice between different options.",
+                rationale: "'Which' is the correct interrogative pronoun used to make a selection from a set of alternatives."
+            },
+            {
+                num: 69,
+                cat: "Employability Skills",
+                text: "Choose the correct punctuation mark after the word “Rohan” in the given sentence: “Rohan David and Ram are playing hide and seek”\nदिए गए वाक्य में शब्द \"रोहन\" के बाद सही विराम चिह्न चुनें।",
+                choices: [
+                    "Comma (,) / अल्पविराम (,)",
+                    "Period (.) / पूर्णविराम",
+                    "Slash (/) / स्लैश",
+                    "Hyphen (-) / हाइफ़न"
+                ],
+                correct: "A1",
+                hint: "Use this punctuation mark to separate items or names in a list.",
+                rationale: "A comma (,) should be used to separate individual names in a list (e.g., Rohan, David, and Ram)."
+            },
+            {
+                num: 70,
+                cat: "Employability Skills",
+                text: "Choose the correct response for the given question: “How have you been”?\nदिए गए प्रश्न के लिए सही उत्तर चुनिए।",
+                choices: [
+                    "Very well, And you?",
+                    "Thank you_ And you?",
+                    "Same to you",
+                    "On vacation_ And you?"
+                ],
+                correct: "A1",
+                hint: "A polite way to answer how you are doing, combined with a question back to the other person.",
+                rationale: "'Very well, And you?' is the standard polite response to answer how you are doing and show mutual courtesy."
+            },
+            {
+                num: 71,
+                cat: "Employability Skills",
+                text: "Choose the correct response of the given question: “When did the accident happen”?\nदिए गए प्रश्न की सही प्रतिक्रिया चुनें।",
+                choices: [
+                    "in the hotel",
+                    "during travelling",
+                    "At 10:30 last night",
+                    "On the table"
+                ],
+                correct: "A3",
+                hint: "The question starts with 'When', so you must provide a specific time or date.",
+                rationale: "Since the question asks 'When', the correct response must specify a time, which is 'At 10:30 last night'."
+            },
+            {
+                num: 72,
+                cat: "Employability Skills",
+                text: "Choose the correct tense of the verb: “I __________ music when I was child”\nक्रिया का सही काल चुनें।",
+                choices: [
+                    "learn",
+                    "am learning",
+                    "will learn",
+                    "had learnt"
+                ],
+                correct: "A4",
+                hint: "The action happened in your childhood, which is in the past.",
+                rationale: "The sentence refers to childhood (a completed past period), so the past perfect 'had learnt' is grammatically correct."
+            },
+            {
+                num: 73,
+                cat: "Employability Skills",
+                text: "Curriculum vitae is also known as ___________ .\nCurriculum vitae को ___________ के रूप में भी जाना जाता है।",
+                choices: [
+                    "circular / परिपत्र",
+                    "resume / रिज्यूम",
+                    "job application form / नौकरी के लिए आवेदन पत्र",
+                    "leave application / छुट्टी की अर्जी"
+                ],
+                correct: "A2",
+                hint: "A brief summary of your skills and work history used when applying for jobs.",
+                rationale: "Curriculum Vitae (CV) is another term for a resume, summarizing academic and professional achievements."
+            },
+            {
+                num: 74,
+                cat: "Employability Skills",
+                text: "Fill in the blank with comparative adjective: “Your pencil is __________ than mine”\nतुलनात्मक विशेषण के साथ रिक्त स्थान भरें।",
+                choices: [
+                    "sharp",
+                    "sharper",
+                    "blunt",
+                    "thick"
+                ],
+                correct: "A2",
+                hint: "When comparing two things, we add '-er' to the adjective.",
+                rationale: "When comparing two objects, the comparative adjective 'sharper' is used with the word 'than'."
+            },
+            {
+                num: 75,
+                cat: "Employability Skills",
+                text: "Fill in the blank with correct future tense of verb: “We ___________ to the zoo after Breakfast “\nक्रिया के सही भविष्य काल के साथ रिक्त स्थान भरें।",
+                choices: [
+                    "went",
+                    "are going",
+                    "had gone",
+                    "will go"
+                ],
+                correct: "A4",
+                hint: "This refers to an action plan for later, so we use 'will' with the base verb.",
+                rationale: "The phrase 'after breakfast' in this context indicates a plan for the future, which is correctly expressed using the simple future tense 'will go'."
+            }
+        ];
+
+        // Global Exam States
+        let currentQuestionIdx = 0;
+        let selectedAnswers = {}; // Map question index -> chosen answer ("A1", "A2", "A3", "A4")
+        let questionStatuses = {}; // Map question index -> "answered", "unanswered", "review", "notvisited"
+        let examTimeRemaining = 120 * 60; // 120 minutes in seconds
+        let timerInterval = null;
+        let candidateName = "Candidate";
+
+        // Initialize App on Load
+        window.onload = function() {
+            // Apply default theme based on system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').className = "fas fa-sun";
+            }
+            
+            // Set all questions as "notvisited" initially
+            for(let i=0; i<QUESTIONS_DB.length; i++) {
+                questionStatuses[i] = "notvisited";
+            }
+        };
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = "fas fa-moon";
+            } else {
+                html.classList.add('dark');
+                icon.className = "fas fa-sun";
+            }
+        }
+
+        function startExam() {
+            const nameInput = document.getElementById('candidate-name').value.trim();
+            if (nameInput) {
+                candidateName = nameInput;
+            } else {
+                candidateName = "Rohan Kumar";
+            }
+            
+            // Set name on screen
+            document.getElementById('display-user-name').innerText = candidateName;
+            document.getElementById('user-initials').innerText = candidateName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
+
+            // Transition Screen
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('exam-screen').classList.remove('hidden');
+
+            // Set up CBT palette grid & questions
+            generatePaletteGrid();
+            loadQuestion(0);
+            updateStatusCounts();
+
+            // Start Countdown Timer
+            startTimer();
+        }
+
+        // Generate the 1-75 grid buttons dynamically
+        function generatePaletteGrid() {
+            const container = document.getElementById('grid-buttons-container');
+            container.innerHTML = '';
+            for (let i = 0; i < QUESTIONS_DB.length; i++) {
+                const btn = document.createElement('button');
+                btn.id = `palette-btn-${i}`;
+                btn.innerText = i + 1;
+                btn.onclick = () => jumpToQuestion(i);
+                btn.className = getPaletteButtonClass(i);
+                container.appendChild(btn);
+            }
+        }
+
+        function getPaletteButtonClass(idx) {
+            let base = "w-10 h-10 rounded-xl font-bold text-xs transition-all duration-300 transform hover:scale-105 flex items-center justify-center border ";
+            const status = questionStatuses[idx];
+            if (idx === currentQuestionIdx) {
+                base += "ring-2 ring-primary-500 border-primary-500 scale-105 shadow-md ";
+            }
+            
+            if (status === "answered") {
+                return base + "bg-emerald-500 text-white border-emerald-600 shadow-sm shadow-emerald-500/10";
+            } else if (status === "unanswered") {
+                return base + "bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/10";
+            } else if (status === "review") {
+                return base + "bg-purple-500 text-white border-purple-600 shadow-sm shadow-purple-500/10";
+            } else {
+                // notvisited
+                return base + "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700";
+            }
+        }
+
+        function loadQuestion(idx) {
+            // Update active styling of previous question button
+            const oldIdx = currentQuestionIdx;
+            currentQuestionIdx = idx;
+            
+            if (questionStatuses[oldIdx] === "notvisited") {
+                questionStatuses[oldIdx] = "unanswered";
+            }
+
+            // Sync Palette button colors
+            document.getElementById(`palette-btn-${oldIdx}`).className = getPaletteButtonClass(oldIdx);
+            document.getElementById(`palette-btn-${idx}`).className = getPaletteButtonClass(idx);
+
+            const q = QUESTIONS_DB[idx];
+            
+            // Set Categories and Breadcrumbs
+            document.getElementById('category-tag').innerText = q.cat;
+            if (q.cat === "Trade Theory") {
+                document.getElementById('category-tag').className = "text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400";
+            } else {
+                document.getElementById('category-tag').className = "text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400";
+            }
+            document.getElementById('current-q-index').innerText = idx + 1;
+            document.getElementById('question-text').innerText = q.text;
+
+            // Generate options dynamically
+            const choicesContainer = document.getElementById('choices-container');
+            choicesContainer.innerHTML = '';
+
+            const prefixes = ["A1", "A2", "A3", "A4"];
+            q.choices.forEach((choice, i) => {
+                const prefix = prefixes[i];
+                const isSelected = selectedAnswers[idx] === prefix;
+
+                const choiceBtn = document.createElement('button');
+                choiceBtn.className = `w-full text-left p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between group ${
+                    isSelected 
+                    ? "border-primary-500 bg-primary-50 dark:bg-primary-950/40 text-primary-900 dark:text-primary-100 ring-2 ring-primary-500/20" 
+                    : "border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300"
+                }`;
+                choiceBtn.onclick = () => selectOption(prefix);
+
+                // Option Indicator circle
+                let dotClass = "w-5 h-5 rounded-full border flex items-center justify-center transition-all ";
+                dotClass += isSelected 
+                    ? "border-primary-500 bg-primary-500 text-white" 
+                    : "border-slate-300 dark:border-slate-700 group-hover:border-primary-500";
+
+                choiceBtn.innerHTML = `
+                    <div class="flex items-center space-x-3 pr-2">
+                        <span class="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg text-slate-500">${prefix}</span>
+                        <span class="text-sm font-medium leading-relaxed">${choice}</span>
+                    </div>
+                    <div class="${dotClass}">
+                        ${isSelected ? '<i class="fas fa-check text-[10px]"></i>' : ''}
+                    </div>
+                `;
+                choicesContainer.appendChild(choiceBtn);
+            });
+
+            // Adjust navigation disabled states
+            document.getElementById('prev-btn').disabled = (idx === 0);
+            document.getElementById('prev-btn').style.opacity = (idx === 0) ? '0.5' : '1';
+            
+            // If it's the last question, change next button text
+            const nextBtn = document.getElementById('next-btn');
+            if (idx === QUESTIONS_DB.length - 1) {
+                nextBtn.innerHTML = `Finish & Submit <i class="fas fa-check-double ml-1"></i>`;
+                nextBtn.className = "px-5 py-2 text-sm font-bold bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl shadow-md";
+            } else {
+                nextBtn.innerHTML = `Save & Next <i class="fas fa-chevron-right ml-1"></i>`;
+                nextBtn.className = "px-5 py-2 text-sm font-bold bg-primary-600 hover:bg-primary-500 text-white rounded-xl shadow-md";
+            }
+
+            updateStatusCounts();
+        }
+
+        function selectOption(prefix) {
+            // Set the active chosen answer
+            selectedAnswers[currentQuestionIdx] = prefix;
+            questionStatuses[currentQuestionIdx] = "answered";
+            
+            // Reload question card to show highlighted option state
+            loadQuestion(currentQuestionIdx);
+        }
+
+        function clearResponse() {
+            // Delete selection
+            delete selectedAnswers[currentQuestionIdx];
+            questionStatuses[currentQuestionIdx] = "unanswered";
+            loadQuestion(currentQuestionIdx);
+        }
+
+        function markForReview() {
+            questionStatuses[currentQuestionIdx] = "review";
+            nextQuestion(false);
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIdx > 0) {
+                loadQuestion(currentQuestionIdx - 1);
+            }
+        }
+
+        function nextQuestion(checkSubmit) {
+            if (currentQuestionIdx < QUESTIONS_DB.length - 1) {
+                // If they click next without choosing an option, change status to unanswered instead of notvisited
+                if (questionStatuses[currentQuestionIdx] === "notvisited") {
+                    questionStatuses[currentQuestionIdx] = "unanswered";
+                }
+                loadQuestion(currentQuestionIdx + 1);
+            } else if (checkSubmit) {
+                // It's the last question and they clicked save/next -> Trigger Submit Confirmation modal
+                confirmSubmitExam();
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            if (questionStatuses[currentQuestionIdx] === "notvisited") {
+                questionStatuses[currentQuestionIdx] = "unanswered";
+            }
+            loadQuestion(idx);
+            
+            // Close mobile menu if open
+            const sidebar = document.getElementById('palette-sidebar');
+            if (!sidebar.classList.contains('hidden') && window.innerWidth < 768) {
+                sidebar.classList.add('hidden');
+            }
+        }
+
+        function toggleMobilePalette() {
+            const sidebar = document.getElementById('palette-sidebar');
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('flex');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex');
+            }
+        }
+
+        function updateStatusCounts() {
+            let answered = 0;
+            let unanswered = 0;
+            let review = 0;
+            let notvisited = 0;
+
+            for (let i = 0; i < QUESTIONS_DB.length; i++) {
+                const s = questionStatuses[i];
+                if (s === "answered") answered++;
+                else if (s === "unanswered") unanswered++;
+                else if (s === "review") review++;
+                else notvisited++;
+            }
+
+            document.getElementById('count-answered').innerText = answered;
+            document.getElementById('count-unanswered').innerText = unanswered;
+            document.getElementById('count-review').innerText = review;
+            document.getElementById('count-notvisited').innerText = notvisited;
+        }
+
+        // Timer Module
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                examTimeRemaining--;
+                if (examTimeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    submitExam(); // Automatic submit when time's up
+                    return;
+                }
+
+                // Format Time String (MM:SS)
+                const mins = Math.floor(examTimeRemaining / 60);
+                const secs = examTimeRemaining % 60;
+                const formattedTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                document.getElementById('exam-timer').innerText = formattedTime;
+
+                // Warning color changes on low time (< 5 minutes)
+                if (examTimeRemaining < 300) {
+                    document.getElementById('exam-timer-wrapper').className = "flex items-center space-x-2 bg-rose-500 text-white px-3 py-1.5 rounded-xl font-bold text-sm animate-pulse";
+                }
+            }, 1000);
+        }
+
+        // Confirmation Actions
+        function confirmSubmitExam() {
+            // Count states for confirmation modal
+            let answered = 0;
+            let unanswered = 0;
+            let review = 0;
+
+            for (let i = 0; i < QUESTIONS_DB.length; i++) {
+                const s = questionStatuses[i];
+                if (s === "answered") answered++;
+                else if (s === "review") review++;
+                else unanswered++;
+            }
+
+            document.getElementById('modal-answered-count').innerText = answered;
+            document.getElementById('modal-unanswered-count').innerText = unanswered;
+            document.getElementById('modal-review-count').innerText = review;
+
+            // Show modal with animation
+            const modal = document.getElementById('confirm-modal');
+            const content = document.getElementById('confirm-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 50);
+        }
+
+        function closeConfirmModal() {
+            const content = document.getElementById('confirm-modal-content');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                document.getElementById('confirm-modal').classList.add('hidden');
+            }, 300);
+        }
+
+        // Submit and Calculate Analytics
+        function submitExam() {
+            clearInterval(timerInterval);
+            closeConfirmModal();
+
+            // Transition main screen
+            document.getElementById('exam-screen').classList.add('hidden');
+            document.getElementById('exam-timer-wrapper').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            // Hide mobile navigation bar too
+            const stickyMobileBar = document.querySelector('.md\\:hidden.fixed.bottom-0');
+            if (stickyMobileBar) stickyMobileBar.classList.add('hidden');
+
+            // Set result candidate name
+            document.getElementById('result-user-name').innerText = candidateName;
+
+            // Calculation Constants
+            let finalScore = 0;
+            let correctCount = 0;
+            let incorrectCount = 0;
+            let unattemptedCount = 0;
+
+            let scoreTradeTheory = 0;
+            let scoreEmployability = 0;
+
+            // Loop and evaluate
+            QUESTIONS_DB.forEach((q, idx) => {
+                const chosen = selectedAnswers[idx];
+                const correct = q.correct;
+
+                if (!chosen) {
+                    unattemptedCount++;
+                } else if (chosen === correct) {
+                    correctCount++;
+                    finalScore += 2; // Each correct question adds 2 marks
+
+                    if (q.cat === "Trade Theory") {
+                        scoreTradeTheory += 2;
+                    } else {
+                        scoreEmployability += 2;
+                    }
+                } else {
+                    incorrectCount++;
+                }
+            });
+
+            // Update UI Stat Counters
+            document.getElementById('display-final-score').innerText = finalScore;
+            document.getElementById('stat-correct').innerText = correctCount;
+            document.getElementById('stat-incorrect').innerText = incorrectCount;
+            document.getElementById('stat-unattempted').innerText = unattemptedCount;
+
+            const accuracy = correctCount + incorrectCount > 0 
+                ? Math.round((correctCount / (correctCount + incorrectCount)) * 100) 
+                : 0;
+            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+
+            // Display segment metrics
+            document.getElementById('score-trade-theory').innerText = `${scoreTradeTheory}/100`;
+            document.getElementById('progress-trade-theory').style.width = `${scoreTradeTheory}%`;
+
+            document.getElementById('score-employability').innerText = `${scoreEmployability}/50`;
+            document.getElementById('progress-employability').style.width = `${(scoreEmployability / 50) * 100}%`;
+
+            // Populate Review Cards Grid
+            generateReviewAnswers();
+
+            // Setup correct/incorrect counters inside filters
+            document.getElementById('count-correct-review').innerText = correctCount;
+            document.getElementById('count-incorrect-review').innerText = incorrectCount;
+            document.getElementById('count-unattempted-review').innerText = unattemptedCount;
+
+            // Celebrate Success!
+            confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Generate the detailed breakdown review cards
+        function generateReviewAnswers() {
+            const container = document.getElementById('review-cards-container');
+            container.innerHTML = '';
+
+            QUESTIONS_DB.forEach((q, idx) => {
+                const chosen = selectedAnswers[idx];
+                const correct = q.correct;
+                const isCorrect = chosen === correct;
+
+                const card = document.createElement('div');
+                card.id = `review-card-${idx}`;
+                card.className = `p-5 rounded-2xl border transition-all duration-300 review-card-item ${
+                    !chosen 
+                        ? 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50' 
+                        : isCorrect 
+                            ? 'border-emerald-200 dark:border-emerald-950 bg-emerald-50/20 dark:bg-emerald-950/10' 
+                            : 'border-rose-200 dark:border-rose-950 bg-rose-50/20 dark:bg-rose-950/10'
+                }`;
+
+                // Status tag
+                let statusTag = '';
+                if (!chosen) {
+                    statusTag = '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500"><i class="fas fa-eye-slash mr-1"></i> Unattempted</span>';
+                } else if (isCorrect) {
+                    statusTag = '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400"><i class="fas fa-check mr-1"></i> Correct</span>';
+                } else {
+                    statusTag = '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400"><i class="fas fa-times mr-1"></i> Incorrect</span>';
+                }
+
+                // Retrieve chosen option text vs correct option text
+                const prefixes = ["A1", "A2", "A3", "A4"];
+                const correctText = q.choices[prefixes.indexOf(correct)];
+                const chosenText = chosen ? q.choices[prefixes.indexOf(chosen)] : "None / कोई नहीं";
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold px-2 py-0.5 bg-primary-100 dark:bg-primary-950 text-primary-600 dark:text-primary-400 rounded">${q.cat}</span>
+                            <span class="text-xs font-semibold text-slate-400">Q. ${idx + 1}</span>
+                        </div>
+                        ${statusTag}
+                    </div>
+
+                    <h4 class="font-semibold text-sm sm:text-base mb-4 text-slate-800 dark:text-slate-100 whitespace-pre-line">${q.text}</h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <div class="p-3 rounded-xl bg-white/40 dark:bg-slate-950/30 border dark:border-slate-800/50">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Your Answer / आपका उत्तर</p>
+                            <p class="text-xs font-semibold mt-1 text-slate-700 dark:text-slate-300">
+                                <span class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded mr-1 text-[10px] font-bold">${chosen || "N/A"}</span> ${chosenText}
+                            </p>
+                        </div>
+                        <div class="p-3 rounded-xl bg-white/40 dark:bg-slate-950/30 border border-emerald-100 dark:border-emerald-950/50">
+                            <p class="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Correct Answer / सही उत्तर</p>
+                            <p class="text-xs font-bold mt-1 text-emerald-600 dark:text-emerald-400">
+                                <span class="bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded mr-1 text-[10px] font-bold">${correct}</span> ${correctText}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Explanation/Rationale Box -->
+                    <div class="p-3 rounded-xl bg-slate-100/50 dark:bg-slate-950/50 text-xs border dark:border-slate-800/40">
+                        <span class="font-bold text-primary-500"><i class="fas fa-lightbulb mr-1.5"></i>Explanation / स्पष्टीकरण:</span>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">${q.rationale}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Handle Review Answer Filters
+        function filterReview(mode) {
+            // Adjust button active styles
+            const btns = document.querySelectorAll('.review-filter-btn');
+            btns.forEach(btn => {
+                btn.className = btn.className.replace('bg-primary-600 text-white', 'bg-slate-100 dark:bg-slate-900 text-slate-500');
+            });
+            event.currentTarget.classList.remove('bg-slate-100', 'dark:bg-slate-900', 'text-slate-500');
+            event.currentTarget.classList.add('bg-primary-600', 'text-white');
+
+            // Hide/Show cards based on selection state
+            QUESTIONS_DB.forEach((q, idx) => {
+                const card = document.getElementById(`review-card-${idx}`);
+                const chosen = selectedAnswers[idx];
+                const correct = q.correct;
+                const isCorrect = chosen === correct;
+
+                if (mode === "all") {
+                    card.classList.remove('hidden');
+                } else if (mode === "correct") {
+                    if (chosen && isCorrect) card.classList.remove('hidden');
+                    else card.classList.add('hidden');
+                } else if (mode === "incorrect") {
+                    if (chosen && !isCorrect) card.classList.remove('hidden');
+                    else card.classList.add('hidden');
+                } else if (mode === "unattempted") {
+                    if (!chosen) card.classList.remove('hidden');
+                    else card.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
