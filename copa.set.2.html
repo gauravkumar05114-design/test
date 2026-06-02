@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>COPA CBT Set-2 (Simple Mobile UI)</title>
+    <!-- Tailwind CSS for modern simplified responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for readable text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom slim scrollbar for mobile */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- Simple Start/Registration screen -->
+    <div id="start-screen" class="flex-1 flex items-center justify-center p-4 bg-slate-50 overflow-y-auto h-screen z-50">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl max-w-sm w-full p-6 space-y-6 transition-all">
+            <div class="text-center space-y-2">
+                <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">AITT CTS CBT</span>
+                <h2 class="text-lg font-bold text-slate-800 leading-tight">Entrance Portal / प्रवेश द्वार</h2>
+                <p class="text-[11px] text-slate-400">Enter your details to initiate Set-2 assessment</p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Candidate Name Input -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Full Name / अभ्यर्थी का नाम</label>
+                    <input type="text" id="candidate-name-input" placeholder="Enter your full name" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium">
+                </div>
+
+                <!-- Roll Number Input -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Roll Number / अनुक्रमांक</label>
+                    <input type="text" id="candidate-roll-input" placeholder="Enter roll number" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-mono font-medium">
+                </div>
+
+                <!-- Exam Details Card -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Exam Description / परीक्षा विवरण</label>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 font-medium leading-relaxed">
+                        <strong>Trade:</strong> COPA (Java) Set-2<br>
+                        <strong>Total Questions:</strong> 75 (150 Marks)<br>
+                        <strong>Evaluation Type:</strong> Instant Computer Grading
+                    </div>
+                </div>
+
+                <!-- In-app Error message placeholder -->
+                <p id="start-error-msg" class="hidden text-rose-500 text-[11px] font-semibold text-center py-1"></p>
+            </div>
+
+            <button onclick="startExamNow()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold shadow-md transition-all text-center">
+                Start Examination / परीक्षा शुरू करें &rarr;
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden Exam Container (Unlocks on Details Save) -->
+    <div id="exam-main-container" class="hidden flex-1 flex flex-col overflow-hidden h-screen">
+
+        <!-- Minimalist Header -->
+        <header class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shrink-0 z-10">
+            <div class="flex items-center space-x-2">
+                <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">SET 2</span>
+                <span id="question-counter" class="text-xs font-bold text-slate-500">Q. 1 / 75</span>
+                <span id="display-candidate-name" class="hidden sm:inline text-xs font-medium text-slate-400 border-l border-slate-200 pl-2"></span>
+            </div>
+            
+            <!-- Touch-Optimized Timer -->
+            <div class="flex items-center space-x-1 text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">
+                <svg class="w-3.5 h-3.5 text-slate-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="timer" class="text-xs font-mono font-bold">120:00</span>
+            </div>
+        </header>
+
+        <!-- Distraction-free CBT Question Arena -->
+        <main class="flex-1 overflow-hidden relative flex flex-col max-w-xl w-full mx-auto bg-white">
+            
+            <!-- Clean Question Segment -->
+            <div class="flex-1 overflow-y-auto px-5 py-6 space-y-6 custom-scroll" id="exam-panel">
+                
+                <!-- Beautiful English and Hindi Question Box -->
+                <div class="space-y-2 border-b border-slate-100 pb-4">
+                    <h2 id="q-text-en" class="text-base font-semibold text-slate-800 leading-relaxed">
+                        Loading Question...
+                    </h2>
+                    <h2 id="q-text-hi" class="text-base font-medium text-indigo-900 font-devanagari leading-relaxed pt-1">
+                        प्रश्न लोड हो रहा है...
+                    </h2>
+                </div>
+
+                <!-- Extremely Simple Options Container -->
+                <div class="space-y-3" id="options-container">
+                    <!-- Option 1 -->
+                    <button onclick="selectOption(1)" id="opt-btn-1" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-1" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">A</span>
+                        <div class="flex-1">
+                            <p id="opt-en-1" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-1" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+
+                    <!-- Option 2 -->
+                    <button onclick="selectOption(2)" id="opt-btn-2" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-2" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">B</span>
+                        <div class="flex-1">
+                            <p id="opt-en-2" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-2" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+
+                    <!-- Option 3 -->
+                    <button onclick="selectOption(3)" id="opt-btn-3" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-3" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">C</span>
+                        <div class="flex-1">
+                            <p id="opt-en-3" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-3" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+
+                    <!-- Option 4 -->
+                    <button onclick="selectOption(4)" id="opt-btn-4" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-4" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">D</span>
+                        <div class="flex-1">
+                            <p id="opt-en-4" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-4" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fixed Minimalist Action Bottom Bar -->
+            <div class="bg-white border-t border-slate-200 p-4 flex items-center justify-between gap-3 shrink-0">
+                <div class="flex items-center space-x-2 flex-1">
+                    <button onclick="clearResponse()" class="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold active:scale-95 transition-all">
+                        Clear
+                    </button>
+                    <button onclick="togglePaletteModal(true)" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all">
+                        <span>📁 Palette</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2 flex-1 justify-end">
+                    <button onclick="navigateQuestion(-1)" id="prev-btn" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold active:scale-95 transition-all">
+                        &larr; Prev
+                    </button>
+                    <button onclick="navigateQuestion(1)" id="next-btn" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all">
+                        Next &rarr;
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div> <!-- END OF #exam-main-container -->
+
+    <!-- Minimalist Palette Bottom Sheet / Modal -->
+    <div id="palette-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-end justify-center">
+        <div class="bg-white rounded-t-3xl max-w-md w-full p-5 space-y-4 max-h-[70vh] flex flex-col shadow-2xl transform translate-y-0 transition-transform duration-300">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
+                <h3 class="text-sm font-bold text-slate-700">Choose Question</h3>
+                <button onclick="togglePaletteModal(false)" class="p-1 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Compact Legend -->
+            <div class="flex flex-wrap gap-3 text-[10px] text-slate-500 justify-center pb-2 border-b border-slate-100 shrink-0">
+                <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded bg-green-500"></span><span>Answered</span></div>
+                <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded bg-rose-400"></span><span>Unanswered</span></div>
+                <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded bg-slate-200"></span><span>Not Visited</span></div>
+            </div>
+
+            <!-- Scrollable 1-75 Grid -->
+            <div class="flex-1 overflow-y-auto custom-scroll py-2">
+                <div class="grid grid-cols-5 gap-2" id="palette-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Quick Submit Trigger inside Palette -->
+            <div class="pt-2 border-t border-slate-100 shrink-0">
+                <button onclick="openSubmitModal()" class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-sm transition-all text-center">
+                    Submit Exam Paper
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimalist Submit Confirmation Modal -->
+    <div id="submit-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-4 shadow-xl">
+            <div class="text-center space-y-2">
+                <h3 class="text-base font-bold text-slate-800">Submit Exam?</h3>
+                <p class="text-xs text-slate-500">Are you ready to submit your responses for evaluation?</p>
+            </div>
+
+            <!-- Simple Response Statistics -->
+            <div class="bg-slate-50 p-3 rounded-xl space-y-1.5 text-xs text-slate-600">
+                <div class="flex justify-between"><span>Total Questions:</span> <span class="font-bold">75</span></div>
+                <div class="flex justify-between"><span>Answered / Saved:</span> <span id="summary-answered" class="font-bold text-green-600">0</span></div>
+                <div class="flex justify-between"><span>Unvisited / Left:</span> <span id="summary-left" class="font-bold text-rose-500">75</span></div>
+            </div>
+
+            <div class="flex space-x-2 text-xs">
+                <button onclick="closeSubmitModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all">
+                    Cancel
+                </button>
+                <button onclick="finalizeExamAnswers()" class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold transition-all shadow">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simplified Scorecard & Review Screen -->
+    <div id="scorecard-screen" class="hidden flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50">
+        <!-- Minimal Hero Score Box -->
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-indigo-900 text-white px-5 py-6 text-center space-y-2">
+                <!-- Candidate details on results display -->
+                <div class="text-[10px] text-indigo-200 font-semibold uppercase tracking-wider">
+                    Candidate: <span id="res-candidate-name" class="font-bold text-white"></span> | Roll: <span id="res-candidate-roll" class="font-bold text-white"></span>
+                </div>
+                <h2 class="text-base font-bold">Result Evaluation Compiled</h2>
+                <div class="inline-flex flex-col items-center justify-center bg-white/10 px-5 py-3 rounded-xl border border-white/15 mt-1">
+                    <span class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Obtained Marks</span>
+                    <span class="text-3xl font-black" id="score-text">0 <span class="text-xs font-normal">/ 150</span></span>
+                    <span class="text-[10px] text-green-300 mt-0.5" id="percentage-text">Percentage: 0%</span>
+                </div>
+            </div>
+
+            <!-- Stats Table -->
+            <div class="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50 text-center py-3 text-xs border-b border-slate-150">
+                <div>
+                    <span class="text-[9px] text-slate-500 block">Total</span>
+                    <span class="font-bold text-slate-800">75</span>
+                </div>
+                <div>
+                    <span class="text-[9px] text-slate-500 block">Correct</span>
+                    <span class="font-bold text-green-600" id="stat-correct">0</span>
+                </div>
+                <div>
+                    <span class="text-[9px] text-slate-500 block">Status</span>
+                    <span class="font-black text-indigo-700" id="stat-status">PASS</span>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white text-center">
+                <button onclick="location.reload()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow transition-colors">
+                    Re-attempt Assessment
+                </button>
+            </div>
+        </div>
+
+        <!-- Solutions Header -->
+        <div class="max-w-md mx-auto space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Review Question Key</h3>
+            <div class="space-y-3" id="review-questions-list">
+                <!-- Loaded dynamically on final submit -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Tiny Footer -->
+    <footer class="bg-white text-slate-400 text-[10px] py-2 px-4 text-center shrink-0 border-t border-slate-100 z-10">
+        © 2026 NIMI Exam Engine • COPA Java (Set-2)
+    </footer>
+
+    <!-- INTERACTIVE ENGINE SCRIPTS -->
+    <script>
+        // Set-2 Complete Database containing 75 Bilingual Questions
+        const set2Questions = [
+            { id: 1, type: "theory", correct: 1, q: { en: "Which is open source software?", hi: "ओपन सोर्स सॉफ्टवेयर कौन सा है?" }, options: [ { en: "Open Office", hi: "Open Office" }, { en: "Windows 10", hi: "Windows 10" }, { en: "MacOs", hi: "MacOs" }, { en: "Microsoft Office 365", hi: "Microsoft Office 365" } ] },
+            { id: 2, type: "theory", correct: 2, q: { en: "Which command remove files in Linux?", hi: "लिनक्स में कौन सा कमांड फाइलों को हटाता है?" }, options: [ { en: "delete", hi: "delete" }, { en: "rm", hi: "rm" }, { en: "dm", hi: "dm" }, { en: "remove", hi: "remove" } ] },
+            { id: 3, type: "theory", correct: 2, q: { en: "What is the first option of the KDE desktop in Linux?", hi: "Linux में KDE डेस्कटॉप का पहला विकल्प क्या है?" }, options: [ { en: "Preference", hi: "Preference" }, { en: "Application", hi: "Application" }, { en: "System", hi: "System" }, { en: "System setting", hi: "System setting" } ] },
+            { id: 4, type: "theory", correct: 2, q: { en: "What is the full form of OSS?", hi: "OSS का फुल फॉर्म क्या है?" }, options: [ { en: "Open System Service", hi: "Open System Service" }, { en: "Open Source Software", hi: "Open Source Software" }, { en: "Open System Software", hi: "Open System Software" }, { en: "Open Synchronized Software", hi: "Open Synchronized Software" } ] },
+            { id: 5, type: "theory", correct: 2, q: { en: "Which software coding is freely available on the internet and open for users for further use?", hi: "कौन सा सॉफ्टवेयर कोडिंग इंटरनेट पर स्वतंत्र रूप से उपलब्ध है और यूजर के लिए आगे उपयोग के लिए खुला है?" }, options: [ { en: "Unlicensed software", hi: "Unlicensed software" }, { en: "Open source software", hi: "Open source software" }, { en: "Free software", hi: "Free software" }, { en: "Community software", hi: "Community software" } ] },
+            { id: 6, type: "theory", correct: 3, q: { en: "What is the full form of FSF?", hi: "FSF का फुल फॉर्म क्या है?" }, options: [ { en: "File Server First", hi: "File Server First" }, { en: "Free Software File", hi: "Free Software File" }, { en: "Free Software Foundation", hi: "Free Software Foundation" }, { en: "First Software First", hi: "First Software First" } ] },
+            { id: 7, type: "theory", correct: 1, q: { en: "Which command stores the active document permanently?", hi: "कौन सा कमांड एक्टिव डॉक्यूमेंट को स्थायी रूप से स्टोर करता है?" }, options: [ { en: "Save", hi: "Save" }, { en: "Send", hi: "Send" }, { en: "Prepare", hi: "Prepare" }, { en: "Save as", hi: "Save as" } ] },
+            { id: 8, type: "theory", correct: 3, q: { en: "Which bar contains the current position of the cursor in MS Word?", hi: "MS Word में कौन सी बार कर्सर की वर्तमान स्थिति को दर्शाती है?" }, options: [ { en: "Layout", hi: "Layout" }, { en: "Title bar", hi: "Title bar" }, { en: "Status bar", hi: "Status bar" }, { en: "Horizontal ruler", hi: "Horizontal ruler" } ] },
+            { id: 9, type: "theory", correct: 2, q: { en: "Which is a text styling feature of MS Word?", hi: "MS Word का टेक्स्ट स्टाइलिंग फीचर कौन सा है?" }, options: [ { en: "Word fill", hi: "Word fill" }, { en: "Word art", hi: "Word art" }, { en: "Word colour", hi: "Word colour" }, { en: "Word font", hi: "Word font" } ] },
+            { id: 10, type: "theory", correct: 3, q: { en: "Which document view resembles the appearance of a web browser?", hi: "वेब ब्राउज़र के रूप में कौन सा डॉक्यूमेंट व्यू दिया गया है?" }, options: [ { en: "Draft view", hi: "ड्राफ्ट व्यू" }, { en: "Outline view", hi: "आउटलाइन व्यू" }, { en: "Web layout view", hi: "वेब लेआउट व्यू" }, { en: "Full screen reading", hi: "फुल स्क्रीन रीडिंग" } ] },
+            { id: 11, type: "theory", correct: 4, q: { en: "What is the purpose of quick access toolbar?", hi: "क्विक एक्सेस टूलबार का उद्देश्य क्या है?" }, options: [ { en: "To hold advanced function", hi: "एडवांस फ़ंक्शन होल्ड करने के लिए" }, { en: "To hold special function", hi: "स्पेशल फंक्शन होल्ड करने के लिए" }, { en: "To hold basic function", hi: "बेसिक फंक्शन होल्ड करने के लिए" }, { en: "To hold familiar and repeated function", hi: "परिचित और रिपीटेड फंक्शन होल्ड करने के लिए" } ] },
+            { id: 12, type: "theory", correct: 3, q: { en: "What is the purpose of gutter margin?", hi: "गटर मार्जिन का उद्देश्य क्या है?" }, options: [ { en: "Added to left margin when printing", hi: "प्रिंटिंग करते समय लेफ्ट मार्जिन में जोड़ा गया" }, { en: "Added to right margin when printing", hi: "प्रिंटिंग करते समय राइट मार्जिन में जोड़ा गया" }, { en: "Added to binding side of page when printing", hi: "प्रिंटिंग करते समय पेज के बाइंडिंग साइड में जोड़ा गया" }, { en: "Added to the outside of page when printing", hi: "प्रिंटिंग करते समय पेज के आउटसाइड जोड़ा गया" } ] },
+            { id: 13, type: "theory", correct: 1, q: { en: "Which option is used for tab setting?", hi: "टैब सेटिंग के लिए किस विकल्प का उपयोग किया जाता है?" }, options: [ { en: "Horizontal ruler", hi: "Horizontal ruler" }, { en: "Status bar", hi: "Status bar" }, { en: "Vertical ruler", hi: "Vertical ruler" }, { en: "Vertical scroll bar", hi: "Vertical scroll bar" } ] },
+            { id: 14, type: "theory", correct: 1, q: { en: "What is the purpose of cover page?", hi: "कवर पेज का उद्देश्य क्या है?" }, options: [ { en: "Allows to fill title, author and date", hi: "शीर्षक, लेखक और दिनांक भरने की अनुमति देता है" }, { en: "Fills list of people intent to mail", hi: "मेल भेजने के इच्छुक लोगों की सूची" }, { en: "To view the mailed list", hi: "मेल की गई सूची देखने के लिए" }, { en: "Contains details of the documents", hi: "दस्तावेजों के विवरण शामिल हैं" } ] },
+            { id: 15, type: "theory", correct: 3, q: { en: "Which term refers to the process of combining two or more cells to make one?", hi: "कौन सा शब्द दो या दो से अधिक सेल्स को मिलाकर एक बनाने की प्रक्रिया को संदर्भित करता है?" }, options: [ { en: "Combining", hi: "Combining" }, { en: "Joining", hi: "Joining" }, { en: "Merging", hi: "Merging" }, { en: "Creating", hi: "Creating" } ] },
+            { id: 16, type: "theory", correct: 2, q: { en: "What has the ability to combine name and addresses within standard document?", hi: "मानक दस्तावेज़ में नाम और पते को संयोजित करने की क्षमता किसमें है?" }, options: [ { en: "Document formatting", hi: "Document formatting" }, { en: "Mail merge", hi: "Mail merge" }, { en: "Database management", hi: "Database management" }, { en: "Form letters", hi: "Form letters" } ] },
+            { id: 17, type: "theory", correct: 3, q: { en: "Which shortcut key center aligns the selected text in MS Word?", hi: "MS Word में चयनित टेक्स्ट को कौन सा शॉर्टकट कुंजी केंद्र में संरेखित करता है?" }, options: [ { en: "Ctrl + C", hi: "Ctrl + C" }, { en: "Ctrl + D", hi: "Ctrl + D" }, { en: "Ctrl + E", hi: "Ctrl + E" }, { en: "Ctrl + F", hi: "Ctrl + F" } ] },
+            { id: 18, type: "theory", correct: 3, q: { en: "What is the purpose of Shift+Ctrl+N in Open Office?", hi: "ओपन ऑफिस में Shift+Ctrl+N का उद्देश्य क्या है?" }, options: [ { en: "To create a new document", hi: "नया डॉक्यूमेंट बनाने के लिए" }, { en: "To open a document", hi: "डॉक्यूमेंट ओपन करने के लिए" }, { en: "To open templates and documents dialog", hi: "टेम्पलेट्स और डॉक्यूमेंट डायलॉग ओपन करने के लिए" }, { en: "To exit an application", hi: "एप्लीकेशन से बाहर निकलने के लिए" } ] },
+            { id: 19, type: "theory", correct: 3, q: { en: "How can you insert a audio file in your word document?", hi: "अपने वर्ड डॉक्यूमेंट में ऑडियो फ़ाइल कैसे सम्मिलित कर सकते हैं?" }, options: [ { en: "Insert > sound menu option", hi: "Insert > sound menu option" }, { en: "Insert > video menu option", hi: "Insert > video menu option" }, { en: "Insert > object menu option", hi: "Insert > object menu option" }, { en: "Insert > blank menu option", hi: "Insert > blank menu option" } ] },
+            { id: 20, type: "theory", correct: 1, q: { en: "How are individuals in a table referred to as?", hi: "टेबल में प्रविष्टियों को किस रूप में संदर्भित किया जाता है?" }, options: [ { en: "cells", hi: "cells" }, { en: "boxes", hi: "boxes" }, { en: "rows", hi: "rows" }, { en: "columns", hi: "columns" } ] },
+            { id: 21, type: "theory", correct: 4, q: { en: "Which MS word tab has access to mail merge options?", hi: "MS word के किस टैब में मेल मर्ज विकल्पों तक पहुंच है?" }, options: [ { en: "Insert tab", hi: "Insert tab" }, { en: "References tab", hi: "References tab" }, { en: "Home tab", hi: "Home tab" }, { en: "Mailings tab", hi: "Mailings tab" } ] },
+            { id: 22, type: "theory", correct: 3, q: { en: "Which is a default document type for a mail merge?", hi: "मेल मर्ज के लिए डिफ़ॉल्ट डॉक्यूमेंट प्रकार कौन सा है?" }, options: [ { en: "Data", hi: "Data" }, { en: "Labels and list", hi: "Labels and list" }, { en: "Letters", hi: "Letters" }, { en: "Set", hi: "Set" } ] },
+            { id: 23, type: "theory", correct: 3, q: { en: "Which shortcut key prints a document?", hi: "डॉक्यूमेंट को प्रिंट करने के लिए किस शॉर्टकट की का प्रयोग किया जाता है?" }, options: [ { en: "Ctrl + V", hi: "Ctrl + V" }, { en: "Ctrl + X", hi: "Ctrl + X" }, { en: "Ctrl + P", hi: "Ctrl + P" }, { en: "Ctrl + S", hi: "Ctrl + S" } ] },
+            { id: 24, type: "theory", correct: 2, q: { en: "Which key copies the selected items in open source office?", hi: "ओपन सोर्स ऑफिस में कौन सी कुंजी चयनित आइटम की प्रतिलिपि बनाती है?" }, options: [ { en: "Ctrl + O", hi: "Ctrl + O" }, { en: "Ctrl + C", hi: "Ctrl + C" }, { en: "Ctrl + P", hi: "Ctrl + P" }, { en: "Ctrl + Shift + C", hi: "Ctrl + Shift + C" } ] },
+            { id: 25, type: "theory", correct: 2, q: { en: "Which list is used to create multiple copies of a document in a mail merge?", hi: "मेल मर्ज में किसी डॉक्यूमेंट की एकाधिक प्रतियां बनाने के लिए किस सूची का उपयोग किया जाता है?" }, options: [ { en: "Main document", hi: "मेन डॉक्यूमेंट" }, { en: "Data source", hi: "डाटा सोर्स" }, { en: "Form label", hi: "फॉर्म लेबल" }, { en: "Database", hi: "डेटाबेस" } ] },
+            { id: 26, type: "theory", correct: 1, q: { en: "Which is a step of merge process?", hi: "मर्ज प्रक्रिया का एक चरण कौन सा है?" }, options: [ { en: "Preview the merge results", hi: "मर्ज रिजल्ट का प्रीव्यू" }, { en: "Set margin of the document", hi: "डॉक्यूमेंट का मार्जिन सेट करना" }, { en: "Format data source", hi: "फॉर्मेट डाटा सोर्स" }, { en: "Remove data sources", hi: "डाटा सोर्स हटाना" } ] },
+            { id: 27, type: "theory", correct: 3, q: { en: "How Cells are named in MS Excel?", hi: "MS Excel में सेल का नाम कैसे दिया जाता है?" }, options: [ { en: "Alphabetically", hi: "वर्णानुक्रम में" }, { en: "Numerically", hi: "संख्यात्मक रूप से" }, { en: "Alphanumerically", hi: "अक्षरात्मक रूप से (Alphanumerically)" }, { en: "Special Characters", hi: "विशेष वर्ण" } ] },
+            { id: 28, type: "theory", correct: 3, q: { en: "What is the maximum row limit in MS Excel 2010?", hi: "MS Excel 2010 में पंक्तियों की अधिकतम सीमा क्या है?" }, options: [ { en: "1084567", hi: "1084567" }, { en: "1048567", hi: "1048567" }, { en: "1048576", hi: "1048576" }, { en: "1084576", hi: "1084576" } ] },
+            { id: 29, type: "theory", correct: 1, q: { en: "Which tab adds pivot table, charts and hyperlinks in a spread sheet?", hi: "पिवट टेबल, चार्ट, हाइपरलिंक्स को स्प्रेड शीट में शामिल करने के लिए किस टैब का उपयोग किया जाता है?" }, options: [ { en: "Insert", hi: "Insert" }, { en: "Page Layout", hi: "Page Layout" }, { en: "Data", hi: "Data" }, { en: "Review", hi: "Review" } ] },
+            { id: 30, type: "theory", correct: 2, q: { en: "Which Excel tab is used for importing, outlining and subtotalling the data placed in a worksheet data list?", hi: "वर्कशीट डेटा सूची में रखे गए डेटा को इम्पोर्ट करने, रेखांकित करने और उप-योग करने के लिए किस एक्सेल टैब का उपयोग किया जाता है?" }, options: [ { en: "Formula", hi: "Formula" }, { en: "Data", hi: "Data" }, { en: "Review", hi: "Review" }, { en: "Insert", hi: "Insert" } ] },
+            { id: 31, type: "theory", correct: 2, q: { en: "Which key combined with ctrl key creates a macro key in Excel?", hi: "कौन सी कुंजी Ctrl कुंजी के साथ मिलकर Excel में मैक्रो कुंजी बनाती है?" }, options: [ { en: "Numeric", hi: "संख्यात्मक" }, { en: "Alphabetic", hi: "वर्णानुक्रमक" }, { en: "Alphanumeric", hi: "अक्षरांकीय" }, { en: "Special characters", hi: "विशेष वर्ण" } ] },
+            { id: 32, type: "theory", correct: 4, q: { en: "Which function key opens save as dialogue box in MS Excel?", hi: "Excel में कौन सी फ़ंक्शन कुंजी 'Save As' डायलॉग बॉक्स खोलती है?" }, options: [ { en: "F5", hi: "F5" }, { en: "F9", hi: "F9" }, { en: "F7", hi: "F7" }, { en: "F12", hi: "F12" } ] },
+            { id: 33, type: "theory", correct: 4, q: { en: "Which starts with '=' sign in Excel 2010?", hi: "Excel 2010 में कौन सा सूत्र/तत्व '=' चिह्न से प्रारंभ होता है?" }, options: [ { en: "Data", hi: "डेटा" }, { en: "Text", hi: "टेक्स्ट" }, { en: "Numbers", hi: "नंबर" }, { en: "Formulas", hi: "सूत्र (Formulas)" } ] },
+            { id: 34, type: "theory", correct: 1, q: { en: "Which function counts the number of cells that contains numbers in a range?", hi: "कौन सा फ़ंक्शन किसी श्रेणी में संख्याओं वाली सेल्स की संख्या की गणना करता है?" }, options: [ { en: "Count()", hi: "Count()" }, { en: "Countif()", hi: "Countif()" }, { en: "Sum()", hi: "Sum()" }, { en: "Sumif()", hi: "Sumif()" } ] },
+            { id: 35, type: "theory", correct: 3, q: { en: "Which is a 'Date and Time' function in Excel?", hi: "Excel में 'Date and Time' फंक्शन कौन सा है?" }, options: [ { en: "FIND()", hi: "FIND()" }, { en: "MOD()", hi: "MOD()" }, { en: "NOW()", hi: "NOW()" }, { en: "MID()", hi: "MID()" } ] },
+            { id: 36, type: "theory", correct: 2, q: { en: "Which option displays the rows that meet certain conditions in MS Excel?", hi: "कौन सा विकल्प MS Excel में कुछ शर्तों को पूरा करने वाली पंक्तियों को प्रदर्शित करता है?" }, options: [ { en: "Find", hi: "ढूँढना" }, { en: "Filter", hi: "फ़िल्टर (Filter)" }, { en: "Format", hi: "प्रारूप" }, { en: "Sort", hi: "क्रमबद्ध करना" } ] },
+            { id: 37, type: "theory", correct: 1, q: { en: "Which command converts cell text to CAPS?", hi: "कौन सा कमांड सेल टेक्स्ट को CAPS में बदलता है?" }, options: [ { en: "=UPPER()", hi: "=UPPER()" }, { en: "=LOWER()", hi: "=LOWER()" }, { en: "=LEN()", hi: "=LEN()" }, { en: "=TRIM()", hi: "=TRIM()" } ] },
+            { id: 38, type: "theory", correct: 2, q: { en: "How to insert chart in MS Excel?", hi: "MS Excel में चार्ट कैसे इन्सर्ट करते हैं?" }, options: [ { en: "Home Tab-Cells", hi: "Home Tab-Cells" }, { en: "Insert Tab-Charts", hi: "Insert Tab-Charts" }, { en: "Data Tab- Data Tools", hi: "Data Tab- Data Tools" }, { en: "Formulas Tab-Insert Function", hi: "Formulas Tab-Insert Function" } ] },
+            { id: 39, type: "theory", correct: 2, q: { en: "Which ribbon menu displays the Page Setup grouping of commands?", hi: "कौन सा रिबन मेनू कमांड के पेज सेटअप ग्रुपिंग को प्रदर्शित करता है?" }, options: [ { en: "Insert", hi: "Insert" }, { en: "Layout", hi: "Layout (या Page Layout)" }, { en: "Review", hi: "Review" }, { en: "Home", hi: "Home" } ] },
+            { id: 40, type: "theory", correct: 1, q: { en: "In which application data validation is used?", hi: "किस एप्लीकेशन में डाटा वैलिडेशन (Data Validation) का उपयोग किया जाता है?" }, options: [ { en: "MS Excel", hi: "MS Excel" }, { en: "MS Word", hi: "MS Word" }, { en: "MS Paint", hi: "MS Paint" }, { en: "MS PowerPoint", hi: "MS PowerPoint" } ] },
+            { id: 41, type: "theory", correct: 1, q: { en: "Which type of chart is used in MS Excel?", hi: "MS Excel में किस प्रकार के चार्ट का उपयोग किया जाता है?" }, options: [ { en: "Bubble", hi: "Bubble" }, { en: "Cone", hi: "Cone" }, { en: "Circle", hi: "Circle" }, { en: "Square", hi: "Square" } ] },
+            { id: 42, type: "theory", correct: 3, q: { en: "Which creates a bar diagram?", hi: "बार डायग्राम बनाने की अनुमति कौन देता है?" }, options: [ { en: "Format -> Chart", hi: "Format -> Chart" }, { en: "Tools -> Chart", hi: "Tools -> Chart" }, { en: "Insert -> Chart", hi: "Insert -> Chart" }, { en: "Edit -> Chart", hi: "Edit -> Chart" } ] },
+            { id: 43, type: "theory", correct: 2, q: { en: "Which option inserts a Pivot Table?", hi: "कौन सा विकल्प पिवोट टेबल सम्मिलित करता है?" }, options: [ { en: "Formula Tab- Data Analysis Group", hi: "Formula Tab- Data Analysis Group" }, { en: "Insert Tab - Tables Group", hi: "Insert Tab - Tables Group" }, { en: "Data Group in the Pivot Table Group", hi: "Data Group in the Pivot Table Group" }, { en: "Data Group In the Tables Group", hi: "Data Group In the Tables Group" } ] },
+            { id: 44, type: "theory", correct: 4, q: { en: "Which tab is used to access the What-if Analysis Excel tools?", hi: "व्हाट-इफ एनालिसिस एक्सेल टूल्स तक पहुंचने के लिए किस टैब का उपयोग किया जाता है?" }, options: [ { en: "Home Tab", hi: "Home Tab" }, { en: "Insert Tab", hi: "Insert Tab" }, { en: "Page Layout Tab", hi: "Page Layout Tab" }, { en: "Data Tab", hi: "Data Tab" } ] },
+            { id: 45, type: "theory", correct: 3, q: { en: "Which type does Portrait and Landscape belong to?", hi: "पोर्ट्रेट और लैंडस्केप किस प्रकार से संबंधित है?" }, options: [ { en: "Page Margins", hi: "Page Margins" }, { en: "Page Arrangements", hi: "Page Arrangements" }, { en: "Page Orientation", hi: "Page Orientation" }, { en: "Page Breaks", hi: "Page Breaks" } ] },
+            { id: 46, type: "theory", correct: 3, q: { en: "Which is a flow control statement in Java?", hi: "जावा में फ्लो कंट्रोल स्टेटमेंट (Flow Control Statement) कौन सा है?" }, options: [ { en: "Method", hi: "Method" }, { en: "Exit( )", hi: "Exit( )" }, { en: "Continue", hi: "Continue" }, { en: "Field", hi: "Field" } ] },
+            { id: 47, type: "theory", correct: 2, q: { en: "Which allows the execution of a statement or group of statements multiple times?", hi: "कौन सा कथन या कथनों के समूह को कई बार निष्पादित करने की अनुमति देता है?" }, options: [ { en: "Array", hi: "Array" }, { en: "Loop", hi: "Loop" }, { en: "Function", hi: "Function" }, { en: "Exception", hi: "Exception" } ] },
+            { id: 48, type: "theory", correct: 2, q: { en: "Which is the superclass of every class in Java?", hi: "जावा में प्रत्येक क्लास का सुपरक्लास कौन सा है?" }, options: [ { en: "String class", hi: "String class" }, { en: "Object class", hi: "Object class" }, { en: "Abstract class", hi: "Abstract class" }, { en: "ArrayList class", hi: "ArrayList class" } ] },
+            { id: 49, type: "theory", correct: 3, q: { en: "Which method of Object class can clone an object?", hi: "ऑब्जेक्ट क्लास की कौन सी विधि किसी ऑब्जेक्ट का क्लोन बना सकती है?" }, options: [ { en: "Objectcopy( )", hi: "Objectcopy( )" }, { en: "Copy( )", hi: "Copy( )" }, { en: "Object clone( )", hi: "Object clone( )" }, { en: "Cloning( )", hi: "Cloning( )" } ] },
+            { id: 50, type: "theory", correct: 4, q: { en: "Which keyword prevents inheritance of a class?", hi: "कौन सा कीवर्ड किसी क्लास के इनहेरिटेंस (Inheritance) को रोकता है?" }, options: [ { en: "Super", hi: "Super" }, { en: "Constant", hi: "Constant" }, { en: "Class", hi: "Class" }, { en: "Final", hi: "Final" } ] },
+            { id: 51, type: "skills", correct: 3, q: { en: "Fill in the blank with correct word. 'They _________ good friends'", hi: "रिक्त में सही शब्द भरें। 'They_________good friends'" }, options: [ { en: "is", hi: "is" }, { en: "am", hi: "am" }, { en: "are", hi: "are" }, { en: "was", hi: "was" } ] },
+            { id: 52, type: "skills", correct: 2, q: { en: "Fill in the blank with present progressive tense of the verb. 'The train __________ through the tunnel'", hi: "क्रिया के वर्तमान प्रगतिशील काल के साथ रिक्त स्थान भरें। 'The train __________ through the tunnel'" }, options: [ { en: "passed", hi: "passed" }, { en: "is passing", hi: "is passing" }, { en: "had passed", hi: "had passed" }, { en: "was passing", hi: "was passing" } ] },
+            { id: 53, type: "skills", correct: 2, q: { en: "Fill in the blank with proper interrogative adjective. '___________ are you going?'", hi: "उचित प्रश्नवाचक विशेषण के साथ रिक्त स्थान भरें। '___________ are you going?'" }, options: [ { en: "Who", hi: "Who" }, { en: "Where", hi: "Where" }, { en: "Which", hi: "Which" }, { en: "What", hi: "What" } ] },
+            { id: 54, type: "skills", correct: 1, q: { en: "Fill in the blank with proper pronoun. 'I made this cake ___________'", hi: "रिक्त स्थान में उचित सर्वनाम के साथ भरें। 'I made this cake ___________'" }, options: [ { en: "myself", hi: "myself" }, { en: "yourself", hi: "yourself" }, { en: "himself", hi: "himself" }, { en: "itself", hi: "itself" } ] },
+            { id: 55, type: "skills", correct: 3, q: { en: "Fill in the blank with proper pronoun. 'She made this cake ___________'", hi: "रिक्त स्थान में उचित सर्वनाम के साथ भरें। 'She made this cake ___________'" }, options: [ { en: "itself", hi: "itself" }, { en: "myself", hi: "myself" }, { en: "herself", hi: "herself" }, { en: "himself", hi: "himself" } ] },
+            { id: 56, type: "skills", correct: 2, q: { en: "Fill in the blank with proper reflexive pronoun. 'She has hurt___________'", hi: "रिक्त स्थान में उचित प्रतिवर्ती सर्वनाम के साथ भरें। 'She has hurt___________'" }, options: [ { en: "myself", hi: "myself" }, { en: "herself", hi: "herself" }, { en: "himself", hi: "himself" }, { en: "itself", hi: "itself" } ] },
+            { id: 57, type: "skills", correct: 4, q: { en: "Fill in the blank with suitable adjective for the given sentence: 'The little girl’s…… eyes revealed her mischief'", hi: "दिए गए वाक्य के लिए उपयुक्त विशेषण के साथ रिक्त स्थान भरें: 'The little girl’s…… eyes revealed her mischief'" }, options: [ { en: "chubby", hi: "chubby" }, { en: "weak", hi: "weak" }, { en: "short sighted", hi: "short sighted" }, { en: "twinkling", hi: "twinkling" } ] },
+            { id: 58, type: "skills", correct: 3, q: { en: "Fill in the blank with suitable place preposition. 'My house is ___________ the third floor'", hi: "उपयुक्त स्थान पूर्वसर्ग के साथ रिक्त स्थान भरें। 'My house is ___________the third floor'" }, options: [ { en: "at", hi: "at" }, { en: "in", hi: "in" }, { en: "on", hi: "on" }, { en: "under", hi: "under" } ] },
+            { id: 59, type: "skills", correct: 4, q: { en: "Fill in the correct question word. '_______________ is the speaker at the function?'", hi: "सही प्रश्न शब्द भरें। '_______________is the speaker at the function?'" }, options: [ { en: "What", hi: "What" }, { en: "When", hi: "When" }, { en: "Why", hi: "Why" }, { en: "Who", hi: "Who" } ] },
+            { id: 60, type: "skills", correct: 3, q: { en: "Low level language is also called ______.", hi: "निम्न स्तर की भाषा को ______ भी कहा जाता है" }, options: [ { en: "source code", hi: "सोर्सकोड" }, { en: "middle ware", hi: "मध्यस्थ" }, { en: "machine language", hi: "मशीन भाषा" }, { en: "assembly language", hi: "असेंबली भाषा" } ] },
+            { id: 61, type: "skills", correct: 4, q: { en: "Pronunciation refers to___________.", hi: "उच्चारण (Pronunciation) का क्या अर्थ है?" }, options: [ { en: "diphthong", hi: "संयुक्त स्वर" }, { en: "consonant", hi: "व्यंजन" }, { en: "punctuation", hi: "विराम चिह्न" }, { en: "production of sound", hi: "ध्वनि का उत्पादन" } ] },
+            { id: 62, type: "skills", correct: 2, q: { en: "Re-arrange the following set of words into meaningful sentence. 'teacher / school / worked / she / a / as'.", hi: "शब्दों के निम्नलिखित सेट को सार्थक वाक्य में व्यवस्थित करें: 'teacher / school / worked / she / a / as'" }, options: [ { en: "School worked as a she teacher", hi: "School worked as a she teacher" }, { en: "She worked as a school teacher", hi: "She worked as a school teacher" }, { en: "She teacher worked as a school", hi: "She teacher worked as a school" }, { en: "Worked she as a school teacher", hi: "Worked she as a school teacher" } ] },
+            { id: 63, type: "skills", correct: 2, q: { en: "Rise and fall of pitch of voice is called __________.", hi: "आवाज की पिच का उतार-चढ़ाव क्या कहलाता है?" }, options: [ { en: "vowel", hi: "स्वर" }, { en: "intonation", hi: "आवाज़ का उतार-चढ़ाव (intonation)" }, { en: "consonant", hi: "व्यंजन" }, { en: "pronunciation", hi: "उच्चारण" } ] },
+            { id: 64, type: "skills", correct: 2, q: { en: "The word that expresses a sudden and strong feeling is called _________.", hi: "वह शब्द जो अचानक और तीव्र भावना व्यक्त करता है उसे क्या कहा जाता है?" }, options: [ { en: "punctuation", hi: "विराम चिह्न" }, { en: "interjection", hi: "विस्मयादिबोधक (interjection)" }, { en: "conjunction", hi: "संयोजन" }, { en: "apostrophe", hi: "एपोसट्राफी" } ] },
+            { id: 65, type: "skills", correct: 1, q: { en: "When you greet higher official’s such as Teacher, Instructor or Supervisor, you should use ___________.", hi: "जब आप शिक्षक, प्रशिक्षक या पर्यवेक्षक जैसे उच्च अधिकारियों का अभिवादन करते हैं, तो आपको किसका उपयोग करना चाहिए?" }, options: [ { en: "Good morning", hi: "Good morning" }, { en: "Hello", hi: "Hello" }, { en: "Hey", hi: "Hey" }, { en: "Hi", hi: "Hi" } ] },
+            { id: 66, type: "skills", correct: 4, q: { en: "Which is a silent letter in the word 'ANSWER'?", hi: "'ANSWER' शब्द में कौन सा मूक (silent) अक्षर है?" }, options: [ { en: "R", hi: "R" }, { en: "E", hi: "E" }, { en: "S", hi: "S" }, { en: "W", hi: "W" } ] },
+            { id: 67, type: "skills", correct: 2, q: { en: "Which one is a 'Do’s' of discussion etiquettes?", hi: "चर्चा के शिष्टाचारों (Discussion Etiquettes) में से कौन सा 'Do' (करने योग्य कार्य) है?" }, options: [ { en: "Loose your temper", hi: "अपना आपा खोएं" }, { en: "Listen to others", hi: "दूसरों की ध्यान से सुनें" }, { en: "Talk about irrelevant details", hi: "अप्रासंगिक विवरण के बारे में बात करें" }, { en: "Use impolite or rude language", hi: "अभद्र या अशिष्ट भाषा का उपयोग करें" } ] },
+            { id: 68, type: "skills", correct: 4, q: { en: "Which one is a 'Don’t' of discussion etiquette?", hi: "चर्चा शिष्टाचार में क्या 'Don't' (नहीं करना चाहिए) है?" }, options: [ { en: "Be open minded", hi: "दिमाग खुला रखना" }, { en: "Use moderate tone", hi: "मध्यम स्वर का प्रयोग करना" }, { en: "Listen to others", hi: "दूसरों की सुनना" }, { en: "Argue unnecessarily", hi: "अनावश्यक बहस करना" } ] },
+            { id: 69, type: "skills", correct: 2, q: { en: "Which one is brain of computer?", hi: "कंप्यूटर का मस्तिष्क कौन सा है?" }, options: [ { en: "Keyboard", hi: "कीबोर्ड" }, { en: "CPU", hi: "सी पी यू" }, { en: "Monitor", hi: "मॉनिटर" }, { en: "Hard disk", hi: "हार्डडिस्क" } ] },
+            { id: 70, type: "skills", correct: 1, q: { en: "Which one is an exclamatory sentence?", hi: "कौन सा विस्मयादिबोधक वाक्य (Exclamatory Sentence) है?" }, options: [ { en: "What a beautiful house it is!", hi: "What a beautiful house it is!" }, { en: "It is a beautiful house.", hi: "It is a beautiful house." }, { en: "Is it a beautiful house?", hi: "Is it a beautiful house?" }, { en: "Your house is beautiful.", hi: "Your house is beautiful." } ] },
+            { id: 71, type: "skills", correct: 1, q: { en: "Which one is in active voice?", hi: "सक्रिय आवाज (Active Voice) में कौन सा वाक्य है?" }, options: [ { en: "Ram has passed the exam.", hi: "Ram has passed the exam." }, { en: "The ball was caught by him.", hi: "The ball was caught by him." }, { en: "The book was being read by her.", hi: "The book was being read by her." }, { en: "We were driven home by dad.", hi: "We were driven home by dad." } ] },
+            { id: 72, type: "skills", correct: 3, q: { en: "Which one is in passive voice?", hi: "निष्क्रिय आवाज (Passive Voice) में कौन सा वाक्य है?" }, options: [ { en: "Mohan is painting a house.", hi: "Mohan is painting a house." }, { en: "She was reading a book.", hi: "She was reading a book." }, { en: "Her birthday was celebrated by us.", hi: "Her birthday was celebrated by us." }, { en: "I have seen that movie.", hi: "I have seen that movie." } ] },
+            { id: 73, type: "skills", correct: 4, q: { en: "Which one is NOT a conjunction?", hi: "निम्नलिखित में से कौन सा एक संयोजन (Conjunction) नहीं है?" }, options: [ { en: "And", hi: "And" }, { en: "Or", hi: "Or" }, { en: "But", hi: "But" }, { en: "On", hi: "On" } ] },
+            { id: 74, type: "skills", correct: 4, q: { en: "Which one is NOT a benefit of the role playing?", hi: "भूमिका निभाने (Role playing) का कौन सा लाभ नहीं है?" }, options: [ { en: "Builds confidence", hi: "आत्मविश्वास पैदा करता है" }, { en: "Develops listening skill", hi: "सुनने का कौशल विकसित करता है" }, { en: "Develops creative problem-solving skill", hi: "रचनात्मक समस्या-समाधान कौशल विकसित करता है" }, { en: "Develops boredom", hi: "बोरियत पैदा करता है" } ] },
+            { id: 75, type: "skills", correct: 3, q: { en: "Which one is NOT a vowel?", hi: "निम्नलिखित में से कौन सा स्वर (Vowel) नहीं है?" }, options: [ { en: "a", hi: "a" }, { en: "e", hi: "e" }, { en: "f", hi: "f" }, { en: "i", hi: "i" } ] }
+        ];
+
+        let activeIdx = 0; // index from 0 to 74
+        let responses = {}; // tracks selected options
+        let visited = {}; // visited items
+        let secondsLeft = 120 * 60; // 120 Minutes
+        let timerTicker;
+
+        // On window startup
+        window.onload = function() {
+            buildQuestionPalette();
+            loadQuestion(0);
+        }
+
+        // Trigger Start Exam on Form Save
+        function startExamNow() {
+            const name = document.getElementById('candidate-name-input').value.trim();
+            const roll = document.getElementById('candidate-roll-input').value.trim();
+            const errEl = document.getElementById('start-error-msg');
+
+            if (!name) {
+                errEl.innerText = "कृपया अपना नाम दर्ज करें / Please enter your name.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            errEl.classList.add('hidden');
+
+            // Populate on UI header
+            const dispName = document.getElementById('display-candidate-name');
+            if (dispName) {
+                dispName.innerText = `| ${name}`;
+                dispName.classList.remove('hidden');
+            }
+
+            // Populate on results scorecard
+            const resName = document.getElementById('res-candidate-name');
+            const resRoll = document.getElementById('res-candidate-roll');
+            if (resName) resName.innerText = name;
+            if (resRoll) resRoll.innerText = roll || "N/A / उपलब्ध नहीं";
+
+            // Toggle screens
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('exam-main-container').classList.remove('hidden');
+
+            // Launch countdown ticker
+            beginTimerCount();
+        }
+
+        // Toggle palette bottom modal sheet
+        function togglePaletteModal(show) {
+            const modal = document.getElementById('palette-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Build the fast selection palette buttons
+        function buildQuestionPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+
+            set2Questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `pal-btn-${idx}`;
+                btn.innerText = q.id;
+                btn.className = "w-10 h-10 text-xs font-bold rounded-lg flex items-center justify-center transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 focus:outline-none";
+                btn.setAttribute('onclick', `jumpToSelected(${idx})`);
+                grid.appendChild(btn);
+            });
+        }
+
+        // Jump instantly to selected question from palette list
+        function jumpToSelected(idx) {
+            visited[set2Questions[activeIdx].id] = true;
+            updatePaletteButton(activeIdx);
+            activeIdx = idx;
+            loadQuestion(idx);
+            togglePaletteModal(false); // auto dismiss palette modal
+        }
+
+        // Render target index values
+        function loadQuestion(idx) {
+            const q = set2Questions[idx];
+            visited[q.id] = true;
+
+            // Simple counter update
+            document.getElementById('question-counter').innerText = `Q. ${q.id} / 75`;
+
+            // Setup Statements
+            document.getElementById('q-text-en').innerText = q.q.en;
+            document.getElementById('q-text-hi').innerText = q.q.hi;
+
+            // Load Options values
+            for (let num = 1; num <= 4; num++) {
+                const optObj = q.options[num - 1];
+                document.getElementById(`opt-en-${num}`).innerText = optObj.en;
+                document.getElementById(`opt-hi-${num}`).innerText = optObj.hi;
+            }
+
+            refreshActiveOptionStyles();
+            updatePaletteButton(idx);
+
+            // Back state handle
+            document.getElementById('prev-btn').disabled = (idx === 0);
+            if (idx === 0) {
+                document.getElementById('prev-btn').classList.add('opacity-40', 'cursor-not-allowed');
+            } else {
+                document.getElementById('prev-btn').classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+
+            // Next / Finish exam change
+            if (idx === 74) {
+                document.getElementById('next-btn').innerText = "Submit Exam";
+                document.getElementById('next-btn').className = "px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all";
+            } else {
+                document.getElementById('next-btn').innerHTML = "Next &rarr;";
+                document.getElementById('next-btn').className = "px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all";
+            }
+        }
+
+        // Apply simple highlight styles to target option container
+        function refreshActiveOptionStyles() {
+            const activeQ = set2Questions[activeIdx];
+            const activeRes = responses[activeQ.id];
+
+            for (let num = 1; num <= 4; num++) {
+                const btn = document.getElementById(`opt-btn-${num}`);
+                const badge = document.getElementById(`opt-badge-${num}`);
+
+                if (activeRes === num) {
+                    // Selection styling
+                    btn.className = "w-full flex items-center p-4 rounded-xl border-2 border-indigo-600 bg-indigo-50/70 transition-all text-left shadow-sm scale-[1.01]";
+                    badge.className = "w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mr-3";
+                } else {
+                    // Plain simple state styling
+                    btn.className = "w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all text-left group";
+                    badge.className = "w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3 group-hover:border-indigo-400 group-hover:text-indigo-600";
+                }
+            }
+        }
+
+        // Select chosen option values
+        function selectOption(num) {
+            const currentQ = set2Questions[activeIdx];
+            responses[currentQ.id] = num;
+            refreshActiveOptionStyles();
+            updatePaletteButton(activeIdx);
+        }
+
+        // Clear option selection
+        function clearResponse() {
+            const currentQ = set2Questions[activeIdx];
+            delete responses[currentQ.id];
+            refreshActiveOptionStyles();
+            updatePaletteButton(activeIdx);
+        }
+
+        // Refresh single palette buttons classes
+        function updatePaletteButton(idx) {
+            const q = set2Questions[idx];
+            const btn = document.getElementById(`pal-btn-${idx}`);
+            if (!btn) return;
+
+            const isCurrent = (activeIdx === idx);
+            const isAnswered = responses[q.id] !== undefined;
+
+            let colStyle = "bg-slate-100 text-slate-700 hover:bg-slate-200";
+
+            if (isAnswered) {
+                colStyle = "bg-green-500 text-white hover:bg-green-600";
+            } else if (visited[q.id]) {
+                colStyle = "bg-rose-400 text-white hover:bg-rose-500";
+            }
+
+            btn.className = `w-10 h-10 text-xs font-bold rounded-lg flex items-center justify-center transition-all ${colStyle} focus:outline-none ${isCurrent ? 'ring-2 ring-indigo-500 ring-offset-1 scale-105' : ''}`;
+        }
+
+        // Step back/forward navigation
+        function navigateQuestion(step) {
+            const nextIdx = activeIdx + step;
+            if (nextIdx >= 0 && nextIdx < 75) {
+                jumpToSelected(nextIdx);
+            } else if (nextIdx === 75) {
+                openSubmitModal();
+            }
+        }
+
+        // Countdown timer ticker
+        function beginTimerCount() {
+            timerTicker = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft <= 0) {
+                    clearInterval(timerTicker);
+                    finalizeExamAnswers(); // Auto submit
+                    return;
+                }
+                const m = Math.floor(secondsLeft / 60);
+                const s = secondsLeft % 60;
+                document.getElementById('timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Submit actions modal toggle
+        function openSubmitModal() {
+            togglePaletteModal(false);
+            let ansCount = Object.keys(responses).length;
+            let unvisited = 75 - ansCount;
+
+            document.getElementById('summary-answered').innerText = ansCount;
+            document.getElementById('summary-left').innerText = unvisited;
+
+            document.getElementById('submit-modal').classList.remove('hidden');
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').classList.add('hidden');
+        }
+
+        // Final evaluation and result rendering
+        function finalizeExamAnswers() {
+            clearInterval(timerTicker);
+            document.getElementById('submit-modal').classList.add('hidden');
+            document.getElementById('exam-panel').closest('main').classList.add('hidden');
+            document.getElementById('scorecard-screen').classList.remove('hidden');
+
+            let scoredCorrect = 0;
+
+            set2Questions.forEach(q => {
+                const userChoice = responses[q.id];
+                if (userChoice !== undefined && userChoice === q.correct) {
+                    scoredCorrect++;
+                }
+            });
+
+            const totalMarks = scoredCorrect * 2;
+            const percentage = ((totalMarks / 150) * 100).toFixed(1);
+            const passStatus = (percentage >= 33) ? "PASS / उत्तीर्ण" : "FAIL / अनुत्तीर्ण";
+
+            document.getElementById('score-text').innerHTML = `${totalMarks} <span class="text-sm font-normal">/ 150</span>`;
+            document.getElementById('percentage-text').innerText = `Percentage: ${percentage}%`;
+            document.getElementById('stat-correct').innerText = `${scoredCorrect} / 75`;
+            
+            const statusLabel = document.getElementById('stat-status');
+            statusLabel.innerText = passStatus;
+            if (percentage >= 33) {
+                statusLabel.className = "font-black text-green-600";
+            } else {
+                statusLabel.className = "font-black text-rose-500";
+            }
+
+            // Populate clean bilingual detailed review segment
+            const reviewWrapper = document.getElementById('review-questions-list');
+            reviewWrapper.innerHTML = '';
+
+            set2Questions.forEach(q => {
+                const userAns = responses[q.id];
+                const isCorrect = (userAns === q.correct);
+                const isAttempted = (userAns !== undefined);
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border bg-white shadow-xs space-y-3 ${isAttempted ? (isCorrect ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-rose-400') : 'border-l-4 border-l-slate-300'}`;
+
+                let statusBadge = '';
+                if (!isAttempted) {
+                    statusBadge = `<span class="bg-slate-100 text-slate-500 text-[9px] px-2 py-0.5 rounded font-bold">Unattempted</span>`;
+                } else if (isCorrect) {
+                    statusBadge = `<span class="bg-green-100 text-green-700 text-[9px] px-2 py-0.5 rounded font-bold">✓ Correct</span>`;
+                } else {
+                    statusBadge = `<span class="bg-rose-100 text-rose-700 text-[9px] px-2 py-0.5 rounded font-bold">✗ Incorrect</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <span class="text-[10px] font-bold text-indigo-800">Q #${q.id}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="space-y-1">
+                        <p class="font-semibold text-slate-800 text-xs leading-tight">${q.q.en}</p>
+                        <p class="text-xs text-slate-500 font-devanagari leading-tight">${q.q.hi}</p>
+                    </div>
+                    <div class="space-y-1.5 pt-1 text-[11px]">
+                        ${q.options.map((opt, oIdx) => {
+                            const optNum = oIdx + 1;
+                            let style = "border-slate-100 text-slate-600 bg-slate-50";
+
+                            if (optNum === q.correct) {
+                                style = "border-green-300 text-green-800 bg-green-50/50 font-semibold";
+                            } else if (isAttempted && userAns === optNum) {
+                                style = "border-rose-300 text-rose-800 bg-rose-50/50 font-semibold";
+                            }
+
+                            return `<div class="p-2 rounded-lg border ${style}">${opt.en} / ${opt.hi}</div>`;
+                        }).join('')}
+                    </div>
+                `;
+
+                reviewWrapper.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
