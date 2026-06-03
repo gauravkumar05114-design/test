@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>COPA CBT Set-3 (Mobile UI)</title>
+    <!-- Tailwind CSS for modern simplified responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for readable text -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom slim scrollbar for mobile */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- Simple Start/Registration screen -->
+    <div id="start-screen" class="flex-1 flex items-center justify-center p-4 bg-slate-50 overflow-y-auto h-screen z-50">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl max-w-sm w-full p-6 space-y-6 transition-all">
+            <div class="text-center space-y-2">
+                <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">AITT CTS CBT</span>
+                <h2 class="text-lg font-bold text-slate-800 leading-tight">Entrance Portal / प्रवेश द्वार</h2>
+                <p class="text-[11px] text-slate-400">Enter your details to initiate Set-3 assessment</p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Candidate Name Input -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Full Name / अभ्यर्थी का नाम</label>
+                    <input type="text" id="candidate-name-input" placeholder="Enter your full name" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium">
+                </div>
+
+                <!-- Roll Number Input -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Roll Number / अनुक्रमांक</label>
+                    <input type="text" id="candidate-roll-input" placeholder="Enter roll number" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-mono font-medium">
+                </div>
+
+                <!-- Exam Details Card -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Exam Description / परीक्षा विवरण</label>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 font-medium leading-relaxed">
+                        <strong>Trade:</strong> COPA (Java) Set-3<br>
+                        <strong>Total Questions:</strong> 75 (150 Marks)<br>
+                        <strong>Evaluation Type:</strong> Instant Computer Grading
+                    </div>
+                </div>
+
+                <!-- In-app Error message placeholder -->
+                <p id="start-error-msg" class="hidden text-rose-500 text-[11px] font-semibold text-center py-1"></p>
+            </div>
+
+            <button onclick="startExamNow()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold shadow-md transition-all text-center">
+                Start Examination / परीक्षा शुरू करें &rarr;
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden Exam Container (Unlocks on Details Save) -->
+    <div id="exam-main-container" class="hidden flex-1 flex flex-col overflow-hidden h-screen">
+
+        <!-- Minimalist Header -->
+        <header class="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center shrink-0 z-10">
+            <div class="flex items-center space-x-2">
+                <span class="bg-indigo-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">SET 3</span>
+                <span id="question-counter" class="text-xs font-bold text-slate-500">Q. 1 / 75</span>
+                <span id="display-candidate-name" class="hidden sm:inline text-xs font-medium text-slate-400 border-l border-slate-200 pl-2"></span>
+            </div>
+            
+            <!-- Touch-Optimized Timer -->
+            <div class="flex items-center space-x-1 text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">
+                <svg class="w-3.5 h-3.5 text-slate-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="timer" class="text-xs font-mono font-bold">120:00</span>
+            </div>
+        </header>
+
+        <!-- Distraction-free CBT Question Arena -->
+        <main class="flex-1 overflow-hidden relative flex flex-col max-w-xl w-full mx-auto bg-white">
+            
+            <!-- Clean Question Segment -->
+            <div class="flex-1 overflow-y-auto px-5 py-6 space-y-6 custom-scroll" id="exam-panel">
+                
+                <!-- Beautiful English and Hindi Question Box -->
+                <div class="space-y-2 border-b border-slate-100 pb-4">
+                    <h2 id="q-text-en" class="text-base font-semibold text-slate-800 leading-relaxed">
+                        Loading Question...
+                    </h2>
+                    <h2 id="q-text-hi" class="text-base font-medium text-indigo-900 font-devanagari leading-relaxed pt-1">
+                        प्रश्न लोड हो रहा है...
+                    </h2>
+                </div>
+
+                <!-- Extremely Simple Options Container -->
+                <div class="space-y-3" id="options-container">
+                    <!-- Option 1 -->
+                    <button onclick="selectOption(1)" id="opt-btn-1" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-1" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">A</span>
+                        <div class="flex-1">
+                            <p id="opt-en-1" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-1" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+
+                    <!-- Option 2 -->
+                    <button onclick="selectOption(2)" id="opt-btn-2" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-2" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">B</span>
+                        <div class="flex-1">
+                            <p id="opt-en-2" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-2" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+
+                    <!-- Option 3 -->
+                    <button onclick="selectOption(3)" id="opt-btn-3" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-3" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">C</span>
+                        <div class="flex-1">
+                            <p id="opt-en-3" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-3" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+
+                    <!-- Option 4 -->
+                    <button onclick="selectOption(4)" id="opt-btn-4" class="w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 active:bg-slate-100 transition-all text-left group">
+                        <span id="opt-badge-4" class="w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3">D</span>
+                        <div class="flex-1">
+                            <p id="opt-en-4" class="text-sm font-medium text-slate-700"></p>
+                            <p id="opt-hi-4" class="text-sm font-normal text-slate-500 font-devanagari mt-0.5"></p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fixed Minimalist Action Bottom Bar -->
+            <div class="bg-white border-t border-slate-200 p-4 flex items-center justify-between gap-3 shrink-0">
+                <div class="flex items-center space-x-2 flex-1">
+                    <button onclick="clearResponse()" class="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold active:scale-95 transition-all">
+                        Clear
+                    </button>
+                    <button onclick="togglePaletteModal(true)" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center space-x-1 active:scale-95 transition-all">
+                        <span>📁 Palette</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2 flex-1 justify-end">
+                    <button onclick="navigateQuestion(-1)" id="prev-btn" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold active:scale-95 transition-all">
+                        &larr; Prev
+                    </button>
+                    <button onclick="navigateQuestion(1)" id="next-btn" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all">
+                        Next &rarr;
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div> <!-- END OF #exam-main-container -->
+
+    <!-- Minimalist Palette Bottom Sheet / Modal -->
+    <div id="palette-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-end justify-center">
+        <div class="bg-white rounded-t-3xl max-w-md w-full p-5 space-y-4 max-h-[70vh] flex flex-col shadow-2xl transform translate-y-0 transition-transform duration-300">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
+                <h3 class="text-sm font-bold text-slate-700">Choose Question</h3>
+                <button onclick="togglePaletteModal(false)" class="p-1 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Compact Legend -->
+            <div class="flex flex-wrap gap-3 text-[10px] text-slate-500 justify-center pb-2 border-b border-slate-100 shrink-0">
+                <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded bg-green-500"></span><span>Answered</span></div>
+                <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded bg-rose-400"></span><span>Unanswered</span></div>
+                <div class="flex items-center space-x-1"><span class="w-3 h-3 rounded bg-slate-200"></span><span>Not Visited</span></div>
+            </div>
+
+            <!-- Scrollable 1-75 Grid -->
+            <div class="flex-1 overflow-y-auto custom-scroll py-2">
+                <div class="grid grid-cols-5 gap-2" id="palette-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Quick Submit Trigger inside Palette -->
+            <div class="pt-2 border-t border-slate-100 shrink-0">
+                <button onclick="openSubmitModal()" class="w-full py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-sm transition-all text-center">
+                    Submit Exam Paper
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimalist Submit Confirmation Modal -->
+    <div id="submit-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 space-y-4 shadow-xl">
+            <div class="text-center space-y-2">
+                <h3 class="text-base font-bold text-slate-800">Submit Exam?</h3>
+                <p class="text-xs text-slate-500">Are you ready to submit your responses for evaluation?</p>
+            </div>
+
+            <!-- Simple Response Statistics -->
+            <div class="bg-slate-50 p-3 rounded-xl space-y-1.5 text-xs text-slate-600">
+                <div class="flex justify-between"><span>Total Questions:</span> <span class="font-bold">75</span></div>
+                <div class="flex justify-between"><span>Answered / Saved:</span> <span id="summary-answered" class="font-bold text-green-600">0</span></div>
+                <div class="flex justify-between"><span>Unvisited / Left:</span> <span id="summary-left" class="font-bold text-rose-500">75</span></div>
+            </div>
+
+            <div class="flex space-x-2 text-xs">
+                <button onclick="closeSubmitModal()" class="flex-1 py-2.5 border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all">
+                    Cancel
+                </button>
+                <button onclick="finalizeExamAnswers()" class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-bold transition-all shadow">
+                    Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simplified Scorecard & Review Screen -->
+    <div id="scorecard-screen" class="hidden flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50">
+        <!-- Minimal Hero Score Box -->
+        <div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-indigo-900 text-white px-5 py-6 text-center space-y-2">
+                <!-- Candidate details on results display -->
+                <div class="text-[10px] text-indigo-200 font-semibold uppercase tracking-wider">
+                    Candidate: <span id="res-candidate-name" class="font-bold text-white"></span> | Roll: <span id="res-candidate-roll" class="font-bold text-white"></span>
+                </div>
+                <h2 class="text-base font-bold">Result Evaluation Compiled</h2>
+                <div class="inline-flex flex-col items-center justify-center bg-white/10 px-5 py-3 rounded-xl border border-white/15 mt-1">
+                    <span class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Obtained Marks</span>
+                    <span class="text-3xl font-black" id="score-text">0 <span class="text-xs font-normal">/ 150</span></span>
+                    <span class="text-[10px] text-green-300 mt-0.5" id="percentage-text">Percentage: 0%</span>
+                </div>
+            </div>
+
+            <!-- Stats Table -->
+            <div class="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50 text-center py-3 text-xs border-b border-slate-150">
+                <div>
+                    <span class="text-[9px] text-slate-500 block">Total</span>
+                    <span class="font-bold text-slate-800">75</span>
+                </div>
+                <div>
+                    <span class="text-[9px] text-slate-500 block">Correct</span>
+                    <span class="font-bold text-green-600" id="stat-correct">0</span>
+                </div>
+                <div>
+                    <span class="text-[9px] text-slate-500 block">Status</span>
+                    <span class="font-black text-indigo-700" id="stat-status">PASS</span>
+                </div>
+            </div>
+
+            <div class="p-4 bg-white text-center">
+                <button onclick="location.reload()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow transition-colors">
+                    Re-attempt Assessment
+                </button>
+            </div>
+        </div>
+
+        <!-- Solutions Header -->
+        <div class="max-w-md mx-auto space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Review Question Key</h3>
+            <div class="space-y-3" id="review-questions-list">
+                <!-- Loaded dynamically on final submit -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Tiny Footer -->
+    <footer class="bg-white text-slate-400 text-[10px] py-2 px-4 text-center shrink-0 border-t border-slate-100 z-10">
+        © 2026 NIMI Exam Engine • COPA Java (Set-3)
+    </footer>
+
+    <!-- INTERACTIVE ENGINE SCRIPTS -->
+    <script>
+        // Set-3 Complete Database containing 75 Bilingual Questions (All non-repeating and syllabus-matched)
+        const set3Questions = [
+            { id: 1, type: "theory", correct: 2, q: { en: "Which command displays the current working directory path in Linux?", hi: "लिनक्स में वर्तमान कार्यशील निर्देशिका (current working directory) का पथ प्रदर्शित करने के लिए किस कमांड का उपयोग किया जाता है?" }, options: [ { en: "cd", hi: "cd" }, { en: "pwd", hi: "pwd" }, { en: "dir", hi: "dir" }, { en: "path", hi: "path" } ] },
+            { id: 2, type: "theory", correct: 2, q: { en: "Which Linux command is used to change file permissions?", hi: "लिनक्स में फ़ाइल अनुमतियों (permissions) को बदलने के लिए किस कमांड का उपयोग किया जाता है?" }, options: [ { en: "chown", hi: "chown" }, { en: "chmod", hi: "chmod" }, { en: "chgrp", hi: "chgrp" }, { en: "attrib", hi: "attrib" } ] },
+            { id: 3, type: "theory", correct: 1, q: { en: "What is the command to create a new directory in Linux?", hi: "लिनक्स में एक नई निर्देशिका (directory) बनाने के लिए किस कमांड का उपयोग किया जाता है?" }, options: [ { en: "mkdir", hi: "mkdir" }, { en: "createdir", hi: "createdir" }, { en: "newdir", hi: "newdir" }, { en: "md", hi: "md" } ] },
+            { id: 4, type: "theory", correct: 2, q: { en: "Which key combination is used to permanently delete a file/folder bypassing the Recycle Bin in Windows?", hi: "विंडोज़ में रीसायकल बिन को बायपास करके किसी फ़ाइल/फ़ोल्डर को स्थायी रूप से हटाने के लिए किस कुंजी संयोजन का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + Delete", hi: "Ctrl + Delete" }, { en: "Shift + Delete", hi: "Shift + Delete" }, { en: "Alt + Delete", hi: "Alt + Delete" }, { en: "Fn + Delete", hi: "Fn + Delete" } ] },
+            { id: 5, type: "theory", correct: 3, q: { en: "Which tool is used to scan and remove bad sectors and fix file system errors on Windows hard drive?", hi: "विंडोज़ हार्ड ड्राइव पर खराब सेक्टर्स को स्कैन करने और फ़ाइल सिस्टम त्रुटियों को ठीक करने के लिए किस टूल का उपयोग किया जाता है?" }, options: [ { en: "Disk Cleanup", hi: "Disk Cleanup" }, { en: "Defragmenter", hi: "Defragmenter" }, { en: "Chkdsk", hi: "Chkdsk" }, { en: "Task Manager", hi: "Task Manager" } ] },
+            { id: 6, type: "theory", correct: 2, q: { en: "Which feature in MS Word automatically corrects common spelling mistakes as you type?", hi: "MS Word में कौन सी विशेषता आपके टाइप करते समय सामान्य वर्तनी की गलतियों को स्वचालित रूप से ठीक करती है?" }, options: [ { en: "AutoFormat", hi: "AutoFormat" }, { en: "AutoCorrect", hi: "AutoCorrect" }, { en: "Spelling & Grammar", hi: "Spelling & Grammar" }, { en: "Thesaurus", hi: "Thesaurus" } ] },
+            { id: 7, type: "theory", correct: 1, q: { en: "What is the shortcut key to insert a Page Break in MS Word?", hi: "MS Word में पेज ब्रेक (Page Break) इन्सर्ट करने की शॉर्टकट कुंजी क्या है?" }, options: [ { en: "Ctrl + Enter", hi: "Ctrl + Enter" }, { en: "Alt + Enter", hi: "Alt + Enter" }, { en: "Shift + Enter", hi: "Shift + Enter" }, { en: "Space + Enter", hi: "Space + Enter" } ] },
+            { id: 8, type: "theory", correct: 3, q: { en: "Which type of indentation pushes all lines except the first line of a paragraph to the right in MS Word?", hi: "MS Word में किस प्रकार का इंडेंटेशन पैराग्राफ की पहली पंक्ति को छोड़कर बाकी सभी पंक्तियों को दाईं ओर धकेलता है?" }, options: [ { en: "Left Indent", hi: "Left Indent" }, { en: "First Line Indent", hi: "First Line Indent" }, { en: "Hanging Indent", hi: "Hanging Indent" }, { en: "Right Indent", hi: "Right Indent" } ] },
+            { id: 9, type: "theory", correct: 2, q: { en: "What is the default file extension of a document saved in Microsoft Word 2010 onwards?", hi: "माइक्रोसॉफ्ट वर्ड 2010 के बाद सहेजे गए दस्तावेज़ का डिफ़ॉल्ट फ़ाइल एक्सटेंशन क्या होता है?" }, options: [ { en: ".doc", hi: ".doc" }, { en: ".docx", hi: ".docx" }, { en: ".txt", hi: ".txt" }, { en: ".rtf", hi: ".rtf" } ] },
+            { id: 10, type: "theory", correct: 1, q: { en: "Which tool allows you to copy the formatting (such as color, font style) from one text to another in MS Word?", hi: "MS Word में कौन सा टूल आपको एक टेक्स्ट से दूसरे टेक्स्ट में फ़ॉर्मेटिंग (जैसे रंग, फ़ॉन्ट शैली) कॉपी करने की अनुमति देता है?" }, options: [ { en: "Format Painter", hi: "Format Painter" }, { en: "Style Copier", hi: "Style Copier" }, { en: "Template Painter", hi: "Template Painter" }, { en: "Format Brush", hi: "Format Brush" } ] },
+            { id: 11, type: "theory", correct: 4, q: { en: "Which feature is used to print small superscripted letters at the bottom of a specific page for citations in MS Word?", hi: "MS Word में उद्धरणों (citations) के लिए किसी विशिष्ट पृष्ठ के निचले भाग में छोटे सुपरस्क्रिप्टेड अक्षरों को प्रिंट करने के लिए किस सुविधा का उपयोग किया जाता है?" }, options: [ { en: "Header", hi: "Header" }, { en: "Footer", hi: "Footer" }, { en: "Endnote", hi: "Endnote" }, { en: "Footnote", hi: "Footnote" } ] },
+            { id: 12, type: "theory", correct: 2, q: { en: "What is the shortcut key to absolute-reference a cell (add $ signs like $A$1) in Excel?", hi: "एक्सेल में सेल को एब्सोल्यूट-रेफरेंस (जैसे $A$1) बनाने की शॉर्टकट कुंजी क्या है?" }, options: [ { en: "F2", hi: "F2" }, { en: "F4", hi: "F4" }, { en: "F8", hi: "F8" }, { en: "F11", hi: "F11" } ] },
+            { id: 13, type: "theory", correct: 3, q: { en: "Which function is used in Excel to search for a value in the leftmost column of a table and return a value in the same row from another column?", hi: "एक्सेल में किस फ़ंक्शन का उपयोग तालिका के सबसे बाएं कॉलम में एक मान खोजने और दूसरे कॉलम से उसी पंक्ति में मान वापस करने के लिए किया जाता है?" }, options: [ { en: "LOOKUP()", hi: "LOOKUP()" }, { en: "INDEX()", hi: "INDEX()" }, { en: "VLOOKUP()", hi: "VLOOKUP()" }, { en: "HLOOKUP()", hi: "HLOOKUP()" } ] },
+            { id: 14, type: "theory", correct: 3, q: { en: "What type of chart is best suited for showing trends over continuous time periods in Excel?", hi: "एक्सेल में निरंतर समय अवधि में रुझान (trends) दिखाने के लिए किस प्रकार का चार्ट सबसे उपयुक्त है?" }, options: [ { en: "Pie Chart", hi: "Pie Chart" }, { en: "Bar Chart", hi: "Bar Chart" }, { en: "Line Chart", hi: "Line Chart" }, { en: "Radar Chart", hi: "Radar Chart" } ] },
+            { id: 15, type: "theory", correct: 1, q: { en: "Which Excel feature highlights cells dynamically with a background color based on their values?", hi: "कौन सी एक्सेल सुविधा कोशिकाओं को उनके मानों के आधार पर पृष्ठभूमि रंग के साथ गतिशील रूप से हाइलाइट करती है?" }, options: [ { en: "Conditional Formatting", hi: "Conditional Formatting" }, { en: "Format Styles", hi: "Format Styles" }, { en: "Data Validation", hi: "Data Validation" }, { en: "Filter", hi: "Filter" } ] },
+            { id: 16, type: "theory", correct: 1, q: { en: "What is the total number of columns available in a single worksheet of Excel 2010?", hi: "एक्सेल 2010 की एकल वर्कशीट में उपलब्ध कॉलमों की कुल संख्या कितनी होती है?" }, options: [ { en: "16384", hi: "16384" }, { en: "256", hi: "256" }, { en: "65536", hi: "65536" }, { en: "1048576", hi: "1048576" } ] },
+            { id: 17, type: "theory", correct: 3, q: { en: "Which mathematical operator has the highest priority in Excel formulas?", hi: "एक्सेल फ़ार्मुलों में किस गणितीय ऑपरेटर की प्राथमिकता (priority) सबसे अधिक है?" }, options: [ { en: "Addition (+)", hi: "Addition (+)" }, { en: "Multiplication (*)", hi: "Multiplication (*)" }, { en: "Exponentiation (^)", hi: "Exponentiation (^)" }, { en: "Division (/)", hi: "Division (/)" } ] },
+            { id: 18, type: "theory", correct: 1, q: { en: "Which function is used in Excel to find the largest value in a range of cells?", hi: "कोशिकाओं (cells) की एक श्रेणी में सबसे बड़ा मान खोजने के लिए एक्सेल में किस फ़ंक्शन का उपयोग किया जाता है?" }, options: [ { en: "MAX()", hi: "MAX()" }, { en: "LARGE()", hi: "LARGE()" }, { en: "HIGH()", hi: "HIGH()" }, { en: "MAXIMUM()", hi: "MAXIMUM()" } ] },
+            { id: 19, type: "theory", correct: 2, q: { en: "What error code is displayed in Excel when a formula divides a number by zero?", hi: "एक्सेल में कौन सा त्रुटि कोड प्रदर्शित होता है जब कोई सूत्र किसी संख्या को शून्य से विभाजित करता है?" }, options: [ { en: "#VALUE!", hi: "#VALUE!" }, { en: "#DIV/0!", hi: "#DIV/0!" }, { en: "#REF!", hi: "#REF!" }, { en: "#NAME?", hi: "#NAME?" } ] },
+            { id: 20, type: "theory", correct: 2, q: { en: "Who is the father/creator of Java programming language?", hi: "जावा प्रोग्रामिंग भाषा के जनक/निर्माता कौन हैं?" }, options: [ { en: "Dennis Ritchie", hi: "Dennis Ritchie" }, { en: "James Gosling", hi: "James Gosling" }, { en: "Bjarne Stroustrup", hi: "Bjarne Stroustrup" }, { en: "Guido van Rossum", hi: "Guido van Rossum" } ] },
+            { id: 21, type: "theory", correct: 2, q: { en: "Which component of Java development is responsible for executing the bytecode?", hi: "जावा विकास का कौन सा घटक बायटकोड (bytecode) को निष्पादित करने के लिए जिम्मेदार है?" }, options: [ { en: "JDK", hi: "JDK" }, { en: "JVM", hi: "JVM" }, { en: "Compiler", hi: "Compiler" }, { en: "Linker", hi: "Linker" } ] },
+            { id: 22, type: "theory", correct: 3, q: { en: "Which keyword is used to declare a constant variable in Java whose value cannot be modified?", hi: "जावा में एक स्थिर (constant) वेरिएबल घोषित करने के लिए किस कीवर्ड का उपयोग किया जाता है जिसका मान बदला नहीं जा सकता?" }, options: [ { en: "const", hi: "const" }, { en: "static", hi: "static" }, { en: "final", hi: "final" }, { en: "constant", hi: "constant" } ] },
+            { id: 23, type: "theory", correct: 2, q: { en: "What is the default value of a boolean variable declared as an instance field in Java?", hi: "जावा में इंस्टेंस फ़ील्ड के रूप में घोषित बूलियन वेरिएबल का डिफ़ॉल्ट मान क्या होता है?" }, options: [ { en: "true", hi: "true" }, { en: "false", hi: "false" }, { en: "null", hi: "null" }, { en: "0", hi: "0" } ] },
+            { id: 24, type: "theory", correct: 3, q: { en: "Which of the following is not a valid primitive data type in Java?", hi: "निम्नलिखित में से कौन सा जावा में मान्य प्रिमिटिव डेटा प्रकार (primitive data type) नहीं है?" }, options: [ { en: "float", hi: "float" }, { en: "double", hi: "double" }, { en: "string", hi: "string" }, { en: "char", hi: "char" } ] },
+            { id: 25, type: "theory", correct: 3, q: { en: "What is the size of 'int' data type in Java?", hi: "जावा में 'int' डेटा प्रकार का आकार कितना होता है?" }, options: [ { en: "1 byte", hi: "1 byte" }, { en: "2 bytes", hi: "2 bytes" }, { en: "4 bytes", hi: "4 bytes" }, { en: "8 bytes", hi: "8 bytes" } ] },
+            { id: 26, type: "theory", correct: 3, q: { en: "Which loop is guaranteed to execute at least once, even if the condition is false?", hi: "शर्त गलत होने पर भी किस लूप के कम से कम एक बार निष्पादित होने की गारंटी होती है?" }, options: [ { en: "for loop", hi: "for loop" }, { en: "while loop", hi: "while loop" }, { en: "do-while loop", hi: "do-while loop" }, { en: "nested loop", hi: "nested loop" } ] },
+            { id: 27, type: "theory", correct: 1, q: { en: "What is the index of the first element in a Java array?", hi: "जावा ऐरे (array) में पहले तत्व का इंडेक्स क्या होता है?" }, options: [ { en: "0", hi: "0" }, { en: "1", hi: "1" }, { en: "-1", hi: "-1" }, { en: "any number", hi: "any number" } ] },
+            { id: 28, type: "theory", correct: 2, q: { en: "Which keyword is used to refer to the current class instance variable in Java?", hi: "जावा में वर्तमान क्लास इंस्टेंस वेरिएबल को संदर्भित करने के लिए किस कीवर्ड का उपयोग किया जाता है?" }, options: [ { en: "super", hi: "super" }, { en: "this", hi: "this" }, { en: "class", hi: "class" }, { en: "object", hi: "object" } ] },
+            { id: 29, type: "theory", correct: 2, q: { en: "What is the extension of a compiled Java bytecode file?", hi: "एक संकलित (compiled) जावा बायटकोड फ़ाइल का एक्सटेंशन क्या होता है?" }, options: [ { en: ".java", hi: ".java" }, { en: ".class", hi: ".class" }, { en: ".exe", hi: ".exe" }, { en: ".obj", hi: ".obj" } ] },
+            { id: 30, type: "theory", correct: 4, q: { en: "Which OOP concept allows a subclass to inherit the variables and methods of its superclass?", hi: "कौन सा OOP सिद्धांत सबक्लास को उसकी सुपरक्लास के वेरिएबल्स और मेथड को इनहेरिट करने की अनुमति देता है?" }, options: [ { en: "Polymorphism", hi: "Polymorphism" }, { en: "Abstraction", hi: "Abstraction" }, { en: "Encapsulation", hi: "Encapsulation" }, { en: "Inheritance", hi: "Inheritance" } ] },
+            { id: 31, type: "theory", correct: 2, q: { en: "Which keyword is used by a subclass to establish inheritance from a superclass?", hi: "सुपरक्लास से इनहेरिटेंस स्थापित करने के लिए सबक्लास द्वारा किस कीवर्ड का उपयोग किया जाता है?" }, options: [ { en: "implements", hi: "implements" }, { en: "extends", hi: "extends" }, { en: "inherits", hi: "inherits" }, { en: "imports", hi: "imports" } ] },
+            { id: 32, type: "theory", correct: 2, q: { en: "What is it called when two or more methods in the same class have the same name but different parameters?", hi: "जब एक ही क्लास में दो या दो से अधिक मेथड का नाम समान हो लेकिन पैरामीटर भिन्न हों तो उसे क्या कहा जाता है?" }, options: [ { en: "Method Overriding", hi: "Method Overriding" }, { en: "Method Overloading", hi: "Method Overloading" }, { en: "Method Duplication", hi: "Method Duplication" }, { en: "Method Cloning", hi: "Method Cloning" } ] },
+            { id: 33, type: "theory", correct: 1, q: { en: "Which annotation or keyword indicates that a subclass method overrides a parent class method?", hi: "कौन सा एनोटेशन (annotation) या कीवर्ड इंगित करता है कि एक सबक्लास मेथड मूल क्लास मेथड को ओवरराइड करती है?" }, options: [ { en: "@Override", hi: "@Override" }, { en: "@Overload", hi: "@Overload" }, { en: "extends", hi: "extends" }, { en: "implements", hi: "implements" } ] },
+            { id: 34, type: "theory", correct: 3, q: { en: "Which block is always executed in Java exception handling, whether an exception occurs or not?", hi: "जावा अपवाद हैंडलिंग (exception handling) में कौन सा ब्लॉक हमेशा निष्पादित होता है, चाहे कोई अपवाद उत्पन्न हो या न हो?" }, options: [ { en: "try", hi: "try" }, { en: "catch", hi: "catch" }, { en: "finally", hi: "finally" }, { en: "throw", hi: "throw" } ] },
+            { id: 35, type: "theory", correct: 3, q: { en: "Which exception is thrown in Java when an array is accessed with an invalid index?", hi: "जब ऐरे (array) को अमान्य इंडेक्स के साथ एक्सेस किया जाता है तो जावा में कौन सा अपवाद (exception) फेंक दिया जाता है?" }, options: [ { en: "NullPointerException", hi: "NullPointerException" }, { en: "ArithmeticException", hi: "ArithmeticException" }, { en: "ArrayIndexOutOfBoundsException", hi: "ArrayIndexOutOfBoundsException" }, { en: "IOException", hi: "IOException" } ] },
+            { id: 36, type: "theory", correct: 2, q: { en: "Which class is used to create mutable/modifiable sequences of characters in Java?", hi: "जावा में कैरेक्टर के परिवर्तनशील/परिवर्तनीय अनुक्रम बनाने के लिए किस क्लास का उपयोग किया जाता है?" }, options: [ { en: "String", hi: "String" }, { en: "StringBuilder", hi: "StringBuilder" }, { en: "CharStream", hi: "CharStream" }, { en: "ArrayString", hi: "ArrayString" } ] },
+            { id: 37, type: "theory", correct: 1, q: { en: "Which operator in Java is used to allocate memory dynamically to an object?", hi: "जावा में किसी ऑब्जेक्ट को गतिशील रूप से मेमोरी आवंटित (allocate memory) करने के लिए किस ऑपरेटर का उपयोग किया जाता है?" }, options: [ { en: "new", hi: "new" }, { en: "malloc", hi: "malloc" }, { en: "alloc", hi: "alloc" }, { en: "create", hi: "create" } ] },
+            { id: 38, type: "theory", correct: 3, q: { en: "Which access modifier makes class members accessible only within the same class?", hi: "कौन सा एक्सेस मॉडिफायर क्लास के सदस्यों को केवल उसी क्लास के भीतर सुलभ बनाता है?" }, options: [ { en: "public", hi: "public" }, { en: "protected", hi: "protected" }, { en: "private", hi: "private" }, { en: "default", hi: "default" } ] },
+            { id: 39, type: "theory", correct: 3, q: { en: "Which package is automatically imported into every Java program without an explicit import statement?", hi: "स्पष्ट आयात (import) विवरण के बिना प्रत्येक जावा प्रोग्राम में कौन सा पैकेज स्वचालित रूप से आयात किया जाता है?" }, options: [ { en: "java.io", hi: "java.io" }, { en: "java.util", hi: "java.util" }, { en: "java.lang", hi: "java.lang" }, { en: "java.awt", hi: "java.awt" } ] },
+            { id: 40, type: "theory", correct: 3, q: { en: "What is the correct way to find the length of a string variable named 'str' in Java?", hi: "जावा में 'str' नामक स्ट्रिंग वेरिएबल की लंबाई ज्ञात करने का सही तरीका क्या है?" }, options: [ { en: "str.length", hi: "str.length" }, { en: "str.size()", hi: "str.size()" }, { en: "str.length()", hi: "str.length()" }, { en: "str.count", hi: "str.count" } ] },
+            { id: 41, type: "theory", correct: 2, q: { en: "What is the result of the evaluated expression '10 % 3' in Java?", hi: "जावा में मूल्यांकित अभिव्यक्ति '10 % 3' का परिणाम क्या होता है?" }, options: [ { en: "3", hi: "3" }, { en: "1", hi: "1" }, { en: "0", hi: "0" }, { en: "10", hi: "10" } ] },
+            { id: 42, type: "theory", correct: 2, q: { en: "Which statement is used to jump immediately out of a loop or a switch statement?", hi: "लूप या स्विच स्टेटमेंट से तुरंत बाहर कूदने (exit) के लिए किस स्टेटमेंट का उपयोग किया जाता है?" }, options: [ { en: "continue", hi: "continue" }, { en: "break", hi: "break" }, { en: "return", hi: "return" }, { en: "exit", hi: "exit" } ] },
+            { id: 43, type: "theory", correct: 2, q: { en: "Which constructor has no arguments and is automatically created by the Java compiler if no constructors are defined?", hi: "किस कंस्ट्रक्टर के पास कोई तर्क (arguments) नहीं होता है और यदि कोई कंस्ट्रक्टर परिभाषित नहीं है तो जावा कंपाइलर द्वारा स्वचालित रूप से बनाया जाता है?" }, options: [ { en: "Parameterized Constructor", hi: "Parameterized Constructor" }, { en: "Default Constructor", hi: "Default Constructor" }, { en: "Copy Constructor", hi: "Copy Constructor" }, { en: "Blank Constructor", hi: "Blank Constructor" } ] },
+            { id: 44, type: "theory", correct: 3, q: { en: "Which of the following is not a standard type of inheritance supported directly by classes in Java?", hi: "निम्नलिखित में से कौन सा जावा में सीधे क्लासों द्वारा समर्थित इनहेरिटेंस का एक मानक प्रकार नहीं है?" }, options: [ { en: "Single Inheritance", hi: "Single Inheritance" }, { en: "Multilevel Inheritance", hi: "Multilevel Inheritance" }, { en: "Multiple Inheritance", hi: "Multiple Inheritance" }, { en: "Hierarchical Inheritance", hi: "Hierarchical Inheritance" } ] },
+            { id: 45, type: "theory", correct: 2, q: { en: "Which keyword is used to explicitly throw a single exception programmatically?", hi: "प्रोग्रामेटिक रूप से एकल अपवाद (single exception) को स्पष्ट रूप से फेंकने (throw) के लिए किस कीवर्ड का उपयोग किया जाता है?" }, options: [ { en: "throws", hi: "throws" }, { en: "throw", hi: "throw" }, { en: "try", hi: "try" }, { en: "catch", hi: "catch" } ] },
+            { id: 46, type: "theory", correct: 2, q: { en: "Which character is used in Linux to match any single character (wildcard)?", hi: "लिनक्स में किसी भी एकल कैरेक्टर (वाइल्डकार्ड) से मेल खाने के लिए किस कैरेक्टर का उपयोग किया जाता है?" }, options: [ { en: "*", hi: "*" }, { en: "?", hi: "?" }, { en: "#", hi: "#" }, { en: "$", hi: "$" } ] },
+            { id: 47, type: "theory", correct: 3, q: { en: "Which directory in Linux contains system configuration files?", hi: "लिनक्स में किस निर्देशिका (directory) में सिस्टम कॉन्फ़िगरेशन फ़ाइलें होती हैं?" }, options: [ { en: "/bin", hi: "/bin" }, { en: "/home", hi: "/home" }, { en: "/etc", hi: "/etc" }, { en: "/var", hi: "/var" } ] },
+            { id: 48, type: "theory", correct: 2, q: { en: "Which dialog box is used to find and replace specific text in MS Word?", hi: "MS Word में विशिष्ट पाठ को खोजने और बदलने के लिए किस डायलॉग बॉक्स का उपयोग किया जाता है?" }, options: [ { en: "Go To", hi: "Go To" }, { en: "Find and Replace", hi: "Find and Replace" }, { en: "Paragraph Settings", hi: "Paragraph Settings" }, { en: "Styles Options", hi: "Styles Options" } ] },
+            { id: 49, type: "theory", correct: 3, q: { en: "Which function is used in Excel to add values based on a single condition?", hi: "एकल शर्त के आधार पर मानों को जोड़ने के लिए एक्सेल में किस फ़ंक्शन का उपयोग किया जाता है?" }, options: [ { en: "SUM()", hi: "SUM()" }, { en: "ADDIF()", hi: "ADDIF()" }, { en: "SUMIF()", hi: "SUMIF()" }, { en: "COUNTIF()", hi: "COUNTIF()" } ] },
+            { id: 50, type: "theory", correct: 3, q: { en: "Which keyword is used to access parent class methods or constructors?", hi: "पैरेंट क्लास मेथड या कंस्ट्रक्टर को एक्सेस करने के लिए किस कीवर्ड का उपयोग किया जाता है?" }, options: [ { en: "this", hi: "this" }, { en: "parent", hi: "parent" }, { en: "super", hi: "super" }, { en: "extends", hi: "extends" } ] },
+            
+            // Employability Skills Section (Q51-Q75)
+            { id: 51, type: "skills", correct: 1, q: { en: "What is the written introduction at the beginning of the Indian Constitution containing its values?", hi: "भारतीय संविधान के प्रारंभ में लिखित परिचय क्या है जिसमें इसके मूल्य शामिल हैं?" }, options: [ { en: "Preamble", hi: "प्रस्तावना (Preamble)" }, { en: "Index", hi: "अनुक्रमणिका" }, { en: "Appendix", hi: "परिशिष्ट" }, { en: "Schedule", hi: "अनुसूची" } ] },
+            { id: 52, type: "skills", correct: 2, q: { en: "Which of the following is a Fundamental Right guaranteed by the Indian Constitution?", hi: "निम्नलिखित में से कौन सा भारतीय संविधान द्वारा गारंटीकृत एक मौलिक अधिकार है?" }, options: [ { en: "Right to buy property anywhere", hi: "कहीं भी संपत्ति खरीदने का अधिकार" }, { en: "Right to Equality", hi: "समानता का अधिकार" }, { en: "Right to avoid taxes", hi: "कर से बचने का अधिकार" }, { en: "Right to use private vehicles", hi: "निजी वाहनों के उपयोग का अधिकार" } ] },
+            { id: 53, type: "skills", correct: 2, q: { en: "Which body language signal indicates positive and active listening?", hi: "कौन सा शारीरिक भाषा (body language) संकेत सकारात्मक और सक्रिय सुनने का संकेत देता है?" }, options: [ { en: "Crossing arms tightly", hi: "बाँहें कसकर मोड़ना" }, { en: "Nodding head and maintaining eye contact", hi: "सिर हिलाना और आँखों का संपर्क बनाए रखना" }, { en: "Looking at your phone constantly", hi: "लगातार अपने फोन को देखना" }, { en: "Yawning frequently", hi: "बार-बार जम्हाई लेना" } ] },
+            { id: 54, type: "skills", correct: 3, q: { en: "What type of communication does not involve spoken words but uses facial expressions and gestures?", hi: "किस प्रकार के संचार में बोले गए शब्द शामिल नहीं होते हैं बल्कि चेहरे के भाव और इशारों का उपयोग किया जाता है?" }, options: [ { en: "Verbal Communication", hi: "मौखिक संचार" }, { en: "Written Communication", hi: "लिखित संचार" }, { en: "Non-verbal Communication", hi: "अशाब्दिक संचार (Non-verbal)" }, { en: "Formal Communication", hi: "औपचारिक संचार" } ] },
+            { id: 55, type: "skills", correct: 2, q: { en: "Which of the following is a vital step for a successful job interview?", hi: "एक सफल नौकरी साक्षात्कार (job interview) के लिए निम्नलिखित में से कौन सा एक महत्वपूर्ण कदम है?" }, options: [ { en: "Arrive late to show busy schedule", hi: "व्यस्त कार्यक्रम दिखाने के लिए देर से पहुंचें" }, { en: "Research the company beforehand", hi: "कंपनी के बारे में पहले से शोध करें" }, { en: "Wear casual sportswear", hi: "अनौपचारिक खेल वस्त्र पहनें" }, { en: "Answer in one-word yes/no only", hi: "केवल एक शब्द में हाँ/ना में उत्तर दें" } ] },
+            { id: 56, type: "skills", correct: 3, q: { en: "What is a collection of a candidate's past work, projects, and skills shown to an interviewer called?", hi: "साक्षात्कारकर्ता को दिखाए जाने वाले उम्मीदवार के पिछले काम, परियोजनाओं और कौशल के संग्रह को क्या कहा जाता है?" }, options: [ { en: "Resume", hi: "Resume" }, { en: "Bio-data", hi: "Bio-data" }, { en: "Portfolio", hi: "Portfolio" }, { en: "Application Form", hi: "Application Form" } ] },
+            { id: 57, type: "skills", correct: 2, q: { en: "Which of the following is a popular internet search engine used to find web information?", hi: "वेब जानकारी खोजने के लिए उपयोग किया जाने वाला एक लोकप्रिय इंटरनेट सर्च इंजन कौन सा है?" }, options: [ { en: "Chrome", hi: "Chrome" }, { en: "Google", hi: "Google" }, { en: "Windows", hi: "Windows" }, { en: "Adobe Reader", hi: "Adobe Reader" } ] },
+            { id: 58, type: "skills", correct: 1, q: { en: "What is a deceptive technique where attackers send fake emails to steal passwords or financial details?", hi: "वह भ्रामक तकनीक क्या है जहाँ हमलावर पासवर्ड या वित्तीय विवरण चुराने के लिए नकली ईमेल भेजते हैं?" }, options: [ { en: "Phishing", hi: "फ़िशिंग (Phishing)" }, { en: "Browsing", hi: "ब्राउज़िंग" }, { en: "Spamming", hi: "स्पैमिंग" }, { en: "Filtering", hi: "फ़िल्टरिंग" } ] },
+            { id: 59, type: "skills", correct: 2, q: { en: "Which service allows storing and accessing data over the internet instead of computer's hard drive?", hi: "कौन सी सेवा कंप्यूटर की हार्ड ड्राइव के बजाय इंटरनेट पर डेटा संग्रहीत करने और उस तक पहुंचने की अनुमति देती है?" }, options: [ { en: "Local storage", hi: "लोकल स्टोरेज" }, { en: "Cloud Computing", hi: "क्लाउड कम्प्यूटिंग (Cloud Computing)" }, { en: "Offline backup", hi: "ऑफ़लाइन बैकअप" }, { en: "Pen drive storage", hi: "पेन ड्राइव स्टोरेज" } ] },
+            { id: 60, type: "skills", correct: 3, q: { en: "What is a person called who starts their own business, takes financial risks, and creates job opportunities?", hi: "उस व्यक्ति को क्या कहा जाता है जो अपना खुद का व्यवसाय शुरू करता है, वित्तीय जोखिम उठाता है और नौकरी के अवसर पैदा करता है?" }, options: [ { en: "Manager", hi: "प्रबंधक" }, { en: "Employee", hi: "कर्मचारी" }, { en: "Entrepreneur", hi: "उद्यमी (Entrepreneur)" }, { en: "Supervisor", hi: "पर्यवेक्षक" } ] },
+            { id: 61, type: "skills", correct: 1, q: { en: "What is the official government portal in India launched to support and fund startups?", hi: "स्टार्टअप्स को समर्थन और धन देने के लिए भारत में शुरू किया गया आधिकारिक सरकारी पोर्टल कौन सा है?" }, options: [ { en: "Startup India", hi: "स्टार्टअप इंडिया (Startup India)" }, { en: "Invest Abroad", hi: "इन्वेस्ट अब्रॉड" }, { en: "Skill Registry", hi: "कौशल रजिस्ट्री" }, { en: "NAPS Scheme", hi: "NAPS योजना" } ] },
+            { id: 62, type: "skills", correct: 2, q: { en: "What does 'PPE' stand for in occupational health and safety?", hi: "व्यावसायिक स्वास्थ्य और सुरक्षा में 'PPE' का क्या अर्थ है?" }, options: [ { en: "Public Protection Equipment", hi: "Public Protection Equipment" }, { en: "Personal Protective Equipment", hi: "व्यक्तिगत सुरक्षा उपकरण (Personal Protective Equipment)" }, { en: "Private Productive Enterprise", hi: "Private Productive Enterprise" }, { en: "People Preventive Element", hi: "People Preventive Element" } ] },
+            { id: 63, type: "skills", correct: 2, q: { en: "What type of fire extinguisher is best suited to put out electrical fires safely?", hi: "बिजली की आग को सुरक्षित रूप से बुझाने के लिए किस प्रकार का अग्निशामक यंत्र सबसे उपयुक्त है?" }, options: [ { en: "Water type", hi: "पानी प्रकार" }, { en: "Carbon Dioxide (CO2) type", hi: "कार्बन डाइऑक्साइड (CO2) प्रकार" }, { en: "Foam type", hi: "फोम प्रकार" }, { en: "Blanket type", hi: "कंबल प्रकार" } ] },
+            { id: 64, type: "skills", correct: 2, q: { en: "What is the study of designing the workspace to fit the user, reducing physical strain and fatigue?", hi: "उपयोगकर्ता के फिट बैठने, शारीरिक खिंचाव और थकान को कम करने के लिए कार्यक्षेत्र को डिजाइन करने के अध्ययन को क्या कहा जाता है?" }, options: [ { en: "Ecology", hi: "पारिस्थितिकी" }, { en: "Ergonomics", hi: "एर्गोनॉमिक्स (Ergonomics)" }, { en: "Economics", hi: "अर्थशास्त्र" }, { en: "Ergography", hi: "एर्गोग्राफी" } ] },
+            { id: 65, type: "skills", correct: 2, q: { en: "Which Indian digital payment system allows instant real-time bank transfers via mobile phones?", hi: "कौन सी भारतीय डिजिटल भुगतान प्रणाली मोबाइल फोन के माध्यम से तत्काल वास्तविक समय में बैंक हस्तांतरण की अनुमति देती है?" }, options: [ { en: "ATM", hi: "ATM" }, { en: "UPI", hi: "UPI (Unified Payments Interface)" }, { en: "Demand Draft", hi: "डिमांड ड्राफ्ट" }, { en: "Cheque", hi: "चेक" } ] },
+            { id: 66, type: "skills", correct: 2, q: { en: "What is the full form of KYC in banking?", hi: "बैंकिंग में KYC का फुल फॉर्म क्या होता है?" }, options: [ { en: "Know Your Credit", hi: "Know Your Credit" }, { en: "Know Your Customer", hi: "Know Your Customer" }, { en: "Keep Your Cash", hi: "Keep Your Cash" }, { en: "Key Yield Corporation", hi: "Key Yield Corporation" } ] },
+            { id: 67, type: "skills", correct: 3, q: { en: "Which grammatical tense is used in: 'I will attend the corporate seminar next Friday'?", hi: "इसमें किस व्याकरणिक काल का उपयोग किया गया है: 'I will attend the corporate seminar next Friday'?" }, options: [ { en: "Simple Present Tense", hi: "Simple Present Tense" }, { en: "Simple Past Tense", hi: "Simple Past Tense" }, { en: "Simple Future Tense", hi: "Simple Future Tense" }, { en: "Present Continuous Tense", hi: "Present Continuous Tense" } ] },
+            { id: 68, type: "skills", correct: 3, q: { en: "Which of the following is a silent letter in the word 'RECEIPT'?", hi: "'RECEIPT' शब्द में निम्नलिखित में से कौन सा मूक (silent) अक्षर है?" }, options: [ { en: "R", hi: "R" }, { en: "C", hi: "C" }, { en: "P", hi: "P" }, { en: "T", hi: "T" } ] },
+            { id: 69, type: "skills", correct: 2, q: { en: "Fill in the blank: 'She is ________ employee in our tech firm.'", hi: "रिक्त स्थान भरें: 'She is ________ employee in our tech firm.'" }, options: [ { en: "a", hi: "a" }, { en: "an", hi: "an" }, { en: "the", hi: "the" }, { en: "no article", hi: "no article" } ] },
+            { id: 70, type: "skills", correct: 2, q: { en: "Rearrange the words to form a correct sentence: 'office / early / arrived / he / the / at'", hi: "सटीक वाक्य बनाने के लिए शब्दों को व्यवस्थित करें: 'office / early / arrived / he / the / at'" }, options: [ { en: "He early arrived at the office", hi: "He early arrived at the office" }, { en: "He arrived early at the office", hi: "He arrived early at the office" }, { en: "Office at the he arrived early", hi: "Office at the he arrived early" }, { en: "He arrived office early at the", hi: "He arrived office early at the" } ] },
+            { id: 71, type: "skills", correct: 1, q: { en: "Choose the sentence with the correct punctuation marks.", hi: "सही विराम चिह्नों वाले वाक्य का चयन करें।" }, options: [ { en: "What a wonderful performance!", hi: "What a wonderful performance!" }, { en: "What a wonderful performance?", hi: "What a wonderful performance?" }, { en: "What a wonderful performance.", hi: "What a wonderful performance." }, { en: "What, a wonderful performance", hi: "What, a wonderful performance" } ] },
+            { id: 72, type: "skills", correct: 2, q: { en: "Which of the following is in active voice?", hi: "निम्नलिखित में से कौन सा सक्रिय आवाज (Active Voice) में है?" }, options: [ { en: "The code was written by Priya.", hi: "The code was written by Priya." }, { en: "Priya wrote the code.", hi: "Priya wrote the code." }, { en: "The code is being written by Priya.", hi: "The code is being written by Priya." }, { en: "A code has been written by Priya.", hi: "A code has been written by Priya." } ] },
+            { id: 73, type: "skills", correct: 2, q: { en: "What does active listening involve?", hi: "सक्रिय श्रवण (active listening) में क्या शामिल है?" }, options: [ { en: "Hearing but thinking of other tasks", hi: "सुनना लेकिन अन्य कार्यों के बारे में सोचना" }, { en: "Paying full attention and understanding the speaker", hi: "पूरा ध्यान देना और वक्ता को समझना" }, { en: "Interrupting immediately with your thoughts", hi: "अपने विचारों के साथ तुरंत हस्तक्षेप करना" }, { en: "Pretending to agree to finish early", hi: "जल्दी समाप्त करने के लिए सहमत होने का नाटक करना" } ] },
+            { id: 74, type: "skills", correct: 2, q: { en: "What is a major cause of occupational accidents?", hi: "व्यावसायिक दुर्घटनाओं (occupational accidents) का एक प्रमुख कारण क्या है?" }, options: [ { en: "Proper machine guarding", hi: "उचित मशीन सुरक्षा" }, { en: "Carelessness and lack of training", hi: "लापरवाही और प्रशिक्षण की कमी" }, { en: "Using safe tools", hi: "सुरक्षित उपकरणों का उपयोग करना" }, { en: "Good workspace lighting", hi: "अच्छा कार्यक्षेत्र प्रकाश व्यवस्था" } ] },
+            { id: 75, type: "skills", correct: 3, q: { en: "Which of the following is NOT a vowel?", hi: "निम्नलिखित में से कौन सा स्वर (Vowel) नहीं है?" }, options: [ { en: "o", hi: "o" }, { en: "u", hi: "u" }, { en: "g", hi: "g" }, { en: "e", hi: "e" } ] }
+        ];
+
+        let activeIdx = 0; // index from 0 to 74
+        let responses = {}; // tracks selected options
+        let visited = {}; // visited items
+        let secondsLeft = 120 * 60; // 120 Minutes
+        let timerTicker;
+
+        // On window startup
+        window.onload = function() {
+            buildQuestionPalette();
+            loadQuestion(0);
+        }
+
+        // Trigger Start Exam on Form Save
+        function startExamNow() {
+            const name = document.getElementById('candidate-name-input').value.trim();
+            const roll = document.getElementById('candidate-roll-input').value.trim();
+            const errEl = document.getElementById('start-error-msg');
+
+            if (!name) {
+                errEl.innerText = "कृपया अपना नाम दर्ज करें / Please enter your name.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            errEl.classList.add('hidden');
+
+            // Populate on UI header
+            const dispName = document.getElementById('display-candidate-name');
+            if (dispName) {
+                dispName.innerText = `| ${name}`;
+                dispName.classList.remove('hidden');
+            }
+
+            // Populate on results scorecard
+            const resName = document.getElementById('res-candidate-name');
+            const resRoll = document.getElementById('res-candidate-roll');
+            if (resName) resName.innerText = name;
+            if (resRoll) resRoll.innerText = roll || "N/A / उपलब्ध नहीं";
+
+            // Toggle screens
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('exam-main-container').classList.remove('hidden');
+
+            // Launch countdown ticker
+            beginTimerCount();
+        }
+
+        // Toggle palette bottom modal sheet
+        function togglePaletteModal(show) {
+            const modal = document.getElementById('palette-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Build the fast selection palette buttons
+        function buildQuestionPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+
+            set3Questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `pal-btn-${idx}`;
+                btn.innerText = q.id;
+                btn.className = "w-10 h-10 text-xs font-bold rounded-lg flex items-center justify-center transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 focus:outline-none";
+                btn.setAttribute('onclick', `jumpToSelected(${idx})`);
+                grid.appendChild(btn);
+            });
+        }
+
+        // Jump instantly to selected question from palette list
+        function jumpToSelected(idx) {
+            visited[set3Questions[activeIdx].id] = true;
+            updatePaletteButton(activeIdx);
+            activeIdx = idx;
+            loadQuestion(idx);
+            togglePaletteModal(false); // auto dismiss palette modal
+        }
+
+        // Render target index values
+        function loadQuestion(idx) {
+            const q = set3Questions[idx];
+            visited[q.id] = true;
+
+            // Simple counter update
+            document.getElementById('question-counter').innerText = `Q. ${q.id} / 75`;
+
+            // Setup Statements
+            document.getElementById('q-text-en').innerText = q.q.en;
+            document.getElementById('q-text-hi').innerText = q.q.hi;
+
+            // Load Options values
+            for (let num = 1; num <= 4; num++) {
+                const optObj = q.options[num - 1];
+                document.getElementById(`opt-en-${num}`).innerText = optObj.en;
+                document.getElementById(`opt-hi-${num}`).innerText = optObj.hi;
+            }
+
+            refreshActiveOptionStyles();
+            updatePaletteButton(idx);
+
+            // Back state handle
+            document.getElementById('prev-btn').disabled = (idx === 0);
+            if (idx === 0) {
+                document.getElementById('prev-btn').classList.add('opacity-40', 'cursor-not-allowed');
+            } else {
+                document.getElementById('prev-btn').classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+
+            // Next / Finish exam change
+            if (idx === 74) {
+                document.getElementById('next-btn').innerText = "Submit Exam";
+                document.getElementById('next-btn').className = "px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-md transition-all text-center";
+            } else {
+                document.getElementById('next-btn').innerHTML = "Next &rarr;";
+                document.getElementById('next-btn').className = "px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold active:scale-95 transition-all";
+            }
+        }
+
+        // Apply simple highlight styles to target option container
+        function refreshActiveOptionStyles() {
+            const activeQ = set3Questions[activeIdx];
+            const activeRes = responses[activeQ.id];
+
+            for (let num = 1; num <= 4; num++) {
+                const btn = document.getElementById(`opt-btn-${num}`);
+                const badge = document.getElementById(`opt-badge-${num}`);
+
+                if (activeRes === num) {
+                    // Selection styling
+                    btn.className = "w-full flex items-center p-4 rounded-xl border-2 border-indigo-600 bg-indigo-50/70 transition-all text-left shadow-sm scale-[1.01]";
+                    badge.className = "w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mr-3";
+                } else {
+                    // Plain simple state styling
+                    btn.className = "w-full flex items-center p-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all text-left group";
+                    badge.className = "w-6 h-6 rounded-full border border-slate-300 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0 mr-3 group-hover:border-indigo-400 group-hover:text-indigo-600";
+                }
+            }
+        }
+
+        // Select chosen option values
+        function selectOption(num) {
+            const currentQ = set3Questions[activeIdx];
+            responses[currentQ.id] = num;
+            refreshActiveOptionStyles();
+            updatePaletteButton(activeIdx);
+        }
+
+        // Clear option selection
+        function clearResponse() {
+            const currentQ = set3Questions[activeIdx];
+            delete responses[currentQ.id];
+            refreshActiveOptionStyles();
+            updatePaletteButton(activeIdx);
+        }
+
+        // Refresh single palette buttons classes
+        function updatePaletteButton(idx) {
+            const q = set3Questions[idx];
+            const btn = document.getElementById(`pal-btn-${idx}`);
+            if (!btn) return;
+
+            const isCurrent = (activeIdx === idx);
+            const isAnswered = responses[q.id] !== undefined;
+
+            let colStyle = "bg-slate-100 text-slate-700 hover:bg-slate-200";
+
+            if (isAnswered) {
+                colStyle = "bg-green-500 text-white hover:bg-green-600";
+            } else if (visited[q.id]) {
+                colStyle = "bg-rose-400 text-white hover:bg-rose-500";
+            }
+
+            btn.className = `w-10 h-10 text-xs font-bold rounded-lg flex items-center justify-center transition-all ${colStyle} focus:outline-none ${isCurrent ? 'ring-2 ring-indigo-500 ring-offset-1 scale-105' : ''}`;
+        }
+
+        // Step back/forward navigation
+        function navigateQuestion(step) {
+            const nextIdx = activeIdx + step;
+            if (nextIdx >= 0 && nextIdx < 75) {
+                jumpToSelected(nextIdx);
+            } else if (nextIdx === 75) {
+                openSubmitModal();
+            }
+        }
+
+        // Countdown timer ticker
+        function beginTimerCount() {
+            timerTicker = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft <= 0) {
+                    clearInterval(timerTicker);
+                    finalizeExamAnswers(); // Auto submit
+                    return;
+                }
+                const m = Math.floor(secondsLeft / 60);
+                const s = secondsLeft % 60;
+                document.getElementById('timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Submit actions modal toggle
+        function openSubmitModal() {
+            togglePaletteModal(false);
+            let ansCount = Object.keys(responses).length;
+            let unvisited = 75 - ansCount;
+
+            document.getElementById('summary-answered').innerText = ansCount;
+            document.getElementById('summary-left').innerText = unvisited;
+
+            document.getElementById('submit-modal').classList.remove('hidden');
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').classList.add('hidden');
+        }
+
+        // Final evaluation and result rendering
+        function finalizeExamAnswers() {
+            clearInterval(timerTicker);
+            document.getElementById('submit-modal').classList.add('hidden');
+            document.getElementById('exam-panel').closest('main').classList.add('hidden');
+            document.getElementById('scorecard-screen').classList.remove('hidden');
+
+            let scoredCorrect = 0;
+
+            set3Questions.forEach(q => {
+                const userChoice = responses[q.id];
+                if (userChoice !== undefined && userChoice === q.correct) {
+                    scoredCorrect++;
+                }
+            });
+
+            const totalMarks = scoredCorrect * 2;
+            const percentage = ((totalMarks / 150) * 100).toFixed(1);
+            const passStatus = (percentage >= 33) ? "PASS / उत्तीर्ण" : "FAIL / अनुत्तीर्ण";
+
+            document.getElementById('score-text').innerHTML = `${totalMarks} <span class="text-sm font-normal">/ 150</span>`;
+            document.getElementById('percentage-text').innerText = `Percentage: ${percentage}%`;
+            document.getElementById('stat-correct').innerText = `${scoredCorrect} / 75`;
+            
+            const statusLabel = document.getElementById('stat-status');
+            statusLabel.innerText = passStatus;
+            if (percentage >= 33) {
+                statusLabel.className = "font-black text-green-600";
+            } else {
+                statusLabel.className = "font-black text-rose-500";
+            }
+
+            // Populate clean bilingual detailed review segment
+            const reviewWrapper = document.getElementById('review-questions-list');
+            reviewWrapper.innerHTML = '';
+
+            set3Questions.forEach(q => {
+                const userAns = responses[q.id];
+                const isCorrect = (userAns === q.correct);
+                const isAttempted = (userAns !== undefined);
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border bg-white shadow-xs space-y-3 ${isAttempted ? (isCorrect ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-rose-400') : 'border-l-4 border-l-slate-300'}`;
+
+                let statusBadge = '';
+                if (!isAttempted) {
+                    statusBadge = `<span class="bg-slate-100 text-slate-500 text-[9px] px-2 py-0.5 rounded font-bold">Unattempted</span>`;
+                } else if (isCorrect) {
+                    statusBadge = `<span class="bg-green-100 text-green-700 text-[9px] px-2 py-0.5 rounded font-bold">✓ Correct</span>`;
+                } else {
+                    statusBadge = `<span class="bg-rose-100 text-rose-700 text-[9px] px-2 py-0.5 rounded font-bold">✗ Incorrect</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <span class="text-[10px] font-bold text-indigo-800">Q #${q.id}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="space-y-1">
+                        <p class="font-semibold text-slate-800 text-xs leading-tight">${q.q.en}</p>
+                        <p class="text-xs text-slate-500 font-devanagari leading-tight">${q.q.hi}</p>
+                    </div>
+                    <div class="space-y-1.5 pt-1 text-[11px]">
+                        ${q.options.map((opt, oIdx) => {
+                            const optNum = oIdx + 1;
+                            let style = "border-slate-100 text-slate-600 bg-slate-50";
+
+                            if (optNum === q.correct) {
+                                style = "border-green-300 text-green-800 bg-green-50/50 font-semibold";
+                            } else if (isAttempted && userAns === optNum) {
+                                style = "border-rose-300 text-rose-800 bg-rose-50/50 font-semibold";
+                            }
+
+                            return `<div class="p-2 rounded-lg border ${style}">${opt.en} / ${opt.hi}</div>`;
+                        }).join('')}
+                    </div>
+                `;
+
+                reviewWrapper.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
