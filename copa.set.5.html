@@ -360,7 +360,7 @@
 
     <!-- INTERACTIVE ENGINE SCRIPTS -->
     <script>
-        const set5Questions = [
+        const set5QuestionsPart1 = [
             { id: 1, type: "theory", correct: 1, q: { en: "What is the keyboard shortcut key to create a new folder on the Windows desktop?", hi: "विंडोज डेस्कटॉप पर एक नया फोल्डर बनाने की कीबोर्ड शॉर्टकट कुंजी क्या है?" }, options: [ { en: "Ctrl + Shift + N", hi: "Ctrl + Shift + N" }, { en: "Ctrl + Alt + N", hi: "Ctrl + Alt + N" }, { en: "Shift + Alt + N", hi: "Shift + Alt + N" }, { en: "Ctrl + F2", hi: "Ctrl + F2" } ] },
             { id: 2, type: "theory", correct: 3, q: { en: "Which of the following is considered an input-cum-output (hybrid) device?", hi: "निम्नलिखित में से किसे इनपुट-सह-आउटपुट (हाइब्रिड) डिवाइस माना जाता है?" }, options: [ { en: "Barcode Reader", hi: "बारकोड रीडर" }, { en: "Inkjet Printer", hi: "इंकजेट प्रिंटर" }, { en: "Touch Screen Monitor", hi: "टच स्क्रीन मॉनिटर" }, { en: "Optical Character Reader", hi: "ऑप्टिकल कैरेक्टर रीडर" } ] },
             { id: 3, type: "theory", correct: 2, q: { en: "Which Linux command is used to count lines, words, and characters in a file?", hi: "एक फ़ाइल में लाइनों, शब्दों और अक्षरों की गणना करने के लिए किस लिनक्स कमांड का उपयोग किया जाता है?" }, options: [ { en: "count", hi: "count" }, { en: "wc", hi: "wc (Word Count)" }, { en: "num", hi: "num" }, { en: "grep -c", hi: "grep -c" } ] },
@@ -444,7 +444,7 @@
         ];
 
         // Concatenate arrays together to build full set
-        const set5Questions = set4Questions.concat(set5QuestionsContinued);
+        const set5Questions = set5QuestionsPart1.concat(set5QuestionsContinued);
 
         let activeIdx = 0; // index from 0 to 74
         let responses = {}; // tracks selected options
