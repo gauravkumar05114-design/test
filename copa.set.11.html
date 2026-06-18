@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>COPA CBT Set-11 Premium Portal</title>
+    <!-- Tailwind CSS for high-fidelity interactive elements -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for rich, readable modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom neon glass scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(20, 184, 166, 0.4);
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(20, 184, 166, 0.7);
+        }
+        
+        /* Smooth stagger animation classes */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-stagger-up {
+            animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        
+        /* Glowing neon highlights */
+        .glow-sapphire {
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+        }
+        .glow-teal-active {
+            box-shadow: 0 0 25px rgba(20, 184, 166, 0.25);
+        }
+        .glow-cyan-active {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-tr from-slate-950 via-slate-900 to-teal-950 text-slate-100 h-screen flex flex-col overflow-hidden select-none">
+
+    <!-- Registration Screen (Name Only) -->
+    <div id="start-screen" class="flex-1 flex items-center justify-center p-4 overflow-y-auto h-screen z-50">
+        <div class="relative bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-800 shadow-2xl max-w-md w-full p-8 space-y-8 transition-all duration-300 transform scale-100 hover:border-teal-500/40 glow-sapphire">
+            
+            <!-- Abstract background glow elements -->
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-teal-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-sky-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="text-center space-y-3 relative">
+                <div class="inline-flex items-center space-x-1.5 bg-gradient-to-r from-teal-500 to-sky-500 text-white text-[11px] font-black px-3.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-teal-500/20">
+                    <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    <span>AITT CTS CBT • SET 11</span>
+                </div>
+                <h2 class="text-2xl font-black bg-gradient-to-r from-white via-slate-200 to-teal-400 bg-clip-text text-transparent leading-tight pt-2">
+                    CBT Assessment Portal<br>परीक्षा प्रवेश द्वार
+                </h2>
+                <p class="text-[12px] text-slate-400 font-medium">Verify your name to start the Set-11 assessment</p>
+            </div>
+
+            <div class="space-y-5 relative">
+                <!-- Candidate Name Input -->
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-black text-teal-400 uppercase tracking-widest">Candidate Full Name / अभ्यर्थी का पूरा नाम</label>
+                    <div class="relative group">
+                        <input type="text" id="candidate-name-input" placeholder="Type your name here..." class="w-full px-5 py-4 rounded-2xl bg-slate-950/70 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500/80 transition-all font-semibold shadow-inner placeholder:text-slate-600">
+                    </div>
+                </div>
+
+                <!-- Exam Details Card -->
+                <div class="space-y-2">
+                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest">Exam Specifications / परीक्षा विवरण</label>
+                    <div class="p-4 bg-slate-950/50 rounded-2xl border border-slate-850 text-xs text-slate-400 font-medium leading-relaxed space-y-1.5">
+                        <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-500">Subject/Trade:</span> <strong class="text-teal-300">COPA Theory & ES Set-11</strong></div>
+                        <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-500">Total Marks:</span> <strong class="text-slate-300">150 Marks (75 Qs)</strong></div>
+                        <div class="flex justify-between"><span class="text-slate-500">Grading System:</span> <strong class="text-cyan-400">Instant Computer Scorecard</strong></div>
+                    </div>
+                </div>
+
+                <!-- Live validation alert slot -->
+                <p id="start-error-msg" class="hidden text-rose-400 text-xs font-bold text-center py-1 animate-pulse"></p>
+            </div>
+
+            <button onclick="startExamNow()" class="relative w-full py-4 bg-gradient-to-r from-teal-600 via-sky-600 to-sky-700 hover:from-teal-500 hover:to-sky-500 active:scale-[0.98] active:duration-75 text-white rounded-2xl text-xs font-extrabold shadow-lg shadow-teal-900/30 transition-all text-center uppercase tracking-widest">
+                Access Examination / परीक्षा शुरू करें &rarr;
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden Exam Container -->
+    <div id="exam-main-container" class="hidden flex-1 flex flex-col overflow-hidden h-screen">
+
+        <!-- Modern Blurred Header -->
+        <header class="bg-slate-900/75 backdrop-blur-md border-b border-slate-800 px-5 py-4 flex justify-between items-center shrink-0 z-15">
+            <div class="flex items-center space-x-3">
+                <span class="bg-gradient-to-r from-teal-600 to-sky-600 text-white text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-wider shadow-md">SET 11</span>
+                <span id="question-counter" class="text-xs font-black text-slate-400 tracking-wide">Q. 1 / 75</span>
+                <span id="display-candidate-name" class="hidden sm:inline text-xs font-bold text-slate-500 border-l border-slate-800 pl-3"></span>
+            </div>
+            
+            <!-- Smart Timer -->
+            <div class="flex items-center space-x-2 text-rose-400 bg-rose-950/20 border border-rose-900/30 px-3 py-1.5 rounded-xl shadow-inner">
+                <svg class="w-3.5 h-3.5 text-rose-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span id="timer" class="text-xs font-mono font-black tracking-widest">120:00</span>
+            </div>
+        </header>
+
+        <!-- Responsive Arena Layout -->
+        <div class="flex-1 flex overflow-hidden relative">
+
+            <!-- LEFT: Core Question Segment -->
+            <main class="flex-1 overflow-hidden relative flex flex-col bg-slate-950/40">
+                
+                <!-- Main Question Box with smooth staggering entry animation -->
+                <div class="flex-1 overflow-y-auto px-6 py-8 space-y-6 custom-scroll" id="exam-panel">
+                    
+                    <!-- Question Box Card -->
+                    <div id="statement-box" class="space-y-3 bg-slate-900/40 border border-slate-850 p-6 rounded-2xl shadow-xl animate-stagger-up">
+                        <div class="flex items-center justify-between border-b border-slate-850 pb-3">
+                            <span id="section-badge" class="text-[9px] font-black px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 uppercase tracking-widest">Trade Theory</span>
+                            <span class="text-[10px] text-slate-500 font-bold tracking-wider">Marks: +2.0</span>
+                        </div>
+                        <h2 id="q-text-en" class="text-base md:text-lg font-bold text-slate-100 leading-relaxed">
+                            Loading Question...
+                        </h2>
+                        <h2 id="q-text-hi" class="text-base md:text-lg font-semibold text-teal-300 font-devanagari leading-relaxed">
+                            प्रश्न लोड हो रहा है...
+                        </h2>
+                    </div>
+
+                    <!-- Clean Premium Option Stack with high contrast triggers -->
+                    <div class="space-y-3.5" id="options-container">
+                        <!-- Option 1 -->
+                        <button onclick="selectOption(1)" id="opt-btn-1" class="w-full flex items-center p-5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:bg-slate-900/60 active:scale-[0.99] transition-all duration-200 text-left group">
+                            <span id="opt-badge-1" class="w-7 h-7 rounded-full border border-slate-700 bg-slate-950 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mr-4 transition-colors group-hover:border-teal-500 group-hover:text-teal-400">A</span>
+                            <div class="flex-1">
+                                <p id="opt-en-1" class="text-xs md:text-sm font-semibold text-slate-300 transition-colors group-hover:text-white"></p>
+                                <p id="opt-hi-1" class="text-xs md:text-sm font-medium text-slate-500 font-devanagari mt-0.5 transition-colors group-hover:text-slate-400"></p>
+                            </div>
+                        </button>
+
+                        <!-- Option 2 -->
+                        <button onclick="selectOption(2)" id="opt-btn-2" class="w-full flex items-center p-5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:bg-slate-900/60 active:scale-[0.99] transition-all duration-200 text-left group">
+                            <span id="opt-badge-2" class="w-7 h-7 rounded-full border border-slate-700 bg-slate-950 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mr-4 transition-colors group-hover:border-teal-500 group-hover:text-teal-400">B</span>
+                            <div class="flex-1">
+                                <p id="opt-en-2" class="text-xs md:text-sm font-semibold text-slate-300 transition-colors group-hover:text-white"></p>
+                                <p id="opt-hi-2" class="text-xs md:text-sm font-medium text-slate-500 font-devanagari mt-0.5 transition-colors group-hover:text-slate-400"></p>
+                            </div>
+                        </button>
+
+                        <!-- Option 3 -->
+                        <button onclick="selectOption(3)" id="opt-btn-3" class="w-full flex items-center p-5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:bg-slate-900/60 active:scale-[0.99] transition-all duration-200 text-left group">
+                            <span id="opt-badge-3" class="w-7 h-7 rounded-full border border-slate-700 bg-slate-950 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mr-4 transition-colors group-hover:border-teal-500 group-hover:text-teal-400">C</span>
+                            <div class="flex-1">
+                                <p id="opt-en-3" class="text-xs md:text-sm font-semibold text-slate-300 transition-colors group-hover:text-white"></p>
+                                <p id="opt-hi-3" class="text-xs md:text-sm font-medium text-slate-500 font-devanagari mt-0.5 transition-colors group-hover:text-slate-400"></p>
+                            </div>
+                        </button>
+
+                        <!-- Option 4 -->
+                        <button onclick="selectOption(4)" id="opt-btn-4" class="w-full flex items-center p-5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:bg-slate-900/60 active:scale-[0.99] transition-all duration-200 text-left group">
+                            <span id="opt-badge-4" class="w-7 h-7 rounded-full border border-slate-700 bg-slate-950 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mr-4 transition-colors group-hover:border-teal-500 group-hover:text-teal-400">D</span>
+                            <div class="flex-1">
+                                <p id="opt-en-4" class="text-xs md:text-sm font-semibold text-slate-300 transition-colors group-hover:text-white"></p>
+                                <p id="opt-hi-4" class="text-xs md:text-sm font-medium text-slate-500 font-devanagari mt-0.5 transition-colors group-hover:text-slate-400"></p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sticky Action Bar at Bottom -->
+                <div class="bg-slate-900/80 backdrop-blur-md border-t border-slate-800 p-4 flex items-center justify-between gap-3 shrink-0">
+                    <div class="flex items-center space-x-2 flex-1">
+                        <button onclick="clearResponse()" class="px-4 py-3 bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-extrabold active:scale-95 duration-100 transition-all uppercase tracking-wider">
+                            Clear
+                        </button>
+                        <!-- Mobile/Tablet Only trigger to open palette bottom sheet -->
+                        <button onclick="togglePaletteModal(true)" class="md:hidden px-4 py-3 bg-teal-600/10 hover:bg-teal-600/20 border border-teal-500/20 text-teal-400 hover:text-teal-300 rounded-xl text-xs font-extrabold active:scale-95 duration-100 transition-all flex items-center space-x-1.5 uppercase tracking-wider">
+                            <span>📁 Palette</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-1 justify-end">
+                        <button onclick="navigateQuestion(-1)" id="prev-btn" class="px-4 py-3 bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white rounded-xl text-xs font-extrabold active:scale-95 duration-100 transition-all uppercase tracking-wider">
+                            &larr; Prev
+                        </button>
+                        <button onclick="navigateQuestion(1)" id="next-btn" class="px-5 py-3 bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-500 hover:to-sky-500 text-white rounded-xl text-xs font-black active:scale-95 duration-100 transition-all flex items-center space-x-1.5 uppercase tracking-widest shadow-md shadow-teal-950/50">
+                            <span>Next &rarr;</span>
+                        </button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- RIGHT: Persistent Palette -->
+            <aside class="hidden md:flex w-80 bg-slate-900/30 border-l border-slate-850 flex-col overflow-hidden shrink-0">
+                <div class="p-5 border-b border-slate-850 bg-slate-950/20">
+                    <h3 class="text-[11px] font-black text-teal-400 uppercase tracking-widest mb-4">Question Grid Overview</h3>
+                    <div class="grid grid-cols-2 gap-3 text-[10px] font-bold text-slate-400">
+                        <div class="flex items-center space-x-2 bg-slate-950/40 p-2 rounded-lg border border-slate-900"><span class="w-2.5 h-2.5 rounded bg-teal-500 shadow-md shadow-teal-500/20"></span><span>Answered</span></div>
+                        <div class="flex items-center space-x-2 bg-slate-950/40 p-2 rounded-lg border border-slate-900"><span class="w-2.5 h-2.5 rounded bg-rose-400 shadow-md shadow-rose-400/20"></span><span>Unanswered</span></div>
+                        <div class="flex items-center space-x-2 bg-slate-950/40 p-2 rounded-lg border border-slate-900"><span class="w-2.5 h-2.5 rounded bg-slate-700"></span><span>Not Visited</span></div>
+                    </div>
+                </div>
+
+                <!-- Scrollable grid inside sidebar -->
+                <div class="flex-1 overflow-y-auto custom-scroll p-4">
+                    <div class="grid grid-cols-5 gap-2" id="desktop-palette-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Desktop Submit button -->
+                <div class="p-4 bg-slate-950/30 border-t border-slate-850 shrink-0">
+                    <button onclick="openSubmitModal()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 active:scale-95 text-white rounded-xl text-xs font-black transition-all shadow-lg shadow-rose-950/50 uppercase tracking-widest">
+                        Submit Examination
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </div> <!-- END OF #exam-main-container -->
+
+    <!-- Slide-up Palette Drawer -->
+    <div id="palette-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end justify-center">
+        <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-w-md w-full p-6 space-y-5 max-h-[75vh] flex flex-col shadow-2xl transform translate-y-0 transition-transform duration-300">
+            <div class="flex justify-between items-center border-b border-slate-850 pb-4 shrink-0">
+                <h3 class="text-xs font-black text-teal-400 uppercase tracking-widest">Choose Question / प्रश्न चुनें</h3>
+                <button onclick="togglePaletteModal(false)" class="p-2 bg-slate-950 rounded-full text-slate-400 hover:text-white border border-slate-850 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- Compact legends inside Drawer -->
+            <div class="flex flex-wrap gap-4 text-[9px] text-slate-400 justify-center pb-2 border-b border-slate-850 shrink-0 uppercase tracking-wider font-bold">
+                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded bg-teal-500"></span><span>Answered</span></div>
+                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded bg-rose-400"></span><span>Unanswered</span></div>
+                <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded bg-slate-700"></span><span>Not Visited</span></div>
+            </div>
+
+            <!-- Grid scrolling container -->
+            <div class="flex-1 overflow-y-auto custom-scroll py-2">
+                <div class="grid grid-cols-5 gap-2.5" id="palette-grid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Submit action inside Drawer -->
+            <div class="pt-3 border-t border-slate-850 shrink-0">
+                <button onclick="openSubmitModal()" class="w-full py-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-xl text-xs font-black shadow-lg shadow-rose-950/50 uppercase tracking-widest">
+                    Submit Examination Paper
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div id="submit-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl glow-sapphire">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                    <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-base font-black text-slate-100">Submit Assessment?</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Are you absolutely ready to submit your exam paper for computer grading?</p>
+            </div>
+
+            <!-- Summary Table -->
+            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-850 space-y-2 text-xs text-slate-400">
+                <div class="flex justify-between"><span>Total Questions / कुल प्रश्न:</span> <span class="font-extrabold text-slate-200">75</span></div>
+                <div class="flex justify-between border-b border-slate-900 pb-2"><span>Answered & Saved / उत्तर दिया:</span> <span id="summary-answered" class="font-black text-teal-400">0</span></div>
+                <div class="flex justify-between pt-1"><span>Unattempted / छोड़ दिया:</span> <span id="summary-left" class="font-black text-rose-400">75</span></div>
+            </div>
+
+            <div class="flex gap-3 text-xs">
+                <button onclick="closeSubmitModal()" class="flex-1 py-3 border border-slate-800 text-slate-400 rounded-xl font-bold hover:bg-slate-850 hover:text-white transition-all uppercase tracking-wider">
+                    Resume / वापस
+                </button>
+                <button onclick="finalizeExamAnswers()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl font-black transition-all shadow-lg shadow-rose-950/40 uppercase tracking-wider">
+                    Submit / जमा करें
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Scorecard Display -->
+    <div id="scorecard-screen" class="hidden flex-1 overflow-y-auto p-4 md:p-8 space-y-8 bg-slate-950 custom-scroll h-screen">
+        
+        <!-- Score Hero Card -->
+        <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden glow-sapphire">
+            <div class="bg-gradient-to-br from-teal-950 via-slate-900 to-slate-950 px-6 py-8 text-center space-y-4 border-b border-slate-850">
+                <div class="text-[10px] text-teal-400 font-extrabold uppercase tracking-widest">
+                    Candidate Report: <span id="res-candidate-name" class="font-black text-white"></span>
+                </div>
+                <h2 class="text-xl md:text-2xl font-black bg-gradient-to-r from-white via-slate-200 to-teal-400 bg-clip-text text-transparent leading-tight">Result Evaluation Compiled</h2>
+                
+                <div class="inline-flex flex-col items-center justify-center bg-slate-950/60 px-8 py-5 rounded-2xl border border-slate-800 shadow-inner mt-2">
+                    <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Obtained Marks</span>
+                    <span class="text-4xl md:text-5xl font-black font-mono bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent mt-1" id="score-text">0 <span class="text-sm font-normal text-slate-500">/ 150</span></span>
+                    <span class="text-[10px] text-slate-400 font-bold mt-1.5" id="percentage-text">Percentage: 0%</span>
+                </div>
+            </div>
+
+            <!-- Advanced Metrics Table -->
+            <div class="grid grid-cols-3 divide-x divide-slate-850 bg-slate-900/50 text-center py-4 text-xs font-bold border-b border-slate-850">
+                <div>
+                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Total Qs</span>
+                    <span class="text-sm font-black text-slate-200 mt-0.5">75</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Correct</span>
+                    <span class="text-sm font-black text-teal-400 mt-0.5" id="stat-correct">0</span>
+                </div>
+                <div>
+                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Status</span>
+                    <span class="text-sm font-black text-teal-400 mt-0.5" id="stat-status">PASS</span>
+                </div>
+            </div>
+
+            <div class="p-5 bg-slate-950/50 text-center flex flex-col md:flex-row gap-3">
+                <button onclick="location.reload()" class="flex-1 py-3.5 bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-500 hover:to-sky-500 text-white rounded-xl font-black text-xs shadow-lg shadow-teal-950/40 uppercase tracking-widest">
+                    Re-attempt Assessment
+                </button>
+            </div>
+        </div>
+
+        <!-- Solutions key wrapper -->
+        <div class="max-w-2xl mx-auto space-y-4">
+            <h3 class="text-xs font-black uppercase tracking-widest text-slate-500 text-center">Correct Answer Keys / उत्तर कुंजी</h3>
+            <div class="space-y-4" id="review-questions-list">
+                <!-- Loaded dynamically on final submit -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Small footer -->
+    <footer class="bg-slate-950/80 text-slate-500 text-[10px] py-3.5 px-4 text-center shrink-0 border-t border-slate-900 z-10 tracking-wide font-medium">
+        © 2026 NIMI Exam Engine • COPA Premium CBT (Set-11)
+    </footer>
+
+    <!-- INTERACTIVE ENGINE SCRIPTS -->
+    <script>
+        const set11Theory = [
+            { id: 1, type: "theory", correct: 1, q: { en: "What is the file extension of a Microsoft Access Database file by default?", hi: "डिफ़ॉल्ट रूप से माइक्रोसॉफ्ट एक्सेस डेटाबेस फ़ाइल का फ़ाइल एक्सटेंशन क्या होता है?" }, options: [ { en: ".accdb", hi: ".accdb" }, { en: ".dbf", hi: ".dbf" }, { en: ".xlsx", hi: ".xlsx" }, { en: ".docx", hi: ".docx" } ] },
+            { id: 2, type: "theory", correct: 3, q: { en: "Who is widely regarded as the Father of Computer?", hi: "किसे कंप्यूटर का जनक (Father of Computer) माना जाता है?" }, options: [ { en: "Alan Turing", hi: "एलेन ट्यूरिंग" }, { en: "Bill Gates", hi: "बिल गेट्स" }, { en: "Charles Babbage", hi: "चार्ल्स बैबेज" }, { en: "Steve Jobs", hi: "स्टीव जॉब्स" } ] },
+            { id: 3, type: "theory", correct: 2, q: { en: "Which function key is commonly used to refresh a web page or file browser screen?", hi: "वेब पेज या फ़ाइल ब्राउज़र स्क्रीन को रिफ्रेश करने के लिए किस फ़ंक्शन कुंजी का उपयोग किया जाता है?" }, options: [ { en: "F2", hi: "F2" }, { en: "F5", hi: "F5" }, { en: "F11", hi: "F11" }, { en: "F1", hi: "F1" } ] },
+            { id: 4, type: "theory", correct: 1, q: { en: "Which memory inside a computer is volatile (loses data on power off)?", hi: "कंप्यूटर के अंदर कौन सी मेमोरी वोलेटाइल (पावर बंद होने पर डेटा खो देने वाली) होती है?" }, options: [ { en: "RAM", hi: "रैम (RAM)" }, { en: "ROM", hi: "रॉम (ROM)" }, { en: "Hard Disk", hi: "हार्ड डिस्क" }, { en: "SSD", hi: "एसएसडी" } ] },
+            { id: 5, type: "theory", correct: 2, q: { en: "Which storage memory is non-volatile and stores bios bootstrap firmware?", hi: "कौन सी स्टोरेज मेमोरी नॉन-वोलेटाइल है और BIOS बूटस्ट्रैप फ़र्मवेयर को संग्रहीत करती है?" }, options: [ { en: "RAM", hi: "रैम (RAM)" }, { en: "ROM", hi: "रॉम (ROM)" }, { en: "Cache", hi: "कैश मेमोरी" }, { en: "Virtual Memory", hi: "वर्चुअल मेमोरी" } ] },
+            { id: 6, type: "theory", correct: 4, q: { en: "Which network type spans across multiple cities or countries globally?", hi: "कौन सा नेटवर्क प्रकार वैश्विक रूप से कई शहरों या देशों में फैला होता है?" }, options: [ { en: "LAN", hi: "LAN" }, { en: "MAN", hi: "MAN" }, { en: "PAN", hi: "PAN" }, { en: "WAN", hi: "WAN (वाइड एरिया नेटवर्क)" } ] },
+            { id: 7, type: "theory", correct: 1, q: { en: "Which network spans across a single city or metropolitan area?", hi: "कौन सा नेटवर्क केवल एक शहर या महानगरीय क्षेत्र में फैला होता है?" }, options: [ { en: "MAN", hi: "MAN (मेट्रोपॉलिटन एरिया नेटवर्क)" }, { en: "LAN", hi: "LAN" }, { en: "WAN", hi: "WAN" }, { en: "VPN", hi: "VPN" } ] },
+            { id: 8, type: "theory", correct: 3, q: { en: "What is the default file extension of a plain text file created in Notepad?", hi: "नोटपैड में बनाई गई एक साधारण टेक्स्ट फ़ाइल का डिफ़ॉल्ट फ़ाइल एक्सटेंशन क्या होता है?" }, options: [ { en: ".html", hi: ".html" }, { en: ".docx", hi: ".docx" }, { en: ".txt", hi: ".txt" }, { en: ".pdf", hi: ".pdf" } ] },
+            { id: 9, type: "theory", correct: 2, q: { en: "What is the keyboard shortcut key to apply Bold style in MS Word?", hi: "MS Word में बोल्ड (Bold) शैली लागू करने की कीबोर्ड शॉर्टकट कुंजी क्या है?" }, options: [ { en: "Ctrl + I", hi: "Ctrl + I" }, { en: "Ctrl + B", hi: "Ctrl + B" }, { en: "Ctrl + U", hi: "Ctrl + U" }, { en: "Ctrl + N", hi: "Ctrl + N" } ] },
+            { id: 10, type: "theory", correct: 1, q: { en: "What is the shortcut key to apply Italic formatting in Microsoft Office programs?", hi: "माइक्रोसॉफ्ट ऑफिस प्रोग्राम में इटैलिक (Italic) फ़ॉर्मेटिंग लागू करने की शॉर्टकट कुंजी क्या है?" }, options: [ { en: "Ctrl + I", hi: "Ctrl + I" }, { en: "Ctrl + Alt + I", hi: "Ctrl + Alt + I" }, { en: "Ctrl + Shift + I", hi: "Ctrl + Shift + I" }, { en: "Ctrl + J", hi: "Ctrl + J" } ] },
+            { id: 11, type: "theory", correct: 3, q: { en: "Which shortcut key is used to Underline selected text in MS Word?", hi: "MS Word में चयनित टेक्स्ट को रेखांकित (Underline) करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + B", hi: "Ctrl + B" }, { en: "Ctrl + Shift + U", hi: "Ctrl + Shift + U" }, { en: "Ctrl + U", hi: "Ctrl + U" }, { en: "Ctrl + Shift + D", hi: "Ctrl + Shift + D" } ] },
+            { id: 12, type: "theory", correct: 4, q: { en: "Which shortcut key is used to Cut the selected item/text to the clipboard?", hi: "चयनित आइटम/टेक्स्ट को क्लिपबोर्ड पर कट (Cut) करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + C", hi: "Ctrl + C" }, { en: "Ctrl + V", hi: "Ctrl + V" }, { en: "Ctrl + Z", hi: "Ctrl + Z" }, { en: "Ctrl + X", hi: "Ctrl + X" } ] },
+            { id: 13, type: "theory", correct: 2, q: { en: "Which shortcut key is used to Copy the selected item or text?", hi: "चयनित आइटम या टेक्स्ट को कॉपी करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + P", hi: "Ctrl + P" }, { en: "Ctrl + C", hi: "Ctrl + C" }, { en: "Ctrl + K", hi: "Ctrl + K" }, { en: "Ctrl + A", hi: "Ctrl + A" } ] },
+            { id: 14, type: "theory", correct: 1, q: { en: "Which shortcut key is used to Paste items from the clipboard?", hi: "क्लिपबोर्ड से आइटम पेस्ट (Paste) करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + V", hi: "Ctrl + V" }, { en: "Ctrl + P", hi: "Ctrl + P" }, { en: "Ctrl + Alt + V", hi: "Ctrl + Alt + V" }, { en: "Ctrl + Shift + V", hi: "Ctrl + Shift + V" } ] },
+            { id: 15, type: "theory", correct: 3, q: { en: "Which shortcut key is used to Select All contents of a document in MS Word?", hi: "MS Word में दस्तावेज़ की सभी सामग्रियों को एक साथ चुनने (Select All) के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + S", hi: "Ctrl + S" }, { en: "Ctrl + Alt + A", hi: "Ctrl + Alt + A" }, { en: "Ctrl + A", hi: "Ctrl + A" }, { en: "Ctrl + F", hi: "Ctrl + F" } ] },
+            { id: 16, type: "theory", correct: 2, q: { en: "Which shortcut key is used to Center Align the selected paragraph in MS Word?", hi: "MS Word में चयनित पैराग्राफ को मध्य संरेखित (Center Align) करने के लिए किस शॉर्टकट कुंजी का उपयोग किया जाता है?" }, options: [ { en: "Ctrl + C", hi: "Ctrl + C" }, { en: "Ctrl + E", hi: "Ctrl + E" }, { en: "Ctrl + J", hi: "Ctrl + J" }, { en: "Ctrl + R", hi: "Ctrl + R" } ] },
+            { id: 17, type: "theory", correct: 1, q: { en: "Which HTML tag is used to display bold text?", hi: "बोल्ड (bold) टेक्स्ट प्रदर्शित करने के लिए किस HTML टैग का उपयोग किया जाता है?" }, options: [ { en: "<b>", hi: "<b>" }, { en: "<bold>", hi: "<bold>" }, { en: "<bl>", hi: "<bl>" }, { en: "<strong>", hi: "<strong>" } ] },
+            { id: 18, type: "theory", correct: 4, q: { en: "Which HTML tag is used to create a hyperlink on a webpage?", hi: "वेबपेज पर हाइपरलिंक (hyperlink) बनाने के लिए किस HTML टैग का उपयोग किया जाता है?" }, options: [ { en: "<link>", hi: "<link>" }, { en: "<href>", hi: "<href>" }, { en: "<a>", hi: "<a>" }, { en: "<img>", hi: "<img>" } ] },
+            { id: 19, type: "theory", correct: 2, q: { en: "What is the full form of XML?", hi: "XML का पूर्ण रूप क्या है?" }, options: [ { en: "Extensible Media Language", hi: "Extensible Media Language" }, { en: "Extensible Markup Language", hi: "Extensible Markup Language" }, { en: "Extra Modern Link", hi: "Extra Modern Link" }, { en: "Extended Markup Locator", hi: "Extended Markup Locator" } ] },
+            { id: 20, type: "theory", correct: 3, q: { en: "What is the full form of SQL in database management systems?", hi: "डेटाबेस मैनेजमेंट सिस्टम में SQL का पूर्ण रूप क्या है?" }, options: [ { en: "Standard Query Language", hi: "Standard Query Language" }, { en: "Sequential Query Link", hi: "Sequential Query Link" }, { en: "Structured Query Language", hi: "Structured Query Language" }, { en: "Server Queue Language", hi: "Server Queue Language" } ] },
+            { id: 21, type: "theory", correct: 1, q: { en: "Which constraint uniquely identifies each record in a database table?", hi: "कौन सा प्रतिबंध डेटाबेस तालिका में प्रत्येक रिकॉर्ड की विशिष्ट रूप से पहचान करता है?" }, options: [ { en: "Primary Key", hi: "प्राइमरी की (Primary Key)" }, { en: "Foreign Key", hi: "फॉरेन की" }, { en: "Unique Constraint", hi: "यूनिक कस्ट्रेंट" }, { en: "Not Null", hi: "नॉट नल" } ] },
+            { id: 22, type: "theory", correct: 2, q: { en: "Which hardware device is used to scan paper photos and documents into digital format?", hi: "कागज की तस्वीरों और दस्तावेजों को डिजिटल प्रारूप में स्कैन करने के लिए किस हार्डवेयर उपकरण का उपयोग किया जाता है?" }, options: [ { en: "Printer", hi: "प्रिंटर" }, { en: "Scanner", hi: "स्कैनर (Scanner)" }, { en: "Keyboard", hi: "कीबोर्ड" }, { en: "Plotter", hi: "प्लॉटर" } ] },
+            { id: 23, type: "theory", correct: 3, q: { en: "A standard computer printer is categorized under which type of devices?", hi: "एक मानक कंप्यूटर प्रिंटर को किस प्रकार के उपकरणों के अंतर्गत वर्गीकृत किया गया है?" }, options: [ { en: "Input Device", hi: "इनपुट डिवाइस" }, { en: "Storage Device", hi: "स्टोरेज डिवाइस" }, { en: "Output Device", hi: "आउटपुट डिवाइस" }, { en: "Process Device", hi: "प्रोसेस डिवाइस" } ] },
+            { id: 24, type: "theory", correct: 4, q: { en: "Which output device is used to print large high-quality architectural designs and engineering maps?", hi: "वास्तुकला डिजाइनों और इंजीनियरिंग मानचित्रों को बड़े आकार में मुद्रित करने के लिए किस आउटपुट डिवाइस का उपयोग किया जाता है?" }, options: [ { en: "Scanner", hi: "स्कैनर" }, { en: "Keyboard", hi: "कीबोर्ड" }, { en: "Inkjet Printer", hi: "इंकजेट प्रिंटर" }, { en: "Plotter", hi: "प्लॉटर (Plotter)" } ] },
+            { id: 25, type: "theory", correct: 1, q: { en: "What is the full form of OMR, commonly used to check competitive exam answer sheets?", hi: "OMR का पूर्ण रूप क्या है, जिसका उपयोग आमतौर पर प्रतियोगी परीक्षाओं की उत्तर पुस्तिकाओं की जांच के लिए किया जाता है?" }, options: [ { en: "Optical Mark Reader", hi: "Optical Mark Reader" }, { en: "Optical Machine Reader", hi: "Optical Machine Reader" }, { en: "Optimal Mark Run", hi: "Optimal Mark Run" }, { en: "Output Mark Record", hi: "Output Mark Record" } ] },
+            { id: 26, type: "theory", correct: 2, q: { en: "What is the full form of MICR, commonly used in bank cheques?", hi: "बैंक चेकों में उपयोग किए जाने वाले MICR का पूर्ण रूप क्या है?" }, options: [ { en: "Magnetic Ink Character Reader", hi: "Magnetic Ink Character Reader" }, { en: "Magnetic Ink Character Recognition", hi: "Magnetic Ink Character Recognition" }, { en: "Mark Ink Character Run", hi: "Mark Ink Character Run" }, { en: "Media Instant Code Registry", hi: "Media Instant Code Registry" } ] },
+            { id: 27, type: "theory", correct: 3, q: { en: "What is the base of the Binary number system?", hi: "बाइनरी (Binary) संख्या प्रणाली का आधार (base) क्या होता है?" }, options: [ { en: "10", hi: "10" }, { en: "8", hi: "8" }, { en: "2", hi: "2" }, { en: "16", hi: "16" } ] },
+            { id: 28, type: "theory", correct: 1, q: { en: "What is the base of the Octal number system?", hi: "ऑक्टल (Octal) संख्या प्रणाली का आधार क्या होता है?" }, options: [ { en: "8", hi: "8" }, { en: "10", hi: "10" }, { en: "2", hi: "2" }, { en: "16", hi: "16" } ] },
+            { id: 29, type: "theory", correct: 4, q: { en: "What is the base of the Hexadecimal number system?", hi: "हेक्साडेसिमल (Hexadecimal) संख्या प्रणाली का आधार क्या होता है?" }, options: [ { en: "2", hi: "2" }, { en: "8", hi: "8" }, { en: "10", hi: "10" }, { en: "16", hi: "16" } ] },
+            { id: 30, type: "theory", correct: 2, q: { en: "One Byte is composed of how many bits?", hi: "एक बाइट (Byte) कितने बिट्स से मिलकर बनता है?" }, options: [ { en: "4 bits", hi: "4 bits" }, { en: "8 bits", hi: "8 bits" }, { en: "16 bits", hi: "16 bits" }, { en: "1024 bits", hi: "1024 bits" } ] },
+            { id: 31, type: "theory", correct: 1, q: { en: "One Kilobyte (KB) is exactly equal to how many Bytes?", hi: "एक किलोबाइट (KB) कितने बाइट्स के बराबर होता है?" }, options: [ { en: "1024 Bytes", hi: "1024 Bytes" }, { en: "1000 Bytes", hi: "1000 Bytes" }, { en: "800 Bytes", hi: "800 Bytes" }, { en: "1024 Bits", hi: "1024 Bits" } ] },
+            { id: 32, type: "theory", correct: 3, q: { en: "One Megabyte (MB) is equal to how many Kilobytes?", hi: "एक मेगाबाइट (MB) कितने किलोबाइट्स के बराबर होता है?" }, options: [ { en: "1000 KB", hi: "1000 KB" }, { en: "1024 Bytes", hi: "1024 Bytes" }, { en: "1024 KB", hi: "1024 KB" }, { en: "1024 MB", hi: "1024 MB" } ] },
+            { id: 33, type: "theory", correct: 4, q: { en: "One Gigabyte (GB) is equal to how many Megabytes?", hi: "एक गीगाबाइट (GB) कितने मेगाबाइट्स के बराबर होता है?" }, options: [ { en: "1024 KB", hi: "1024 KB" }, { en: "1000 MB", hi: "1000 MB" }, { en: "1024 Bytes", hi: "1024 Bytes" }, { en: "1024 MB", hi: "1024 MB" } ] },
+            { id: 34, type: "theory", correct: 2, q: { en: "What is the full form of IP in computer networking?", hi: "कंप्यूटर नेटवर्किंग में IP का पूर्ण रूप क्या है?" }, options: [ { en: "Internal Process", hi: "Internal Process" }, { en: "Internet Protocol", hi: "Internet Protocol" }, { en: "Instant Port", hi: "Instant Port" }, { en: "Intelligent Program", hi: "Intelligent Program" } ] },
+            { id: 35, type: "theory", correct: 1, q: { en: "What is the full expansion of the wireless technology term Wi-Fi?", hi: "वायरलेस तकनीक शब्द Wi-Fi का पूर्ण विस्तार क्या है?" }, options: [ { en: "Wireless Fidelity", hi: "Wireless Fidelity" }, { en: "Wireless Finder", hi: "Wireless Finder" }, { en: "Wired Fiber", hi: "Wired Fiber" }, { en: "Wireless Filter", hi: "Wireless Filter" } ] },
+            { id: 36, type: "theory", correct: 3, q: { en: "Which CMD command in Windows is used to create a new folder/directory?", hi: "विंडोज़ में नया फ़ोल्डर/डायरेक्टरी बनाने के लिए किस CMD कमांड का उपयोग किया जाता है?" }, options: [ { en: "cd", hi: "cd" }, { en: "rd", hi: "rd" }, { en: "mkdir", hi: "mkdir" }, { en: "dir", hi: "dir" } ] },
+            { id: 37, type: "theory", correct: 2, q: { en: "Which CMD command in Windows is used to delete an empty folder/directory?", hi: "विंडोज़ में खाली फ़ोल्डर/डायरेक्टरी को हटाने के लिए किस CMD कमांड का उपयोग किया जाता है?" }, options: [ { en: "mkdir", hi: "mkdir" }, { en: "rmdir", hi: "rmdir" }, { en: "del", hi: "del" }, { en: "cls", hi: "cls" } ] },
+            { id: 38, type: "theory", correct: 1, q: { en: "Which CSS property is used to specify the background color of an element?", hi: "किसी तत्व के पृष्ठभूमि रंग को निर्दिष्ट करने के लिए किस CSS विशेषता का उपयोग किया जाता है?" }, options: [ { en: "background-color", hi: "background-color" }, { en: "color", hi: "color" }, { en: "bg-color", hi: "bg-color" }, { en: "border-color", hi: "border-color" } ] },
+            { id: 39, type: "theory", correct: 4, q: { en: "Which of the following is an example of an Operating System?", hi: "निम्नलिखित में से कौन सा ऑपरेटिंग सिस्टम का एक उदाहरण है?" }, options: [ { en: "Google Chrome", hi: "Google Chrome" }, { en: "MS Office", hi: "MS Office" }, { en: "VLC Media Player", hi: "VLC Media Player" }, { en: "Linux", hi: "Linux (लिनक्स)" } ] },
+            { id: 40, type: "theory", correct: 2, q: { en: "What is the full form of GUI in operating systems?", hi: "ऑपरेटिंग सिस्टम में GUI का पूर्ण रूप क्या है?" }, options: [ { en: "General User Interface", hi: "General User Interface" }, { en: "Graphical User Interface", hi: "Graphical User Interface" }, { en: "Group User Interaction", hi: "Group User Interaction" }, { en: "Guide User Internet", hi: "Guide User Internet" } ] },
+            { id: 41, type: "theory", correct: 3, q: { en: "What is the full form of CLI in systems?", hi: "सिस्टम में CLI का पूर्ण रूप क्या है?" }, options: [ { en: "Class Line Interface", hi: "Class Line Interface" }, { en: "Common Link Interface", hi: "Common Link Interface" }, { en: "Command Line Interface", hi: "Command Line Interface" }, { en: "Control Line Index", hi: "Control Line Index" } ] },
+            { id: 42, type: "theory", correct: 1, q: { en: "What is the standard file extension of an external JavaScript file?", hi: "बाहरी जावास्क्रिप्ट (JavaScript) फ़ाइल का मानक फ़ाइल एक्सटेंशन क्या होता है?" }, options: [ { en: ".js", hi: ".js" }, { en: ".java", hi: ".java" }, { en: ".script", hi: ".script" }, { en: ".html", hi: ".html" } ] },
+            { id: 43, type: "theory", correct: 4, q: { en: "Which of the following is primarily utilized as an output display device?", hi: "निम्नलिखित में से किसका उपयोग मुख्य रूप से आउटपुट डिस्प्ले डिवाइस के रूप में किया जाता है?" }, options: [ { en: "Keyboard", hi: "कीबोर्ड" }, { en: "Mouse", hi: "माउस" }, { en: "Microphone", hi: "माइक्रोफोन" }, { en: "Monitor", hi: "मॉनिटर" } ] },
+            { id: 44, type: "theory", correct: 2, q: { en: "Which computer memory holds active programs currently being processed by the CPU?", hi: "कंप्यूटर की कौन सी मेमोरी सीपीयू द्वारा वर्तमान में प्रोसेस की जा रही सक्रिय प्रोग्रामों को रखती है?" }, options: [ { en: "ROM", hi: "ROM" }, { en: "RAM", hi: "RAM (रैंडम एक्सेस मेमोरी)" }, { en: "Hard Disk", hi: "हार्ड डिस्क" }, { en: "Floppy Disk", hi: "फ्लॉपी डिस्क" } ] },
+            { id: 45, type: "theory", correct: 3, q: { en: "Which network device is used to forward data packets between different networks?", hi: "विभिन्न नेटवर्कों के बीच डेटा पैकेट को रूट/फॉरवर्ड करने के लिए किस नेटवर्क डिवाइस का उपयोग किया जाता है?" }, options: [ { en: "Hub", hi: "हब (Hub)" }, { en: "Switch", hi: "स्विच" }, { id: 3, en: "Router", hi: "राउटर" }, { en: "Repeater", hi: "रिपीटर" } ] },
+            { id: 46, type: "theory", correct: 1, q: { en: "Which key is used to start the slide show from the beginning in MS PowerPoint?", hi: "MS PowerPoint में शुरुआत से स्लाइड शो शुरू करने के लिए किस कुंजी का उपयोग किया जाता है?" }, options: [ { en: "F5", hi: "F5" }, { en: "F2", hi: "F2" }, { en: "F1", hi: "F1" }, { en: "F7", hi: "F7" } ] },
+            { id: 47, type: "theory", correct: 2, q: { en: "What is the standard file extension of a PowerPoint Presentation?", hi: "पावरपॉइंट प्रेजेंटेशन का मानक फ़ाइल एक्सटेंशन क्या होता है?" }, options: [ { en: ".xlsx", hi: ".xlsx" }, { en: ".pptx", hi: ".pptx" }, { en: ".docx", hi: ".docx" }, { en: ".txt", hi: ".txt" } ] },
+            { id: 48, type: "theory", correct: 4, q: { en: "Which of the following is an example of a secondary storage device?", hi: "निम्नलिखित में से कौन सा एक सेकेंडरी स्टोरेज डिवाइस का उदाहरण है?" }, options: [ { en: "RAM", hi: "RAM" }, { en: "ROM", hi: "ROM" }, { en: "Cache Memory", hi: "कैश मेमोरी" }, { en: "Hard Disk Drive", hi: "हार्ड डिस्क ड्राइव (HDD)" } ] },
+            { id: 49, type: "theory", correct: 1, q: { en: "Which tag is used to create a table row in HTML?", hi: "HTML में टेबल पंक्ति (table row) बनाने के लिए किस टैग का उपयोग किया जाता है?" }, options: [ { en: "<tr>", hi: "<tr>" }, { en: "<td>", hi: "<td>" }, { en: "<th>", hi: "<th>" }, { en: "<table>", hi: "<table>" } ] },
+            { id: 50, type: "theory", correct: 2, q: { en: "What is the default port number of standard HTTP service?", hi: "मानक HTTP सेवा का डिफ़ॉल्ट पोर्ट नंबर क्या होता है?" }, options: [ { en: "21", hi: "21" }, { en: "80", hi: "80" }, { en: "443", hi: "443" }, { en: "25", hi: "25" } ] },
+        ];
+
+        const set11Skills = [
+            { id: 51, type: "skills", correct: 3, q: { en: "Which of the following is considered a standard formal greeting?", hi: "निम्नलिखित में से किसे एक मानक औपचारिक अभिवादन (formal greeting) माना जाता है?" }, options: [ { en: "\"What's up?\"", hi: "\"What's up?\"" }, { en: "\"Hey buddy!\"", hi: "\"Hey buddy!\"" }, { en: "\"Good morning, Sir.\"", hi: "\"Good morning, Sir.\"" }, { en: "\"Hi ya!\"", hi: "\"Hi ya!\"" } ] },
+            { id: 52, type: "skills", correct: 1, q: { en: "Which of the following is an example of an informal greeting?", hi: "निम्नलिखित में से कौन सा अनौपचारिक अभिवादन (informal greeting) का उदाहरण है?" }, options: [ { en: "\"Hey, what's up?\"", hi: "\"Hey, what's up?\"" }, { en: "\"Good afternoon, Madam.\"", hi: "\"Good afternoon, Madam.\"" }, { en: "\"Pleasure meeting you.\"", hi: "\"Pleasure meeting you.\"" }, { en: "\"How do you do?\"", hi: "\"How do you do?\"" } ] },
+            { id: 53, type: "skills", correct: 2, q: { en: "What is listening with complete attention and without interruption called?", hi: "बिना किसी बाधा के और पूरी सावधानी के साथ सुनने को क्या कहा जाता है?" }, options: [ { en: "Passive listening", hi: "पैसिव लिसनिंग (निष्क्रिय सुनना)" }, { en: "Active listening", hi: "एक्टिव लिसनिंग (सक्रिय सुनना)" }, { en: "Biased listening", hi: "पक्षपाती सुनना" }, { en: "Selective listening", hi: "चुनिंदा सुनना" } ] },
+            { id: 54, type: "skills", correct: 4, q: { en: "What does the letter 'W' represent in SWOT analysis?", hi: "SWOT विश्लेषण में 'W' अक्षर क्या दर्शाता है?" }, options: [ { en: "Work", hi: "Work" }, { en: "Wealth", hi: "Wealth" }, { en: "Welfare", hi: "Welfare" }, { en: "Weakness", hi: "Weakness (कमजोरी)" } ] },
+            { id: 55, type: "skills", correct: 1, q: { en: "What does SWOT analysis stand for?", hi: "SWOT विश्लेषण का पूर्ण रूप क्या है?" }, options: [ { en: "Strengths, Weaknesses, Opportunities, Threats", hi: "Strengths, Weaknesses, Opportunities, Threats" }, { en: "Safety, Work, Outcome, Training", hi: "Safety, Work, Outcome, Training" }, { en: "Salary, Wealth, Organization, Team", hi: "Salary, Wealth, Organization, Team" }, { en: "Status, Work, Option, Task", hi: "Status, Work, Option, Task" } ] },
+            { id: 56, type: "skills", correct: 3, q: { en: "Nodding the head during communication represents what type of communication?", hi: "संचार के दौरान सिर हिलाना किस प्रकार के संचार का प्रतिनिधित्व करता है?" }, options: [ { en: "Verbal", hi: "मौखिक (Verbal)" }, { en: "Written", hi: "लिखित" }, { en: "Non-verbal", hi: "गैर-मौखिक (Non-verbal)" }, { en: "Formal", hi: "औपचारिक" } ] },
+            { id: 57, type: "skills", correct: 2, q: { en: "Which of the following is an example of written communication?", hi: "निम्नलिखित में से कौन सा लिखित संचार (written communication) का उदाहरण है?" }, options: [ { en: "Phone conversation", hi: "फोन पर बातचीत" }, { en: "Official Letter or Email", hi: "आधिकारिक पत्र या ईमेल" }, { en: "Face-to-face chat", hi: "आमने-सामने बातचीत" }, { en: "Public speech", hi: "सार्वजनिक भाषण" } ] },
+            { id: 58, type: "skills", correct: 4, q: { en: "Self-employment or starting one's own business is known as:", hi: "स्व-रोजगार या अपना खुद का व्यवसाय शुरू करने को किस रूप में जाना जाता है?" }, options: [ { en: "Apprenticeship", hi: "शिक्षुता (Apprenticeship)" }, { en: "Clerical Job", hi: "लिपिकीय नौकरी" }, { en: "Government Job", hi: "सरकारी नौकरी" }, { en: "Entrepreneurship", hi: "उद्यमशीलता (Entrepreneurship)" } ] },
+            { id: 59, type: "skills", correct: 1, q: { en: "What is logically the first step when planning to start a new business venture?", hi: "एक नया व्यावसायिक उद्यम शुरू करने की योजना बनाते समय तार्किक रूप से पहला कदम क्या है?" }, options: [ { en: "Market research and business planning", hi: "बाजार अनुसंधान और व्यावसायिक योजना बनाना" }, { en: "Hiring managers", hi: "प्रबंधकों को काम पर रखना" }, { en: "Taking a large loan", hi: "बड़ा कर्ज लेना" }, { en: "Renting a massive showroom", hi: "एक विशाल शोरूम किराए पर लेना" } ] },
+            { id: 60, type: "skills", correct: 3, q: { en: "What does ATM stand for in banking services?", hi: "बैंकिंग सेवाओं में ATM का पूर्ण रूप क्या है?" }, options: [ { en: "Any Time Money", hi: "Any Time Money" }, { en: "Automated Transaction Machine", hi: "Automated Transaction Machine" }, { en: "Automated Teller Machine", hi: "Automated Teller Machine" }, { en: "Automatic Transfer Mode", hi: "Automatic Transfer Mode" } ] },
+            { id: 61, type: "skills", correct: 2, q: { en: "What does GDP represent in economics?", hi: "अर्थशास्त्र में GDP क्या दर्शाता है?" }, options: [ { en: "Gross Development Plan", hi: "Gross Development Plan" }, { en: "Gross Domestic Product", hi: "Gross Domestic Product (सकल घरेलू उत्पाद)" }, { en: "General Deposit Policy", hi: "General Deposit Policy" }, { en: "Government Debt Percent", hi: "Government Debt Percent" } ] },
+            { id: 62, type: "skills", correct: 4, q: { en: "Which of the following is a clean, renewable source of energy?", hi: "निम्नलिखित में से कौन सा ऊर्जा का स्वच्छ, नवीकरणीय (renewable) स्रोत है?" }, options: [ { en: "Coal", hi: "कोयला" }, { en: "Petroleum", hi: "पेट्रोलियम" }, { en: "Diesel", hi: "डीजल" }, { en: "Solar Energy", hi: "सौर ऊर्जा (Solar Energy)" } ] },
+            { id: 63, type: "skills", correct: 1, q: { en: "What is the primary cause of environmental pollution?", hi: "पर्यावरण प्रदूषण का प्राथमिक कारण क्या है?" }, options: [ { en: "Excessive industrial emissions and waste dumping", hi: "अत्यधिक औद्योगिक उत्सर्जन और कचरा डंपिंग" }, { en: "Planting solar panels", hi: "सौर पैनल लगाना" }, { en: "Organic farming", hi: "जैविक खेती" }, { en: "Water conservation", hi: "जल संरक्षण" } ] },
+            { id: 64, type: "skills", correct: 3, q: { en: "Under the Factories Act, employment of children below which age is strictly prohibited?", hi: "कारखाना अधिनियम के तहत किस वर्ष से कम उम्र के बच्चों का रोजगार सख्त वर्जित है?" }, options: [ { en: "18 years", hi: "18 वर्ष" }, { en: "16 years", hi: "16 वर्ष" }, { en: "14 years", hi: "14 वर्ष (14 Years)" }, { en: "21 years", hi: "21 वर्ष" } ] },
+            { id: 65, type: "skills", correct: 2, q: { en: "What does KYC stand for in banking KYC regulations?", hi: "बैंकिंग KYC नियमों में KYC का पूर्ण रूप क्या है?" }, options: [ { en: "Know Your Company", hi: "Know Your Company" }, { en: "Know Your Customer", hi: "Know Your Customer" }, { en: "Keep Your Cash", hi: "Keep Your Cash" }, { en: "Key Yield Calculation", hi: "Key Yield Calculation" } ] },
+            { id: 66, type: "skills", correct: 4, q: { en: "Which password represents the safest security practice?", hi: "कौन सा पासवर्ड सबसे सुरक्षित सुरक्षा अभ्यास का प्रतिनिधित्व करता है?" }, options: [ { en: "\"123456\"", hi: "\"123456\"" }, { en: "\"password\"", hi: "\"password\"" }, { en: "\"yourname123\"", hi: "\"yourname123\"" }, { en: "\"C0pa@#2026\"", hi: "\"C0pa@#2026\" (मिश्रित वर्ण)" } ] },
+            { id: 67, type: "skills", correct: 1, q: { en: "What is the best way to keep your personal computer secure from malware infections?", hi: "अपने पर्सनल कंप्यूटर को मैलवेयर संक्रमण से सुरक्षित रखने का सबसे अच्छा तरीका क्या है?" }, options: [ { en: "Install and regularly update an Antivirus software", hi: "एक एंटीवायरस सॉफ्टवेयर स्थापित और नियमित रूप से अपडेट करें" }, { en: "Disconnect monitor when not using", hi: "उपयोग न करते समय मॉनिटर को डिस्कनेक्ट करें" }, { en: "Use a simple password like '123'", hi: "सरल पासवर्ड '123' का प्रयोग करें" }, { en: "Turn off power supply daily", hi: "दैनिक रूप से बिजली की आपूर्ति बंद करें" } ] },
+            { id: 68, type: "skills", correct: 3, q: { en: "Which core element must always be present in a professional job Resume?", hi: "एक पेशेवर नौकरी रिज्यूमे (Resume) में हमेशा कौन सा मुख्य तत्व उपस्थित होना चाहिए?" }, options: [ { en: "Detailed family tree", hi: "विस्तृत पारिवारिक इतिहास" }, { en: "Political views", hi: "राजनीतिक विचार" }, { en: "Correct contact details, education, and skills", hi: "सही संपर्क विवरण, शिक्षा और कौशल" }, { en: "Salary demands and expenses", hi: "वेतन की मांग और खर्च" } ] },
+            { id: 69, type: "skills", correct: 2, q: { en: "A face-to-face professional meeting with a hiring manager for a job role is called:", hi: "नौकरी की भूमिका के लिए काम पर रखने वाले प्रबंधक के साथ आमने-सामने की पेशेवर बैठक को क्या कहा जाता है?" }, options: [ { en: "Seminar", hi: "सेमिनार" }, { en: "Interview", hi: "साक्षात्कार (Interview)" }, { en: "Debate", hi: "वाद-विवाद" }, { en: "Conference", hi: "सम्मेलन" } ] },
+            { id: 70, type: "skills", correct: 1, q: { en: "What is considered appropriate attire for attending a formal job interview?", hi: "औपचारिक नौकरी साक्षात्कार में शामिल होने के लिए कौन सा पहनावा उपयुक्त माना जाता है?" }, options: [ { en: "Clean and neat formal clothing", hi: "साफ और स्वच्छ औपचारिक कपड़े" }, { en: "Sports tracks and slippers", hi: "स्पोर्ट्स ट्रैक और चप्पल" }, { en: "Casual party outfit", hi: "कैजुअल पार्टी के कपड़े" }, { en: "Jeans and round-neck t-shirt", hi: "जींस और गोल गले की टी-शर्ट" } ] },
+            { id: 71, type: "skills", correct: 3, q: { en: "Which of the following is considered highly positive body language during an interview?", hi: "साक्षात्कार के दौरान निम्नलिखित में से किसे अत्यधिक सकारात्मक शारीरिक भाषा माना जाता है?" }, options: [ { en: "Slouching in the chair", hi: "कुर्सी पर झुककर बैठना" }, { en: "Avoiding direct eye contact", hi: "सीधे आँख मिलाने से बचना" }, { en: "Maintaining comfortable eye contact and sitting upright", hi: "आरामदायक आई कांटेक्ट बनाए रखना और सीधे बैठना" }, { en: "Continuous clock checking", hi: "लगातार घड़ी देखना" } ] },
+            { id: 72, type: "skills", correct: 4, q: { en: "Identify the pronoun in the sentence: 'She is a talented programmer.'", hi: "वाक्य में सर्वनाम (pronoun) को पहचानें: 'She is a talented programmer.'" }, options: [ { en: "programmer", hi: "programmer" }, { en: "talented", hi: "talented" }, { en: "is", hi: "is" }, { en: "She", hi: "She" } ] },
+            { id: 73, type: "skills", correct: 1, q: { en: "What is a synonym of the English word 'Glad'?", hi: "अंग्रेजी शब्द 'Glad' का समानार्थक (synonym) शब्द क्या है?" }, options: [ { en: "Happy", hi: "Happy" }, { en: "Sad", hi: "Sad" }, { en: "Angry", hi: "Angry" }, { en: "Tired", hi: "Tired" } ] },
+            { id: 74, type: "skills", correct: 2, q: { en: "What is the antonym of the English word 'Hard'?", hi: "अंग्रेजी शब्द 'Hard' का विलोम शब्द (antonym) क्या है?" }, options: [ { en: "Heavy", hi: "Heavy" }, { en: "Easy", hi: "Easy (आसान)" }, { en: "Difficult", hi: "Difficult" }, { en: "Strong", hi: "Strong" } ] },
+            { id: 75, type: "skills", correct: 3, q: { en: "Which of the following is a direct mobile-to-mobile payment system initiated by the Govt of India?", hi: "निम्नलिखित में से कौन सा भारत सरकार द्वारा शुरू किया गया एक सीधा मोबाइल-टू-मोबाइल भुगतान प्रणाली है?" }, options: [ { en: "Paypal", hi: "पेपाल" }, { en: "DigiLocker", hi: "डिजीलॉकर" }, { en: "BHIM / UPI", hi: "भीम / यूपीआई" }, { en: "e-Shram", hi: "ई-श्रम" } ] }
+        ];
+
+        // Combine into one unified array of 75 questions
+        const set11Questions = [...set11Theory, ...set11Skills];
+
+        let activeIdx = 0; // index from 0 to 74
+        let responses = {}; // tracks selected options
+        let visited = {}; // visited items
+        let secondsLeft = 120 * 60; // 120 Minutes
+        let timerTicker;
+
+        // On window startup
+        window.onload = function() {
+            buildQuestionPalette();
+            loadQuestion(0);
+        }
+
+        // Trigger Start Exam on Form Save
+        function startExamNow() {
+            const name = document.getElementById('candidate-name-input').value.trim();
+            const errEl = document.getElementById('start-error-msg');
+
+            if (!name) {
+                errEl.innerText = "कृपया अपना नाम दर्ज करें / Please enter your name.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            errEl.classList.add('hidden');
+
+            // Populate on UI header
+            const dispName = document.getElementById('display-candidate-name');
+            if (dispName) {
+                dispName.innerText = `| Candidate: ${name}`;
+                dispName.classList.remove('hidden');
+            }
+
+            // Populate on results scorecard
+            const resName = document.getElementById('res-candidate-name');
+            if (resName) resName.innerText = name;
+
+            // Toggle screens
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('exam-main-container').classList.remove('hidden');
+
+            // Launch countdown ticker
+            beginTimerCount();
+        }
+
+        // Toggle palette bottom modal sheet
+        function togglePaletteModal(show) {
+            const modal = document.getElementById('palette-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Build the fast selection palette buttons
+        function buildQuestionPalette() {
+            const mobileGrid = document.getElementById('palette-grid');
+            const desktopGrid = document.getElementById('desktop-palette-grid');
+            
+            mobileGrid.innerHTML = '';
+            desktopGrid.innerHTML = '';
+
+            set11Questions.forEach((q, idx) => {
+                // For Mobile Palette Sheet
+                const btnMobile = document.createElement('button');
+                btnMobile.id = `pal-btn-mob-${idx}`;
+                btnMobile.innerText = q.id;
+                btnMobile.className = "w-10 h-10 text-xs font-black rounded-xl flex items-center justify-center transition-all bg-slate-800 text-slate-400 border border-slate-750 hover:bg-slate-700 hover:text-white focus:outline-none active:scale-95";
+                btnMobile.setAttribute('onclick', `jumpToSelected(${idx})`);
+                mobileGrid.appendChild(btnMobile);
+
+                // For Desktop Sidebar Palette
+                const btnDesktop = document.createElement('button');
+                btnDesktop.id = `pal-btn-desk-${idx}`;
+                btnDesktop.innerText = q.id;
+                btnDesktop.className = "w-10 h-10 text-xs font-black rounded-xl flex items-center justify-center transition-all bg-slate-800 text-slate-400 border border-slate-750 hover:bg-slate-700 hover:text-white focus:outline-none active:scale-95";
+                btnDesktop.setAttribute('onclick', `jumpToSelected(${idx})`);
+                desktopGrid.appendChild(btnDesktop);
+            });
+        }
+
+        // Jump instantly to selected question from palette list
+        function jumpToSelected(idx) {
+            visited[set11Questions[activeIdx].id] = true;
+            updatePaletteButton(activeIdx);
+            activeIdx = idx;
+            loadQuestion(idx);
+            togglePaletteModal(false); // auto dismiss palette modal
+        }
+
+        // Render target index values with smooth stagger animations
+        function loadQuestion(idx) {
+            const q = set11Questions[idx];
+            visited[q.id] = true;
+
+            // Trigger stagger animations on statement box and options container
+            const statementBox = document.getElementById('statement-box');
+            const optionsContainer = document.getElementById('options-container');
+
+            statementBox.classList.remove('animate-stagger-up');
+            optionsContainer.classList.remove('animate-stagger-up');
+            void statementBox.offsetWidth; // Trigger reflow to restart animation
+            statementBox.classList.add('animate-stagger-up');
+            optionsContainer.classList.add('animate-stagger-up');
+
+            // Simple counter update
+            document.getElementById('question-counter').innerText = `Q. ${q.id} / 75`;
+
+            // Section Badge Dynamic Label
+            const sectBadge = document.getElementById('section-badge');
+            if (q.type === 'theory') {
+                sectBadge.innerText = "Trade Theory";
+                sectBadge.className = "text-[9px] font-black px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 uppercase tracking-widest";
+            } else {
+                sectBadge.innerText = "Employability Skills";
+                sectBadge.className = "text-[9px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 uppercase tracking-widest";
+            }
+
+            // Setup Statements
+            document.getElementById('q-text-en').innerText = q.q.en;
+            document.getElementById('q-text-hi').innerText = q.q.hi;
+
+            // Load Options values
+            for (let num = 1; num <= 4; num++) {
+                const optObj = q.options[num - 1];
+                document.getElementById(`opt-en-${num}`).innerText = optObj.en;
+                document.getElementById(`opt-hi-${num}`).innerText = optObj.hi;
+            }
+
+            refreshActiveOptionStyles();
+            updatePaletteButton(idx);
+
+            // Back state handle
+            document.getElementById('prev-btn').disabled = (idx === 0);
+            if (idx === 0) {
+                document.getElementById('prev-btn').classList.add('opacity-40', 'cursor-not-allowed');
+            } else {
+                document.getElementById('prev-btn').classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+
+            // Next / Finish exam change
+            const nextBtn = document.getElementById('next-btn');
+            if (idx === 74) {
+                nextBtn.innerHTML = "<span>Submit Exam</span>";
+                nextBtn.className = "px-5 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-xs font-black active:scale-95 duration-100 transition-all flex items-center space-x-1.5 uppercase tracking-widest shadow-md shadow-rose-950/50";
+            } else {
+                nextBtn.innerHTML = "<span>Next &rarr;</span>";
+                nextBtn.className = "px-5 py-3 bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-500 hover:to-sky-500 text-white rounded-xl text-xs font-black active:scale-95 duration-100 transition-all flex items-center space-x-1.5 uppercase tracking-widest shadow-md shadow-teal-950/50";
+            }
+        }
+
+        // Apply simple highlight styles to target option container
+        function refreshActiveOptionStyles() {
+            const activeQ = set11Questions[activeIdx];
+            const activeRes = responses[activeQ.id];
+
+            for (let num = 1; num <= 4; num++) {
+                const btn = document.getElementById(`opt-btn-${num}`);
+                const badge = document.getElementById(`opt-badge-${num}`);
+
+                if (activeRes === num) {
+                    // Selection styling (Glowing premium state)
+                    btn.className = "w-full flex items-center p-5 rounded-2xl border-2 border-teal-500/80 bg-gradient-to-r from-teal-950/35 to-slate-900/35 transition-all duration-200 text-left scale-[1.01] glow-teal-active";
+                    badge.className = "w-7 h-7 rounded-full bg-gradient-to-r from-teal-500 to-sky-500 text-white flex items-center justify-center text-xs font-black shrink-0 mr-4 shadow-lg shadow-teal-500/20";
+                } else {
+                    // Plain simple state styling
+                    btn.className = "w-full flex items-center p-5 rounded-2xl border border-slate-850 bg-slate-900/30 hover:bg-slate-900/60 active:scale-[0.99] transition-all duration-200 text-left group";
+                    badge.className = "w-7 h-7 rounded-full border border-slate-700 bg-slate-950 text-slate-500 flex items-center justify-center text-xs font-black shrink-0 mr-4 transition-colors group-hover:border-teal-500 group-hover:text-teal-400";
+                }
+            }
+        }
+
+        // Select chosen option values
+        function selectOption(num) {
+            const currentQ = set11Questions[activeIdx];
+            responses[currentQ.id] = num;
+            refreshActiveOptionStyles();
+            updatePaletteButton(activeIdx);
+        }
+
+        // Clear option selection
+        function clearResponse() {
+            const currentQ = set11Questions[activeIdx];
+            delete responses[currentQ.id];
+            refreshActiveOptionStyles();
+            updatePaletteButton(activeIdx);
+        }
+
+        // Refresh single palette buttons classes across both grids
+        function updatePaletteButton(idx) {
+            const q = set11Questions[idx];
+            const btnMob = document.getElementById(`pal-btn-mob-${idx}`);
+            const btnDesk = document.getElementById(`pal-btn-desk-${idx}`);
+            if (!btnMob && !btnDesk) return;
+
+            const isCurrent = (activeIdx === idx);
+            const isAnswered = responses[q.id] !== undefined;
+
+            let colStyle = "bg-slate-800 text-slate-400 border-slate-750 hover:bg-slate-700 hover:text-white";
+
+            if (isAnswered) {
+                colStyle = "bg-teal-500 text-slate-950 border-teal-400 hover:bg-teal-400 font-black glow-teal-active";
+            } else if (visited[q.id]) {
+                colStyle = "bg-rose-400 text-slate-950 border-rose-300 hover:bg-rose-350 font-black";
+            }
+
+            const currentRing = isCurrent ? 'ring-2 ring-teal-500 ring-offset-2 ring-offset-slate-950 scale-105 border-teal-400' : '';
+
+            if (btnMob) btnMob.className = `w-10 h-10 text-xs font-black rounded-xl flex items-center justify-center transition-all focus:outline-none ${colStyle} ${currentRing}`;
+            if (btnDesk) btnDesk.className = `w-10 h-10 text-xs font-black rounded-xl flex items-center justify-center transition-all focus:outline-none ${colStyle} ${currentRing}`;
+        }
+
+        // Step back/forward navigation
+        function navigateQuestion(step) {
+            const nextIdx = activeIdx + step;
+            if (nextIdx >= 0 && nextIdx < 75) {
+                jumpToSelected(nextIdx);
+            } else if (nextIdx === 75) {
+                openSubmitModal();
+            }
+        }
+
+        // Countdown timer ticker
+        function beginTimerCount() {
+            timerTicker = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft <= 0) {
+                    clearInterval(timerTicker);
+                    finalizeExamAnswers(); // Auto submit
+                    return;
+                }
+                const m = Math.floor(secondsLeft / 60);
+                const s = secondsLeft % 60;
+                document.getElementById('timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Submit actions modal toggle
+        function openSubmitModal() {
+            togglePaletteModal(false);
+            let ansCount = Object.keys(responses).length;
+            let unvisited = 75 - ansCount;
+
+            document.getElementById('summary-answered').innerText = ansCount;
+            document.getElementById('summary-left').innerText = unvisited;
+
+            document.getElementById('submit-modal').classList.remove('hidden');
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').classList.add('hidden');
+        }
+
+        // Final evaluation and result rendering
+        function finalizeExamAnswers() {
+            clearInterval(timerTicker);
+            document.getElementById('submit-modal').classList.add('hidden');
+            
+            // Hide parent exam containers
+            document.getElementById('exam-main-container').classList.add('hidden');
+            document.getElementById('scorecard-screen').classList.remove('hidden');
+
+            let scoredCorrect = 0;
+
+            set11Questions.forEach(q => {
+                const userChoice = responses[q.id];
+                if (userChoice !== undefined && userChoice === q.correct) {
+                    scoredCorrect++;
+                }
+            });
+
+            const totalMarks = scoredCorrect * 2;
+            const percentage = ((totalMarks / 150) * 100).toFixed(1);
+            const passStatus = (percentage >= 33) ? "PASS / उत्तीर्ण" : "FAIL / अनुत्तीर्ण";
+
+            document.getElementById('score-text').innerHTML = `${totalMarks} <span class="text-sm font-normal text-slate-500">/ 150</span>`;
+            document.getElementById('percentage-text').innerText = `Percentage: ${percentage}%`;
+            document.getElementById('stat-correct').innerText = `${scoredCorrect} / 75`;
+            
+            const statusLabel = document.getElementById('stat-status');
+            statusLabel.innerText = passStatus;
+            if (percentage >= 33) {
+                statusLabel.className = "text-sm font-black px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 inline-block uppercase";
+            } else {
+                statusLabel.className = "text-sm font-black px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 inline-block uppercase";
+            }
+
+            // Populate clean bilingual detailed review segment
+            const reviewWrapper = document.getElementById('review-questions-list');
+            reviewWrapper.innerHTML = '';
+
+            set11Questions.forEach(q => {
+                const userAns = responses[q.id];
+                const isCorrect = (userAns === q.correct);
+                const isAttempted = (userAns !== undefined);
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl border bg-slate-900/40 border-slate-850 shadow-inner space-y-4 ${isAttempted ? (isCorrect ? 'border-l-4 border-l-teal-500' : 'border-l-4 border-l-rose-400') : 'border-l-4 border-l-slate-700'}`;
+
+                let statusBadge = '';
+                if (!isAttempted) {
+                    statusBadge = `<span class="bg-slate-800 text-slate-400 text-[10px] px-3 py-1 rounded-full font-extrabold uppercase tracking-wider">Unattempted</span>`;
+                } else if (isCorrect) {
+                    statusBadge = `<span class="bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] px-3 py-1 rounded-full font-extrabold uppercase tracking-wider">✓ Correct</span>`;
+                } else {
+                    statusBadge = `<span class="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] px-3 py-1 rounded-full font-extrabold uppercase tracking-wider">✗ Incorrect</span>`;
+                }
+
+                const catName = q.type === 'theory' ? 'Trade Theory' : 'Employability Skills';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-850 pb-3">
+                        <span class="text-xs font-black text-teal-400">${catName} | Q #${q.id}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="space-y-1">
+                        <p class="font-bold text-slate-100 text-sm leading-relaxed">${q.q.en}</p>
+                        <p class="text-xs text-slate-400 font-devanagari leading-relaxed">${q.q.hi}</p>
+                    </div>
+                    <div class="space-y-2.5 pt-1 text-[11px]">
+                        ${q.options.map((opt, oIdx) => {
+                            const optNum = oIdx + 1;
+                            let style = "border-slate-850 text-slate-400 bg-slate-950/30";
+
+                            if (optNum === q.correct) {
+                                style = "border-teal-500/50 text-teal-300 bg-teal-500/5 font-bold";
+                            } else if (isAttempted && userAns === optNum) {
+                                style = "border-rose-500/50 text-rose-300 bg-rose-50/5 font-bold";
+                            }
+
+                            return `<div class="p-3 rounded-xl border ${style}">${opt.en} / ${opt.hi}</div>`;
+                        }).join('')}
+                    </div>
+                `;
+
+                reviewWrapper.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
