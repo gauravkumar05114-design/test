@@ -1,195 +1,643 @@
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Connect | Premium Portfolio</title>
+    <title>ई-गन्ना पर्ची एवं किसान एंट्री प्रणाली</title>
+    <!-- Tailwind CSS लोड करना -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- सीधे PDF डाउनलोड करने के लिए html2pdf लाइब्रेरी -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- हिंदी फ़ॉन्ट्स (Noto Sans Devanagari & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        :root {
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --primary-glow: rgba(99, 102, 241, 0.5);
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #030712;
-            overflow-x: hidden;
-            color: #f3f4f6;
+            font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
         }
 
-        /* Animated Mesh Background */
-        .bg-mesh {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: 
-                radial-gradient(at 0% 0%, rgba(67, 56, 202, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
-            filter: blur(80px);
+        /* प्रिंट और PDF के लिए विशेष स्टाइलिंग - केवल A4 पेज के सबसे ऊपर कॉम्पैक्ट साइज में */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 6mm 8mm;
+            }
+            html, body {
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            /* पेज के बाकी सभी हिस्सों को पूरी तरह छुपाएं ताकि खाली पेज न बने */
+            header, footer, section.no-print, .no-print, #toast-box {
+                display: none !important;
+            }
+            main, .grid, section {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            #printable-area {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: 1.5px solid #000 !important;
+                border-radius: 6px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            /* कॉम्पैक्ट प्रिंट साइज ताकि ऊपर से आसानी से फाड़ा जा सके */
+            #printable-area .p-header {
+                padding: 6px 10px !important;
+            }
+            #printable-area .p-subbar {
+                padding: 4px 10px !important;
+            }
+            #printable-area .p-body {
+                padding: 8px 10px !important;
+            }
+            #printable-area table th,
+            #printable-area table td {
+                padding: 3px 8px !important;
+                font-size: 12px !important;
+            }
+            /* नीचे कैंची / फाड़ने की लाइन दिखाएं */
+            #tear-line {
+                display: flex !important;
+            }
+            /* बैकग्राउंड कलर प्रिंट में दिखाने के लिए */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
-
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.05),
-                transparent
-            );
-            transition: 0.5s;
-        }
-
-        .glass-card:hover::before {
-            left: 100%;
-        }
-
-        .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .icon-circle {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 20px;
-            transition: transform 0.3s ease;
-        }
-
-        .glass-card:hover .icon-circle {
-            transform: rotate(10deg) scale(1.1);
-        }
-
-        /* Individual Brand Accents */
-        .instagram-hover:hover { box-shadow: 0 0 20px rgba(225, 48, 108, 0.2); }
-        .youtube-hover:hover { box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
-        .facebook-hover:hover { box-shadow: 0 0 20px rgba(24, 119, 242, 0.2); }
-        .whatsapp-hover:hover { box-shadow: 0 0 20px rgba(37, 211, 102, 0.2); }
-
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center py-12 px-4">
-    <div class="bg-mesh"></div>
+<body class="bg-emerald-50 min-h-screen text-slate-800 flex flex-col">
 
-    <div class="w-full max-w-lg">
-        <!-- Header -->
-        <div class="text-center mb-10">
-            <div class="relative inline-block group">
-                <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-1000"></div>
-                <img src="https://ui-avatars.com/api/?name=Professional+User&background=0f172a&color=fff&size=200" 
-                     alt="Profile Avatar" 
-                     class="relative w-28 h-28 rounded-full border border-white/20 object-cover">
+    <!-- नेविगेशन बार (प्रिंट में नहीं दिखेगा) -->
+    <header class="bg-gradient-to-r from-emerald-800 to-green-700 text-white shadow-lg no-print">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-white text-emerald-800 p-2 rounded-xl shadow">
+                    <!-- गन्ना आइकन SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M8 6l4-2 4 2M8 12l4-2 4 2M8 18l4-2 4 2"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-wide">ई-गन्ना आपूर्ति प्रणाली</h1>
+                    <p class="text-xs sm:text-sm text-emerald-100">किसान गन्ना पर्ची एंट्री एवं प्रिंट पोर्टल</p>
+                </div>
             </div>
-            <h1 class="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-                John Doe
-            </h1>
-            <p class="mt-3 text-lg text-gray-400 font-medium tracking-wide uppercase text-xs">
-                Content Creator & Professional Designer
-            </p>
+            <div class="text-xs sm:text-sm bg-emerald-900/50 px-3 py-1.5 rounded-lg border border-emerald-500/30">
+                पेराई सत्र: <span class="font-bold text-amber-300">2026 - 2027</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- मुख्य कंटेनर -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
+        
+        <!-- कस्टम नोटिफिकेशन / अलर्ट बॉक्स (alert() की जगह) -->
+        <div id="toast-box" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-800 text-white px-5 py-3 rounded-xl shadow-2xl border border-emerald-400 flex items-center gap-3 transition-all duration-300 no-print">
+            <span id="toast-icon">✅</span>
+            <span id="toast-message" class="font-medium text-sm">संदेश</span>
         </div>
 
-        <!-- Links Container -->
-        <div class="grid gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            <!-- Instagram -->
-            <a href="#" class="glass-card instagram-hover group flex items-center p-5 rounded-3xl">
-                <div class="icon-circle bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600">
-                    <i class="fab fa-instagram text-white"></i>
+            <!-- बायाँ भाग: किसान एंट्री फॉर्म (प्रिंट में नहीं दिखेगा) -->
+            <section class="lg:col-span-5 bg-white rounded-2xl shadow-md border border-emerald-100 p-5 sm:p-6 no-print">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+                    <h2 class="text-lg sm:text-xl font-bold text-emerald-900 flex items-center gap-2">
+                        <span>📝</span> किसान विवरण दर्ज करें
+                    </h2>
+                    <button type="button" onclick="fillDemoData()" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-2.5 py-1 rounded-lg transition">
+                        डेमो भरें
+                    </button>
                 </div>
-                <div class="ml-5 flex-grow">
-                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-widest">Connect on</span>
-                    <h2 class="text-xl font-bold text-gray-100">Instagram</h2>
-                </div>
-                <div class="text-gray-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-external-link-alt"></i>
-                </div>
-            </a>
 
-            <!-- YouTube -->
-            <a href="#" class="glass-card youtube-hover group flex items-center p-5 rounded-3xl">
-                <div class="icon-circle bg-red-600">
-                    <i class="fab fa-youtube text-white"></i>
-                </div>
-                <div class="ml-5 flex-grow">
-                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-widest">Watch on</span>
-                    <h2 class="text-xl font-bold text-gray-100">YouTube</h2>
-                </div>
-                <div class="text-gray-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-external-link-alt"></i>
-                </div>
-            </a>
+                <form id="ganna-form" onsubmit="generateSlip(event)" class="space-y-4">
+                    
+                    <!-- चीनी मिल का नाम -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">चीनी मिल / समिति का नाम</label>
+                        <input type="text" id="millName" value="सहकारी चीनी मिल लिमिटेड" required
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition text-sm sm:text-base">
+                    </div>
 
-            <!-- Facebook -->
-            <a href="#" class="glass-card facebook-hover group flex items-center p-5 rounded-3xl">
-                <div class="icon-circle bg-blue-600">
-                    <i class="fab fa-facebook-f text-white"></i>
-                </div>
-                <div class="ml-5 flex-grow">
-                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-widest">Join on</span>
-                    <h2 class="text-xl font-bold text-gray-100">Facebook</h2>
-                </div>
-                <div class="text-gray-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-external-link-alt"></i>
-                </div>
-            </a>
+                    <!-- पर्ची संख्या और दिनांक -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">पर्ची संख्या (Parchi No.) *</label>
+                            <div class="flex gap-1">
+                                <input type="text" id="parchiNo" placeholder="जैसे: 104589" required
+                                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base font-semibold text-emerald-900">
+                                <button type="button" onclick="generateRandomParchi()" title="नया नंबर बनाएं"
+                                    class="px-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl font-bold text-sm transition">
+                                    🔄
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">जारी दिनांक</label>
+                            <input type="date" id="issueDate" required
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                        </div>
+                    </div>
 
-            <!-- WhatsApp -->
-            <a href="#" class="glass-card whatsapp-hover group flex items-center p-5 rounded-3xl">
-                <div class="icon-circle bg-emerald-500">
-                    <i class="fab fa-whatsapp text-white text-2xl"></i>
-                </div>
-                <div class="ml-5 flex-grow">
-                    <span class="block text-xs font-semibold text-gray-500 uppercase tracking-widest">Chat on</span>
-                    <h2 class="text-xl font-bold text-gray-100">WhatsApp</h2>
-                </div>
-                <div class="text-gray-600 group-hover:text-white transition-colors">
-                    <i class="fas fa-external-link-alt"></i>
-                </div>
-            </a>
+                    <!-- कृषक संख्या और ग्राम कोड -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">कृषक कोड / नं. (Krishak No.) *</label>
+                            <input type="text" id="krishakNo" placeholder="जैसे: 00452" required
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ग्राम कोड (Village Code) *</label>
+                            <input type="text" id="villageCode" placeholder="जैसे: 108" required
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                        </div>
+                    </div>
 
+                    <!-- ग्राम का नाम -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">ग्राम का नाम (Village Name)</label>
+                        <input type="text" id="villageName" placeholder="जैसे: रामपुर कलां"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                    </div>
+
+                    <!-- किसान का नाम -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">किसान का नाम (Farmer Name) *</label>
+                        <input type="text" id="farmerName" placeholder="हिंदी में नाम लिखें (जैसे: रमेश कुमार)" required
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                    </div>
+
+                    <!-- पिता का नाम -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">पिता का नाम (Father's Name) *</label>
+                        <input type="text" id="fatherName" placeholder="पिता का नाम लिखें (जैसे: श्री रामप्रसाद)" required
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                    </div>
+
+                    <!-- गन्ने की किस्म और अनुमानित वजन -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">गन्ना किस्म / प्रजाति</label>
+                            <select id="caneVariety"
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                                <option value="अगेती (Early)">अगेती (Early)</option>
+                                <option value="सामान्य (General)">सामान्य (General)</option>
+                                <option value="पेड़ी (Ratoon)">पेड़ी (Ratoon)</option>
+                                <option value="पौधा (Plant)">पौधा (Plant)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">तौल माध्यम / वजन (क्विंटल)</label>
+                            <input type="text" id="supplyMode" value="ट्रॉली / 45 क्विंटल"
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none transition text-sm sm:text-base">
+                        </div>
+                    </div>
+
+                    <!-- बटन समूह -->
+                    <div class="pt-3 flex flex-col sm:flex-row gap-3">
+                        <button type="submit"
+                            class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-5 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <span>📄</span> पर्ची बनाएं एवं सेव करें
+                        </button>
+                        <button type="button" onclick="resetForm()"
+                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition cursor-pointer">
+                            साफ़ करें
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- दायाँ भाग: लाइव ई-गन्ना पर्ची प्रीव्यू और प्रिंट -->
+            <section class="lg:col-span-7 flex flex-col gap-5">
+                
+                <!-- ऊपर एक्शन बार (प्रिंट बटन) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-emerald-100 p-4 flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base sm:text-lg">ई-गन्ना पर्ची प्रीव्यू</h3>
+                        <p class="text-xs text-slate-500">PDF में सेव करने या प्रिंट निकालने के लिए बटन दबाएं</p>
+                    </div>
+                    <button type="button" onclick="printParchi()"
+                        class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-2 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        <span>PDF / प्रिंट निकालें</span>
+                    </button>
+                <!-- ऊपर एक्शन बार (प्रिंट और PDF बटन) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-emerald-100 p-4 flex flex-wrap items-center justify-between gap-3 no-print">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base sm:text-lg">ई-गन्ना पर्ची प्रीव्यू (कॉम्पैक्ट टॉप साइज)</h3>
+                        <p class="text-xs text-slate-500">पेज के सबसे ऊपर प्रिंट होगा ताकि ऊपर से फाड़कर बाकी पेज दोबारा उपयोग कर सकें</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="printParchi()"
+                            class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-2 cursor-pointer text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            <span>सीधे प्रिंट करें</span>
+                        </button>
+                        <button type="button" onclick="downloadPDF()"
+                            class="bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-2 cursor-pointer text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>PDF डाउनलोड करें</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- वास्तविक प्रिंटेबल ई-गन्ना पर्ची कार्ड (कॉम्पैक्ट टॉप लेआउट) -->
+                <div id="printable-area" class="bg-white rounded-xl shadow-xl border-2 border-emerald-800 overflow-hidden">
+                    
+                    <!-- पर्ची हेडर -->
+                    <div class="p-header bg-emerald-800 text-white px-4 py-2.5 text-center border-b border-emerald-950">
+                        <div class="flex justify-between items-center text-[11px] text-emerald-200">
+                            <span>|| श्री गणेशाय नमः ||</span>
+                            <span class="font-semibold">ई-गन्ना आपूर्ति पर्ची (किसान प्रति)</span>
+                            <span>सत्र: 2026-27</span>
+                        </div>
+                        <h2 id="p-millName" class="text-lg sm:text-xl font-extrabold tracking-wide leading-tight mt-0.5">सहकारी चीनी मिल लिमिटेड</h2>
+                    </div>
+
+                    <!-- पर्ची मुख्य संख्या, कृषक कोड और ग्राम कोड एक ही कॉम्पैक्ट पट्टी में -->
+                    <div class="p-subbar bg-amber-50 px-4 py-2 border-b border-dashed border-slate-400 flex flex-wrap justify-between items-center gap-2 text-xs sm:text-sm">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-semibold text-slate-600">पर्ची नं.:</span>
+                            <span id="p-parchiNo" class="text-base font-extrabold text-rose-700 bg-white px-2 py-0.2 rounded border border-rose-300">104589</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-semibold text-slate-600">कृषक कोड:</span>
+                            <span id="p-krishakNo" class="text-base font-extrabold text-emerald-900 bg-white px-2 py-0.2 rounded border border-emerald-300">00452</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-semibold text-slate-600">ग्राम कोड:</span>
+                            <span id="p-villageCode" class="text-base font-extrabold text-emerald-900 bg-white px-2 py-0.2 rounded border border-emerald-300">108</span>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-slate-600">दिनांक:</span>
+                            <span id="p-issueDate" class="font-bold text-slate-900">--/--/----</span>
+                        </div>
+                    </div>
+
+                    <!-- किसान व्यक्तिगत विवरण कॉम्पैक्ट 2-कॉलम ग्रिड तालिका -->
+                    <div class="p-body p-3 sm:p-4 space-y-2.5">
+                        <div class="border border-slate-300 rounded-lg overflow-hidden">
+                            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                                <tbody>
+                                    <tr class="border-b border-slate-200">
+                                        <th class="bg-slate-100 px-3 py-1.5 font-bold text-slate-700 w-1/5">किसान का नाम:</th>
+                                        <td id="p-farmerName" class="px-3 py-1.5 font-extrabold text-slate-900 w-3/10">रमेश कुमार</td>
+                                        <th class="bg-slate-100 px-3 py-1.5 font-bold text-slate-700 w-1/5 border-l border-slate-200">पिता का नाम:</th>
+                                        <td id="p-fatherName" class="px-3 py-1.5 font-bold text-slate-800 w-3/10">श्री रामप्रसाद</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="bg-slate-100 px-3 py-1.5 font-bold text-slate-700">ग्राम का नाम:</th>
+                                        <td id="p-villageName" class="px-3 py-1.5 font-semibold text-slate-800">रामपुर कलां</td>
+                                        <th class="bg-slate-100 px-3 py-1.5 font-bold text-slate-700 border-l border-slate-200">प्रजाति / तौल:</th>
+                                        <td class="px-3 py-1.5 font-semibold text-emerald-800">
+                                            <span id="p-caneVariety">अगेती (Early)</span> | <span id="p-supplyMode">ट्रॉली / 45 क्विं.</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- बारकोड और हस्ताक्षर एक ही पंक्ति में (ऊंचाई कम रखने के लिए) -->
+                        <div class="pt-1 flex justify-between items-end gap-4">
+                            <div class="flex items-center gap-2">
+                                <div class="inline-flex items-end gap-0.5 h-6 bg-white px-1.5 py-0.5 border border-slate-200 rounded">
+                                    <div class="w-1 h-full bg-slate-900"></div>
+                                    <div class="w-0.5 h-full bg-slate-900"></div>
+                                    <div class="w-1.5 h-full bg-slate-900"></div>
+                                    <div class="w-0.5 h-full bg-slate-900"></div>
+                                    <div class="w-1 h-full bg-slate-900"></div>
+                                    <div class="w-1.5 h-full bg-slate-900"></div>
+                                    <div class="w-0.5 h-full bg-slate-900"></div>
+                                    <div class="w-1 h-full bg-slate-900"></div>
+                                    <div class="w-1 h-full bg-slate-900"></div>
+                                </div>
+                                <span id="p-barcode-text" class="text-[10px] font-mono text-slate-500">E-GANNA-108-00452-104589</span>
+                            </div>
+
+                            <div class="text-right">
+                                <p class="text-[11px] font-bold text-slate-700 border-t border-slate-400 pt-0.5 px-3 inline-block">अधिकृत हस्ताक्षर / मोहर</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- नीचे कैंची से काटने / फाड़ने की निशान वाली लाइन -->
+                    <div id="tear-line" class="bg-slate-100 px-3 py-1 text-[10px] text-slate-500 border-t border-dashed border-slate-500 flex justify-between items-center">
+                        <span>✂️ ------------------------------------ यहाँ से फाड़ें (ऊपरी हिस्सा) ------------------------------------ ✂️</span>
+                        <span class="font-semibold text-emerald-800">ई-गन्ना पोर्टल</span>
+                    </div>
+                </div>
+
+            </section>
         </div>
 
-        <!-- Footer -->
-        <div class="mt-12 text-center">
-            <p class="text-gray-500 text-sm font-medium">
-                &copy; 2025 ALL RIGHTS RESERVED.
-            </p>
-            <div class="mt-4 flex justify-center gap-6 text-gray-600">
-                <a href="#" class="hover:text-white transition-colors"><i class="fas fa-envelope"></i></a>
-                <a href="#" class="hover:text-white transition-colors"><i class="fas fa-globe"></i></a>
-                <a href="#" class="hover:text-white transition-colors"><i class="fas fa-user-shield"></i></a>
+        <!-- दर्ज की गई पर्चियों की सूची (हिस्ट्री टेबल - प्रिंट में नहीं दिखेगा) -->
+        <section class="mt-10 bg-white rounded-2xl shadow-md border border-emerald-100 p-5 sm:p-6 no-print">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                        <span>📋</span> हाल ही में दर्ज की गई ई-गन्ना पर्चियां
+                    </h3>
+                    <p class="text-xs text-slate-500">किसी भी पुरानी पर्ची को देखने या दोबारा PDF प्रिंट करने के लिए क्लिक करें</p>
+                </div>
+                <button type="button" onclick="clearHistory()" class="text-xs text-rose-600 hover:text-rose-800 font-semibold underline">
+                    सूची साफ़ करें
+                </button>
             </div>
-        </div>
-    </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-emerald-50 text-emerald-900 border-b border-emerald-200">
+                            <th class="py-3 px-4 font-bold rounded-tl-xl">पर्ची नं.</th>
+                            <th class="py-3 px-4 font-bold">किसान का नाम</th>
+                            <th class="py-3 px-4 font-bold">पिता का नाम</th>
+                            <th class="py-3 px-4 font-bold">कृषक नं.</th>
+                            <th class="py-3 px-4 font-bold">ग्राम कोड</th>
+                            <th class="py-3 px-4 font-bold">दिनांक</th>
+                            <th class="py-3 px-4 font-bold text-center rounded-tr-xl">कार्य</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody" class="divide-y divide-slate-100">
+                        <!-- जावास्क्रिप्ट से डेटा यहाँ जुड़ेगा -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- फुटर -->
+    <footer class="bg-slate-800 text-slate-300 text-center py-4 text-xs mt-12 no-print">
+        <p>© 2026 ई-गन्ना पर्ची एवं किसान सेवा पोर्टल | सभी अधिकार सुरक्षित</p>
+    </footer>
+
+    <!-- जावास्क्रिप्ट लॉजिक -->
+    <script>
+        // ग्लोबल डेटा स्टोर (LocalStorage के साथ)
+        let savedEntries = [];
+
+        // पेज लोड होने पर इनिशियलाइज़ेशन
+        window.onload = function() {
+            try {
+                // आज की तारीख सेट करें
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('issueDate').value = today;
+
+                // लोकल स्टोरेज से पुरानी एंट्री लोड करें
+                const stored = localStorage.getItem('eganna_entries');
+                if (stored) {
+                    savedEntries = JSON.parse(stored);
+                }
+
+                // यदि कोई एंट्री पहले से है तो नवीनतम दिखाएं, अन्यथा डिफ़ॉल्ट डेमो प्रीव्यू दिखाएं
+                if (savedEntries.length > 0) {
+                    loadEntryToSlip(savedEntries[0]);
+                } else {
+                    generateRandomParchi();
+                    updateSlipPreview();
+                }
+
+                renderHistoryTable();
+                attachLiveListeners();
+            } catch (error) {
+                console.error("इनिशियलाइज़ेशन त्रुटि:", error);
+            }
+        };
+
+        // लाइव टाइपिंग के साथ पर्ची प्रीव्यू अपडेट करने के लिए लिसनर्स
+        function attachLiveListeners() {
+            const fields = ['millName', 'parchiNo', 'issueDate', 'krishakNo', 'villageCode', 'villageName', 'farmerName', 'fatherName', 'caneVariety', 'supplyMode'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', updateSlipPreview);
+                    el.addEventListener('change', updateSlipPreview);
+                }
+            });
+        }
+
+        // तारीख को भारतीय प्रारूप (DD-MM-YYYY) में बदलने का फंक्शन
+        function formatDateHindi(dateStr) {
+            if (!dateStr) return '--/--/----';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
+        // रैंडम 6 अंकों की पर्ची संख्या बनाना
+        function generateRandomParchi() {
+            const randomNum = Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('parchiNo').value = randomNum;
+            updateSlipPreview();
+        }
+
+        // पर्ची प्रीव्यू कार्ड को फॉर्म के डेटा से अपडेट करना
+        function updateSlipPreview() {
+            const millName = document.getElementById('millName').value.trim() || 'सहकारी चीनी मिल लिमिटेड';
+            const parchiNo = document.getElementById('parchiNo').value.trim() || '------';
+            const issueDate = formatDateHindi(document.getElementById('issueDate').value);
+            const krishakNo = document.getElementById('krishakNo').value.trim() || '-----';
+            const villageCode = document.getElementById('villageCode').value.trim() || '---';
+            const villageName = document.getElementById('villageName').value.trim() || '---';
+            const farmerName = document.getElementById('farmerName').value.trim() || '---';
+            const fatherName = document.getElementById('fatherName').value.trim() || '---';
+            const caneVariety = document.getElementById('caneVariety').value;
+            const supplyMode = document.getElementById('supplyMode').value.trim() || '---';
+
+            document.getElementById('p-millName').textContent = millName;
+            document.getElementById('p-parchiNo').textContent = parchiNo;
+            document.getElementById('p-issueDate').textContent = issueDate;
+            document.getElementById('p-krishakNo').textContent = krishakNo;
+            document.getElementById('p-villageCode').textContent = villageCode;
+            document.getElementById('p-villageName').textContent = villageName;
+            document.getElementById('p-farmerName').textContent = farmerName;
+            document.getElementById('p-fatherName').textContent = fatherName;
+            document.getElementById('p-caneVariety').textContent = caneVariety;
+            document.getElementById('p-supplyMode').textContent = supplyMode;
+            document.getElementById('p-barcode-text').textContent = `E-GANNA-${villageCode}-${krishakNo}-${parchiNo}`;
+        }
+
+        // फॉर्म सबमिट होने पर पर्ची जनरेट और सेव करना
+        function generateSlip(event) {
+            event.preventDefault();
+            try {
+                const entry = {
+                    id: Date.now(),
+                    millName: document.getElementById('millName').value.trim(),
+                    parchiNo: document.getElementById('parchiNo').value.trim(),
+                    issueDate: document.getElementById('issueDate').value,
+                    krishakNo: document.getElementById('krishakNo').value.trim(),
+                    villageCode: document.getElementById('villageCode').value.trim(),
+                    villageName: document.getElementById('villageName').value.trim() || 'उपलब्ध नहीं',
+                    farmerName: document.getElementById('farmerName').value.trim(),
+                    fatherName: document.getElementById('fatherName').value.trim(),
+                    caneVariety: document.getElementById('caneVariety').value,
+                    supplyMode: document.getElementById('supplyMode').value.trim()
+                };
+
+                updateSlipPreview();
+
+                // सूची में सबसे ऊपर जोड़ें
+                savedEntries.unshift(entry);
+                localStorage.setItem('eganna_entries', JSON.stringify(savedEntries));
+                renderHistoryTable();
+
+                showToast('ई-गन्ना पर्ची सफलतापूर्वक तैयार और सुरक्षित हो गई है!', '✅');
+            } catch (error) {
+                console.error("एंट्री सेव करने में त्रुटि:", error);
+                showToast('डेटा सेव करने में समस्या आई।', '⚠️');
+            }
+        }
+
+        // किसी पुरानी एंट्री को पर्ची प्रीव्यू में लोड करना
+        function loadEntryToSlip(entry) {
+            document.getElementById('millName').value = entry.millName;
+            document.getElementById('parchiNo').value = entry.parchiNo;
+            document.getElementById('issueDate').value = entry.issueDate;
+            document.getElementById('krishakNo').value = entry.krishakNo;
+            document.getElementById('villageCode').value = entry.villageCode;
+            document.getElementById('villageName').value = entry.villageName === 'उपलब्ध नहीं' ? '' : entry.villageName;
+            document.getElementById('farmerName').value = entry.farmerName;
+            document.getElementById('fatherName').value = entry.fatherName;
+            document.getElementById('caneVariety').value = entry.caneVariety;
+            document.getElementById('supplyMode').value = entry.supplyMode;
+            updateSlipPreview();
+        }
+
+        // हिस्ट्री टेबल रेंडर करना
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-tbody');
+            tbody.innerHTML = '';
+
+            if (savedEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-6 text-center text-slate-400">
+        // PDF / प्रिंट डायलॉग खोलना (डायरेक्ट ब्राउज़र प्रिंट + फॉलबैक)
+        function printParchi() {
+            updateSlipPreview();
+            setTimeout(() => {
+                try {
+                    window.focus();
+                    window.print();
+                } catch (e) {
+                    console.error("प्रिंट त्रुटि:", e);
+                    downloadPDF();
+                }
+            }, 150);
+        }
+
+        // सीधे टॉप-साइज PDF फाइल डाउनलोड करने का फंक्शन (यदि ब्राउज़र में प्रिंट ब्लॉक हो)
+        function downloadPDF() {
+            updateSlipPreview();
+            const element = document.getElementById('printable-area');
+            const parchiNo = document.getElementById('p-parchiNo').textContent.trim() || 'parchi';
+
+            if (typeof html2pdf === 'undefined') {
+                showToast('PDF लाइब्रेरी लोड हो रही है, कृपया सीधे प्रिंट बटन दबाएं।', '⚠️');
+                window.print();
+                return;
+            }
+
+            showToast('ऊपरी हिस्से की PDF तैयार हो रही है...', '⏳');
+
+            const opt = {
+                margin:       [5, 8, 5, 8], // ऊपर से सिर्फ 5mm मार्जिन ताकि टॉप पर रहे
+                filename:     `E-Ganna-Parchi-${parchiNo}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast(`PDF (E-Ganna-Parchi-${parchiNo}.pdf) डाउनलोड हो गई है!`, '✅');
+            }).catch(err => {
+                console.error("PDF त्रुटि:", err);
+                window.print();
+            });
+        }
+
+        // डेमो डेटा भरने के लिए फंक्शन
+        function fillDemoData() {
+            generateRandomParchi();
+            document.getElementById('krishakNo').value = '01284';
+            document.getElementById('villageCode').value = '205';
+            document.getElementById('villageName').value = 'किशनपुर';
+            document.getElementById('farmerName').value = 'सुरेश चन्द्र शर्मा';
+            document.getElementById('fatherName').value = 'श्री हरवंश लाल शर्मा';
+            document.getElementById('caneVariety').value = 'अगेती (Early)';
+            document.getElementById('supplyMode').value = 'ट्रैक्टर-ट्रॉली / 50 क्विंटल';
+            updateSlipPreview();
+            showToast('डेमो किसान विवरण भर दिया गया है।', '✨');
+        }
+
+        // फॉर्म रीसेट करना
+        function resetForm() {
+            document.getElementById('krishakNo').value = '';
+            document.getElementById('villageCode').value = '';
+            document.getElementById('villageName').value = '';
+            document.getElementById('farmerName').value = '';
+            document.getElementById('fatherName').value = '';
+            generateRandomParchi();
+            updateSlipPreview();
+            showToast('फॉर्म साफ़ कर दिया गया है।', '🧹');
+        }
+
+        // हिस्ट्री साफ़ करना
+        function clearHistory() {
+            savedEntries = [];
+            localStorage.removeItem('eganna_entries');
+            renderHistoryTable();
+            showToast('सभी पुरानी एंट्री हटा दी गई हैं।', '🗑️');
+        }
+
+        // कस्टम टोस्ट मैसेज दिखाना (alert के स्थान पर)
+        function showToast(msg, icon = '✅') {
+            const box = document.getElementById('toast-box');
+            document.getElementById('toast-message').textContent = msg;
+            document.getElementById('toast-icon').textContent = icon;
+            box.classList.remove('hidden');
+            
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                box.classList.add('hidden');
+            }, 3000);
+        }
+
+        // XSS सुरक्षा हेतु HTML एस्केप
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag]));
+        }
+    </script>
 </body>
 </html>
+```
